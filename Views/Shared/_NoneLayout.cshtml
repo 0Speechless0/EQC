@@ -1,0 +1,56 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>經濟部水利署-水利工程品管系統</title>
+    <meta name="keywords" content="經濟部水利署,水利工程,品管系統">
+    <meta name="description" content="經濟部水利署-水利工程品管系統">
+    <link rel="icon" href="@Url.Content("~/Content/images1/ROC_Water_Resources_Agency_Seal.svg")" type="image/ico" />
+    <link href="@Url.Content("~/Content/css1/bootstrap.min.css")" rel="stylesheet">
+    <link href="@Url.Content("~/Content/css1/fontawesome.min.css")" rel="stylesheet">
+    <link href="@Url.Content("~/Content/css1/all.css")" rel="stylesheet">
+    <!--icon font設定-->
+    <link href="/Content/css1/layout.css" rel="stylesheet">
+    <!--自訂CSS-->
+    <link href="/Content/css1/rwd.css" rel="stylesheet">
+    <!--自訂RWD設定-->
+    <!--[if lt IE 9]>
+      <script src="js/html5shiv.min.js"></script>
+      <script src="js/respond.min.js"></script>
+      <![endif]-->
+
+</head>
+<body class="index">
+    <div id="WRAPPER">
+        <header><img class="logo" src="/Content/images1/major_logo.png"></header>
+        <div id="app">
+            @RenderBody()
+        </div>
+    </div>
+    @Scripts.Render("~/bundles/jquery")
+    @*@Scripts.Render("~/bundles/bootstrap")*@
+    @*<script src="@Url.Content("~/Scripts/js/jquery.slim.min.js")"></script>
+        <script src="@Url.Content("~/Scripts/js/bootstrap.bundle.min.js")"></script>
+        <script src="@Url.Content("~/Scripts/js/jquery.fileuploader.min.js")"></script>*@
+
+    <script src="@Url.Content("~/Scripts/js/jquery-3.6.0.min.js")"></script>
+    <script src="@Url.Content("~/Scripts/js/bootstrap.min.js")"></script>
+    <script src="@Url.Content("~/Scripts/js/script.js")"></script>
+    <!-- CSS -->
+
+    <script src=@Url.Content("~/Content/dist/js/app.js")></script>
+
+    <script>
+        new Vue({
+            //store,
+            //render: (h) => h(App),
+        }).$mount('#app')
+    </script>
+
+    @RenderSection("scripts", required: false)
+</body>
+</html>
+
+

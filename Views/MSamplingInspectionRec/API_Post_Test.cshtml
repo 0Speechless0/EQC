@@ -1,0 +1,31 @@
+﻿@{
+    ViewBag.Title = "Post API Test";
+    Layout = "~/Views/Shared/_LayoutMobile.cshtml";
+}
+
+
+<!DOCTYPE html>
+<html>
+<body>
+    <form action="../API" method="post">
+        <input type="submit" value="送出資料" style="width:95%" /><br />
+        帳號：<input type="text" name="UserNo" placeholder="請輸入帳號" value="guest" /><br />
+        手機：<input type="text" name="Mobile" placeholder="請輸入帳號" value="0912345678" /><br />
+        工程：<input type="text" name="EngName" placeholder="請輸入工程" value="109年度急水溪鐵線里堤段設施維修改善工程(三期),110-B-01030-005-186" /><br />
+        分項工程：<input type="text" name="EngItemName" placeholder="請輸入工程" value="aaaa,1016" /><br />
+        檢查座標x：<input type="text" name="XYPosLati" placeholder="請輸入" value="24.153820" /><br />
+        檢查座標y：<input type="text" name="XYPosLong" placeholder="請輸入" value="120.665321" /><br />
+        檢查位置：<input type="text" name="PosDesc" placeholder="請輸入" value="gushy" /><br />
+        檢查日期：<input type="text" name="CheckDate" placeholder="請輸入" value="2021-10-14" /><br />
+        抽查項目：<input type="text" name="CheckItem" placeholder="請輸入" value="uuhaj" /><br />
+        實際抽查情形：<input type="text" name="RealCheckCond" placeholder="請輸入" value="23.632788 公分 Ghhz" /><br />
+        抽查結果：<input type="text" name="CheckResult" placeholder="請輸入" value="檢查合格" /><br />
+        照片1：<input type="text" name="CheckImage1" placeholder="請輸入" value="" /><br />
+        照片2：<input type="text" name="CheckImage2" placeholder="請輸入" value="" /><br />
+        照片3：<input type="text" name="CheckImage3" placeholder="請輸入" value="" /><br />
+        檢查人員：<input type="text" name="CheckUser" placeholder="請輸入" value="njjs" /><br />
+
+
+    </form>
+</body>
+</html>

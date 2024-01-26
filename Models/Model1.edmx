@@ -1,0 +1,468 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+    <Schema Namespace="EQC_NEWModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="Country2WRAMapping">
+          <Key>
+            <PropertyRef Name="Seq" />
+          </Key>
+          <Property Name="Seq" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="RiverBureau" Type="nvarchar" MaxLength="50" />
+          <Property Name="Country" Type="nvarchar" MaxLength="50" />
+          <Property Name="CreateTime" Type="datetime" />
+          <Property Name="CreateUserSeq" Type="int" />
+          <Property Name="ModifyTime" Type="datetime" />
+          <Property Name="ModifyUserSeq" Type="int" />
+        </EntityType>
+        <EntityType Name="CourtVerdict">
+          <Key>
+            <PropertyRef Name="Seq" />
+          </Key>
+          <Property Name="Seq" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="JID" Type="nvarchar" MaxLength="80" />
+          <Property Name="JYear" Type="nvarchar" MaxLength="5" />
+          <Property Name="JCase" Type="nvarchar" MaxLength="20" />
+          <Property Name="JNo" Type="varchar" MaxLength="20" />
+          <Property Name="JDate" Type="nvarchar" MaxLength="10" />
+          <Property Name="JTitle" Type="nvarchar" MaxLength="500" />
+          <Property Name="CreateTime" Type="datetime" />
+          <Property Name="CreateUser" Type="int" />
+          <Property Name="ModifyTime" Type="datetime" />
+          <Property Name="ModifyUser" Type="int" />
+        </EntityType>
+        <EntityType Name="PublicWorkFirmResume">
+          <Key>
+            <PropertyRef Name="Seq" />
+          </Key>
+          <Property Name="Seq" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="CorporationName" Type="nvarchar" MaxLength="255" />
+          <Property Name="GrdAPlusAuditCnt200million5Yrs" Type="int" Nullable="false" />
+          <Property Name="GrdAAuditCnt200million5Yrs" Type="int" Nullable="false" />
+          <Property Name="GrdBAuditCnt200million5Yrs" Type="int" Nullable="false" />
+          <Property Name="GrdCAuditCnt200million5Yrs" Type="int" Nullable="false" />
+          <Property Name="GrdAPlusAuditCnt50To200million5Yrs" Type="int" Nullable="false" />
+          <Property Name="GrdAAuditCnt50To200million5Yrs" Type="int" Nullable="false" />
+          <Property Name="GrdBAuditCnt50To200million5Yrs" Type="int" Nullable="false" />
+          <Property Name="GrdCAuditCnt50To200million5Yrs" Type="int" Nullable="false" />
+          <Property Name="GrdAPlusAuditCnt10To50million5Yrs" Type="int" Nullable="false" />
+          <Property Name="GrdAAuditCnt10To50million5Yrs" Type="int" Nullable="false" />
+          <Property Name="GrdBAuditCnt10To50million5Yrs" Type="int" Nullable="false" />
+          <Property Name="GrdCAuditCnt10To50million5Yrs" Type="int" Nullable="false" />
+          <Property Name="GrdAPlusAuditCnt1To10million5Yrs" Type="int" Nullable="false" />
+          <Property Name="GrdAAuditCnt1To10million5Yrs" Type="int" Nullable="false" />
+          <Property Name="GrdBAuditCnt1To10million5Yrs" Type="int" Nullable="false" />
+          <Property Name="GrdCAuditCnt1To10million5Yrs" Type="int" Nullable="false" />
+          <Property Name="ListDate" Type="varchar" MaxLength="7" />
+          <Property Name="CreateTime" Type="datetime" />
+          <Property Name="CreateUserSeq" Type="int" />
+          <Property Name="ModifyTime" Type="datetime" />
+          <Property Name="ModifyUserSeq" Type="int" />
+          <Property Name="GrdAAuditRatio" Type="decimal" Precision="18" Scale="17" Nullable="false" />
+          <Property Name="GrdCAuditNum" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="TechnicalArtical">
+          <Key>
+            <PropertyRef Name="Seq" />
+          </Key>
+          <Property Name="Seq" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Title" Type="nvarchar" MaxLength="255" Nullable="false" />
+          <Property Name="Text" Type="ntext" />
+          <Property Name="CreateTime" Type="datetime" />
+          <Property Name="ModifyTime" Type="datetime" />
+          <Property Name="Author" Type="int" Nullable="false" />
+          <Property Name="Url" Type="text" />
+          <Property Name="Click" Type="int" Nullable="false" />
+        </EntityType>
+        <!--產生期間發現錯誤:
+警告 6002: 資料表/檢視 'EQC_NEW.dbo.TechnicalArticalMTag' 未定義主索引鍵。已推斷此索引鍵，並將定義建立成唯讀的資料表/檢視。-->
+        <EntityType Name="TechnicalArticalMTag">
+          <Key>
+            <PropertyRef Name="TechnicalArticalSeq" />
+            <PropertyRef Name="TechnicalTagSeq" />
+          </Key>
+          <Property Name="TechnicalArticalSeq" Type="int" Nullable="false" />
+          <Property Name="TechnicalTagSeq" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="THSR">
+          <Key>
+            <PropertyRef Name="Seq" />
+          </Key>
+          <Property Name="Seq" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Direction" Type="tinyint" />
+          <Property Name="CarNo" Type="varchar" MaxLength="6" />
+          <Property Name="StartStationName" Type="nvarchar" MaxLength="10" />
+          <Property Name="DepartureTime" Type="varchar" MaxLength="5" />
+          <Property Name="EndingStationName" Type="nvarchar" MaxLength="10" />
+          <Property Name="ArrivalTime" Type="varchar" MaxLength="5" />
+          <Property Name="Memo" Type="nvarchar" MaxLength="100" />
+          <Property Name="CreateTime" Type="datetime" />
+          <Property Name="CreateUser" Type="int" />
+          <Property Name="ModifyTime" Type="datetime" />
+          <Property Name="ModifyUser" Type="int" />
+        </EntityType>
+        <EntityType Name="wraControlPlanNo">
+          <Key>
+            <PropertyRef Name="Seq" />
+          </Key>
+          <Property Name="Seq" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="ProcuringEntityId" Type="varchar" MaxLength="10" />
+          <Property Name="ProjectNo" Type="varchar" MaxLength="20" />
+          <Property Name="ProjectName" Type="nchar" MaxLength="100" />
+          <Property Name="PlanOrganizerName" Type="nvarchar" MaxLength="50" />
+          <Property Name="Memo" Type="nvarchar" MaxLength="255" />
+          <Property Name="SupervisionUnit" Type="nvarchar" MaxLength="100" />
+          <Property Name="PlanningSection" Type="nvarchar" MaxLength="100" />
+          <Property Name="hostingPerson" Type="nvarchar" MaxLength="50" />
+          <Property Name="CreateTime" Type="datetime" />
+          <Property Name="CreateUserSeq" Type="int" />
+          <Property Name="ModifyTime" Type="datetime" />
+          <Property Name="ModifyUserSeq" Type="int" />
+        </EntityType>
+        <Association Name="FK_TechnicalArticalMTag_TechnicalArtical">
+          <End Role="TechnicalArtical" Type="Self.TechnicalArtical" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="TechnicalArticalMTag" Type="Self.TechnicalArticalMTag" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="TechnicalArtical">
+              <PropertyRef Name="Seq" />
+            </Principal>
+            <Dependent Role="TechnicalArticalMTag">
+              <PropertyRef Name="TechnicalArticalSeq" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="EQC_NEWModelStoreContainer">
+          <EntitySet Name="Country2WRAMapping" EntityType="Self.Country2WRAMapping" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="CourtVerdict" EntityType="Self.CourtVerdict" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="PublicWorkFirmResume" EntityType="Self.PublicWorkFirmResume" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="TechnicalArtical" EntityType="Self.TechnicalArtical" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="THSR" EntityType="Self.THSR" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="wraControlPlanNo" EntityType="Self.wraControlPlanNo" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="TechnicalArticalMTag" EntityType="Self.TechnicalArticalMTag" store:Type="Tables" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [TechnicalArticalMTag].[TechnicalArticalSeq] AS [TechnicalArticalSeq], 
+    [TechnicalArticalMTag].[TechnicalTagSeq] AS [TechnicalTagSeq]
+    FROM [dbo].[TechnicalArticalMTag] AS [TechnicalArticalMTag]</DefiningQuery>
+          </EntitySet>
+          <AssociationSet Name="FK_TechnicalArticalMTag_TechnicalArtical" Association="Self.FK_TechnicalArticalMTag_TechnicalArtical">
+            <End Role="TechnicalArtical" EntitySet="TechnicalArtical" />
+            <End Role="TechnicalArticalMTag" EntitySet="TechnicalArticalMTag" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema></edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="EQC_NEWModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityContainer Name="EQC_NEWEntities1" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="Country2WRAMapping" EntityType="EQC_NEWModel.Country2WRAMapping" />
+          <EntitySet Name="wraControlPlanNo" EntityType="EQC_NEWModel.wraControlPlanNo" />
+          <EntitySet Name="QualityDeductionPoints" EntityType="EQC_NEWModel.QualityDeductionPoints" />
+          <EntitySet Name="PublicWorkFirmResume" EntityType="EQC_NEWModel.PublicWorkFirmResume" />
+          <EntitySet Name="TechnicalArtical" EntityType="EQC_NEWModel.TechnicalArtical" />
+          <EntitySet Name="TechnicalArticalMTag" EntityType="EQC_NEWModel.TechnicalArticalMTag" />
+          <AssociationSet Name="FK_TechnicalArticalMTag_TechnicalArtical" Association="EQC_NEWModel.FK_TechnicalArticalMTag_TechnicalArtical">
+            <End Role="TechnicalArtical" EntitySet="TechnicalArtical" />
+            <End Role="TechnicalArticalMTag" EntitySet="TechnicalArticalMTag" />
+          </AssociationSet>
+          <EntitySet Name="CourtVerdict" EntityType="EQC_NEWModel.CourtVerdict" />
+          <EntitySet Name="THSR" EntityType="EQC_NEWModel.THSR" />
+        </EntityContainer>
+        <EntityType Name="Country2WRAMapping">
+          <Key>
+            <PropertyRef Name="Seq" />
+          </Key>
+          <Property Name="Seq" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="RiverBureau" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Country" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="CreateTime" Type="DateTime" Precision="3" />
+          <Property Name="CreateUserSeq" Type="Int32" />
+          <Property Name="ModifyTime" Type="DateTime" Precision="3" />
+          <Property Name="ModifyUserSeq" Type="Int32" />
+        </EntityType>
+        <EntityType Name="wraControlPlanNo">
+          <Key>
+            <PropertyRef Name="Seq" />
+          </Key>
+          <Property Name="Seq" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="ProcuringEntityId" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="ProjectNo" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="ProjectName" Type="String" MaxLength="100" FixedLength="true" Unicode="true" />
+          <Property Name="PlanOrganizerName" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Memo" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="SupervisionUnit" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="PlanningSection" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="hostingPerson" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="CreateTime" Type="DateTime" Precision="3" />
+          <Property Name="CreateUserSeq" Type="Int32" />
+          <Property Name="ModifyTime" Type="DateTime" Precision="3" />
+          <Property Name="ModifyUserSeq" Type="Int32" />
+        </EntityType>
+        <EntityType Name="QualityDeductionPoints">
+          <Key>
+            <PropertyRef Name="Seq" />
+          </Key>
+          <Property Name="Seq" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="UnitName" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="UnitCode" Type="String" Nullable="false" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="MissingNo" Type="String" Nullable="false" MaxLength="30" FixedLength="false" Unicode="false" />
+          <Property Name="DeductionPoint" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="Content" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="CreateTime" Type="DateTime" Precision="3" />
+          <Property Name="CreateUserSeq" Type="Int32" />
+          <Property Name="ModifyTime" Type="DateTime" Precision="3" />
+          <Property Name="ModifyUserSeq" Type="Int32" />
+        </EntityType>
+        <EntityType Name="PublicWorkFirmResume">
+          <Key>
+            <PropertyRef Name="Seq" />
+          </Key>
+          <Property Name="Seq" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="CorporationName" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="GrdAPlusAuditCnt200million5Yrs" Type="Int32" Nullable="false" />
+          <Property Name="GrdAAuditCnt200million5Yrs" Type="Int32" Nullable="false" />
+          <Property Name="GrdBAuditCnt200million5Yrs" Type="Int32" Nullable="false" />
+          <Property Name="GrdCAuditCnt200million5Yrs" Type="Int32" Nullable="false" />
+          <Property Name="GrdAPlusAuditCnt50To200million5Yrs" Type="Int32" Nullable="false" />
+          <Property Name="GrdAAuditCnt50To200million5Yrs" Type="Int32" Nullable="false" />
+          <Property Name="GrdBAuditCnt50To200million5Yrs" Type="Int32" Nullable="false" />
+          <Property Name="GrdCAuditCnt50To200million5Yrs" Type="Int32" Nullable="false" />
+          <Property Name="GrdAPlusAuditCnt10To50million5Yrs" Type="Int32" Nullable="false" />
+          <Property Name="GrdAAuditCnt10To50million5Yrs" Type="Int32" Nullable="false" />
+          <Property Name="GrdBAuditCnt10To50million5Yrs" Type="Int32" Nullable="false" />
+          <Property Name="GrdCAuditCnt10To50million5Yrs" Type="Int32" Nullable="false" />
+          <Property Name="GrdAPlusAuditCnt1To10million5Yrs" Type="Int32" Nullable="false" />
+          <Property Name="GrdAAuditCnt1To10million5Yrs" Type="Int32" Nullable="false" />
+          <Property Name="GrdBAuditCnt1To10million5Yrs" Type="Int32" Nullable="false" />
+          <Property Name="GrdCAuditCnt1To10million5Yrs" Type="Int32" Nullable="false" />
+          <Property Name="ListDate" Type="String" MaxLength="7" FixedLength="false" Unicode="false" />
+          <Property Name="CreateTime" Type="DateTime" Precision="3" />
+          <Property Name="CreateUserSeq" Type="Int32" />
+          <Property Name="ModifyTime" Type="DateTime" Precision="3" />
+          <Property Name="ModifyUserSeq" Type="Int32" />
+          <Property Name="GrdAAuditRatio" Type="Decimal" Precision="18" Scale="17" Nullable="false" />
+          <Property Name="GrdCAuditNum" Type="Int32" Nullable="false" />
+        </EntityType>
+        <EntityType Name="TechnicalArtical">
+          <Key>
+            <PropertyRef Name="Seq" />
+          </Key>
+          <Property Name="Seq" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Title" Type="String" Nullable="false" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Text" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="CreateTime" Type="DateTime" Precision="3" />
+          <Property Name="ModifyTime" Type="DateTime" Precision="3" />
+          <Property Name="Author" Type="Int32" Nullable="false" />
+          <Property Name="Url" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
+          <Property Name="Click" Type="Int32" Nullable="false" />
+          <NavigationProperty Name="TechnicalArticalMTag" Relationship="EQC_NEWModel.FK_TechnicalArticalMTag_TechnicalArtical" FromRole="TechnicalArtical" ToRole="TechnicalArticalMTag" />
+        </EntityType>
+        <EntityType Name="TechnicalArticalMTag">
+          <Key>
+            <PropertyRef Name="TechnicalArticalSeq" />
+            <PropertyRef Name="TechnicalTagSeq" />
+          </Key>
+          <Property Name="TechnicalArticalSeq" Type="Int32" Nullable="false" />
+          <Property Name="TechnicalTagSeq" Type="Int32" Nullable="false" />
+          <NavigationProperty Name="TechnicalArtical" Relationship="EQC_NEWModel.FK_TechnicalArticalMTag_TechnicalArtical" FromRole="TechnicalArticalMTag" ToRole="TechnicalArtical" />
+        </EntityType>
+        <Association Name="FK_TechnicalArticalMTag_TechnicalArtical">
+          <End Type="EQC_NEWModel.TechnicalArtical" Role="TechnicalArtical" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Type="EQC_NEWModel.TechnicalArticalMTag" Role="TechnicalArticalMTag" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="TechnicalArtical">
+              <PropertyRef Name="Seq" />
+            </Principal>
+            <Dependent Role="TechnicalArticalMTag">
+              <PropertyRef Name="TechnicalArticalSeq" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityType Name="CourtVerdict">
+          <Key>
+            <PropertyRef Name="Seq" />
+          </Key>
+          <Property Name="Seq" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="JID" Type="String" MaxLength="80" FixedLength="false" Unicode="true" />
+          <Property Name="JYear" Type="String" MaxLength="5" FixedLength="false" Unicode="true" />
+          <Property Name="JCase" Type="String" MaxLength="20" FixedLength="false" Unicode="true" />
+          <Property Name="JNo" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="JDate" Type="String" MaxLength="10" FixedLength="false" Unicode="true" />
+          <Property Name="JTitle" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="CreateTime" Type="DateTime" Precision="3" />
+          <Property Name="CreateUser" Type="Int32" />
+          <Property Name="ModifyTime" Type="DateTime" Precision="3" />
+          <Property Name="ModifyUser" Type="Int32" />
+        </EntityType>
+        <EntityType Name="THSR">
+          <Key>
+            <PropertyRef Name="Seq" />
+          </Key>
+          <Property Name="Seq" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Direction" Type="Byte" />
+          <Property Name="CarNo" Type="String" MaxLength="6" FixedLength="false" Unicode="false" />
+          <Property Name="StartStationName" Type="String" MaxLength="10" FixedLength="false" Unicode="true" />
+          <Property Name="DepartureTime" Type="String" MaxLength="5" FixedLength="false" Unicode="false" />
+          <Property Name="EndingStationName" Type="String" MaxLength="10" FixedLength="false" Unicode="true" />
+          <Property Name="ArrivalTime" Type="String" MaxLength="5" FixedLength="false" Unicode="false" />
+          <Property Name="Memo" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="CreateTime" Type="DateTime" Precision="3" />
+          <Property Name="CreateUser" Type="Int32" />
+          <Property Name="ModifyTime" Type="DateTime" Precision="3" />
+          <Property Name="ModifyUser" Type="Int32" />
+        </EntityType>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="EQC_NEWModelStoreContainer" CdmEntityContainer="EQC_NEWEntities1">
+          <EntitySetMapping Name="Country2WRAMapping">
+            <EntityTypeMapping TypeName="EQC_NEWModel.Country2WRAMapping">
+              <MappingFragment StoreEntitySet="Country2WRAMapping">
+                <ScalarProperty Name="ModifyUserSeq" ColumnName="ModifyUserSeq" />
+                <ScalarProperty Name="ModifyTime" ColumnName="ModifyTime" />
+                <ScalarProperty Name="CreateUserSeq" ColumnName="CreateUserSeq" />
+                <ScalarProperty Name="CreateTime" ColumnName="CreateTime" />
+                <ScalarProperty Name="Country" ColumnName="Country" />
+                <ScalarProperty Name="RiverBureau" ColumnName="RiverBureau" />
+                <ScalarProperty Name="Seq" ColumnName="Seq" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="wraControlPlanNo">
+            <EntityTypeMapping TypeName="EQC_NEWModel.wraControlPlanNo">
+              <MappingFragment StoreEntitySet="wraControlPlanNo">
+                <ScalarProperty Name="ModifyUserSeq" ColumnName="ModifyUserSeq" />
+                <ScalarProperty Name="ModifyTime" ColumnName="ModifyTime" />
+                <ScalarProperty Name="CreateUserSeq" ColumnName="CreateUserSeq" />
+                <ScalarProperty Name="CreateTime" ColumnName="CreateTime" />
+                <ScalarProperty Name="hostingPerson" ColumnName="hostingPerson" />
+                <ScalarProperty Name="PlanningSection" ColumnName="PlanningSection" />
+                <ScalarProperty Name="SupervisionUnit" ColumnName="SupervisionUnit" />
+                <ScalarProperty Name="Memo" ColumnName="Memo" />
+                <ScalarProperty Name="PlanOrganizerName" ColumnName="PlanOrganizerName" />
+                <ScalarProperty Name="ProjectName" ColumnName="ProjectName" />
+                <ScalarProperty Name="ProjectNo" ColumnName="ProjectNo" />
+                <ScalarProperty Name="ProcuringEntityId" ColumnName="ProcuringEntityId" />
+                <ScalarProperty Name="Seq" ColumnName="Seq" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="PublicWorkFirmResume">
+            <EntityTypeMapping TypeName="EQC_NEWModel.PublicWorkFirmResume">
+              <MappingFragment StoreEntitySet="PublicWorkFirmResume">
+                <ScalarProperty Name="GrdCAuditNum" ColumnName="GrdCAuditNum" />
+                <ScalarProperty Name="GrdAAuditRatio" ColumnName="GrdAAuditRatio" />
+                <ScalarProperty Name="ModifyUserSeq" ColumnName="ModifyUserSeq" />
+                <ScalarProperty Name="ModifyTime" ColumnName="ModifyTime" />
+                <ScalarProperty Name="CreateUserSeq" ColumnName="CreateUserSeq" />
+                <ScalarProperty Name="CreateTime" ColumnName="CreateTime" />
+                <ScalarProperty Name="ListDate" ColumnName="ListDate" />
+                <ScalarProperty Name="GrdCAuditCnt1To10million5Yrs" ColumnName="GrdCAuditCnt1To10million5Yrs" />
+                <ScalarProperty Name="GrdBAuditCnt1To10million5Yrs" ColumnName="GrdBAuditCnt1To10million5Yrs" />
+                <ScalarProperty Name="GrdAAuditCnt1To10million5Yrs" ColumnName="GrdAAuditCnt1To10million5Yrs" />
+                <ScalarProperty Name="GrdAPlusAuditCnt1To10million5Yrs" ColumnName="GrdAPlusAuditCnt1To10million5Yrs" />
+                <ScalarProperty Name="GrdCAuditCnt10To50million5Yrs" ColumnName="GrdCAuditCnt10To50million5Yrs" />
+                <ScalarProperty Name="GrdBAuditCnt10To50million5Yrs" ColumnName="GrdBAuditCnt10To50million5Yrs" />
+                <ScalarProperty Name="GrdAAuditCnt10To50million5Yrs" ColumnName="GrdAAuditCnt10To50million5Yrs" />
+                <ScalarProperty Name="GrdAPlusAuditCnt10To50million5Yrs" ColumnName="GrdAPlusAuditCnt10To50million5Yrs" />
+                <ScalarProperty Name="GrdCAuditCnt50To200million5Yrs" ColumnName="GrdCAuditCnt50To200million5Yrs" />
+                <ScalarProperty Name="GrdBAuditCnt50To200million5Yrs" ColumnName="GrdBAuditCnt50To200million5Yrs" />
+                <ScalarProperty Name="GrdAAuditCnt50To200million5Yrs" ColumnName="GrdAAuditCnt50To200million5Yrs" />
+                <ScalarProperty Name="GrdAPlusAuditCnt50To200million5Yrs" ColumnName="GrdAPlusAuditCnt50To200million5Yrs" />
+                <ScalarProperty Name="GrdCAuditCnt200million5Yrs" ColumnName="GrdCAuditCnt200million5Yrs" />
+                <ScalarProperty Name="GrdBAuditCnt200million5Yrs" ColumnName="GrdBAuditCnt200million5Yrs" />
+                <ScalarProperty Name="GrdAAuditCnt200million5Yrs" ColumnName="GrdAAuditCnt200million5Yrs" />
+                <ScalarProperty Name="GrdAPlusAuditCnt200million5Yrs" ColumnName="GrdAPlusAuditCnt200million5Yrs" />
+                <ScalarProperty Name="CorporationName" ColumnName="CorporationName" />
+                <ScalarProperty Name="Seq" ColumnName="Seq" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="TechnicalArtical">
+            <EntityTypeMapping TypeName="EQC_NEWModel.TechnicalArtical">
+              <MappingFragment StoreEntitySet="TechnicalArtical">
+                <ScalarProperty Name="Click" ColumnName="Click" />
+                <ScalarProperty Name="Url" ColumnName="Url" />
+                <ScalarProperty Name="Author" ColumnName="Author" />
+                <ScalarProperty Name="ModifyTime" ColumnName="ModifyTime" />
+                <ScalarProperty Name="CreateTime" ColumnName="CreateTime" />
+                <ScalarProperty Name="Text" ColumnName="Text" />
+                <ScalarProperty Name="Title" ColumnName="Title" />
+                <ScalarProperty Name="Seq" ColumnName="Seq" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="TechnicalArticalMTag">
+            <EntityTypeMapping TypeName="EQC_NEWModel.TechnicalArticalMTag">
+              <MappingFragment StoreEntitySet="TechnicalArticalMTag">
+                <ScalarProperty Name="TechnicalTagSeq" ColumnName="TechnicalTagSeq" />
+                <ScalarProperty Name="TechnicalArticalSeq" ColumnName="TechnicalArticalSeq" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="CourtVerdict">
+            <EntityTypeMapping TypeName="EQC_NEWModel.CourtVerdict">
+              <MappingFragment StoreEntitySet="CourtVerdict">
+                <ScalarProperty Name="ModifyUser" ColumnName="ModifyUser" />
+                <ScalarProperty Name="ModifyTime" ColumnName="ModifyTime" />
+                <ScalarProperty Name="CreateUser" ColumnName="CreateUser" />
+                <ScalarProperty Name="CreateTime" ColumnName="CreateTime" />
+                <ScalarProperty Name="JTitle" ColumnName="JTitle" />
+                <ScalarProperty Name="JDate" ColumnName="JDate" />
+                <ScalarProperty Name="JNo" ColumnName="JNo" />
+                <ScalarProperty Name="JCase" ColumnName="JCase" />
+                <ScalarProperty Name="JYear" ColumnName="JYear" />
+                <ScalarProperty Name="JID" ColumnName="JID" />
+                <ScalarProperty Name="Seq" ColumnName="Seq" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="THSR">
+            <EntityTypeMapping TypeName="EQC_NEWModel.THSR">
+              <MappingFragment StoreEntitySet="THSR">
+                <ScalarProperty Name="ModifyUser" ColumnName="ModifyUser" />
+                <ScalarProperty Name="ModifyTime" ColumnName="ModifyTime" />
+                <ScalarProperty Name="CreateUser" ColumnName="CreateUser" />
+                <ScalarProperty Name="CreateTime" ColumnName="CreateTime" />
+                <ScalarProperty Name="Memo" ColumnName="Memo" />
+                <ScalarProperty Name="ArrivalTime" ColumnName="ArrivalTime" />
+                <ScalarProperty Name="EndingStationName" ColumnName="EndingStationName" />
+                <ScalarProperty Name="DepartureTime" ColumnName="DepartureTime" />
+                <ScalarProperty Name="StartStationName" ColumnName="StartStationName" />
+                <ScalarProperty Name="CarNo" ColumnName="CarNo" />
+                <ScalarProperty Name="Direction" ColumnName="Direction" />
+                <ScalarProperty Name="Seq" ColumnName="Seq" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="false" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
+        <DesignerProperty Name="UseLegacyProvider" Value="false" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="无" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>

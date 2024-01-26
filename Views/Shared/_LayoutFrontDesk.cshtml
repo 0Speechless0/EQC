@@ -1,0 +1,211 @@
+﻿<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>經濟部水利署-水利工程品管系統</title>
+    <meta name="keywords" content="經濟部水利署,水利工程,品管系統">
+    <meta name="description" content="經濟部水利署-水利工程品管系統">
+    <link rel="icon" href="@Url.Content("~/Content/images/ROC_Water_Resources_Agency_Seal.svg")" type="image/ico" />
+    <link href="@Url.Content("~/Content/css/bootstrap.min.css")" rel="stylesheet">
+    <link href="@Url.Content("~/Content/css/fontawesome.min.css")" rel="stylesheet">
+    <!--icon font設定-->
+    <link href="@Url.Content("~/Content/css/all.css")" rel="stylesheet" />
+    <!--load all styles -->
+    <link href="@Url.Content("~/Content/css/layout.css")" rel="stylesheet" />
+    <!--自訂CSS-->
+    <link href="@Url.Content("~/Content/css/rwd.css")" rel="stylesheet" />
+    <link href="@Url.Content("~/Content/css/drag.css")" rel="stylesheet" />
+    <!-- CSS -->
+    <link rel="stylesheet" href="@Url.Content("~/Scripts/assets/libs/font-awesome/css/font-awesome.css")" />
+    <link rel="stylesheet" href="@Url.Content("~/Scripts/assets/libs/jquery-ui/jquery-ui.min.css")" />
+
+    <!-- Page Specific CSS -->
+    <script src="@Url.Content("~/Scripts/assets/libs/jquery/jquery.js")"></script>
+    <script src="@Url.Content("~/Scripts/assets/libs/jquery-ui/jquery-ui.min.js")"></script>
+    <script src="@Url.Content("~/Scripts/assets/libs/jquery-ui-i18n/ui/i18n/datepicker-zh-TW.js")"></script>
+    <script src="@Url.Content("~/Scripts/assets/js/side-menu.js")"></script>
+    <script src="@Url.Content("~/Scripts/assets/js/layout.js")"></script>
+    <script src="@Url.Content("~/Scripts/assets/js/theme-config.js")"></script>
+</head>
+@{
+    EQC.Common.SessionManager sessionManager = new EQC.Common.SessionManager();
+    EQC.Common.UserInfo userInfo = sessionManager.GetUser();
+}
+<nav class="navbar navbar-expand-lg fixed-top">
+    <a class="navbar-brand" href="#" title="回首頁"><img src="../Content/images/major_logo.png" alt="經濟部水利署logo"></a>
+    <button class="navbar-toggler collapsed" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="主選單開合">
+        <i class="fas fa-bars fa-2x"></i>
+    </button>
+    <div class="navbar-collapse collapse" id="navbarCollapse" style="">
+        <ul class="navbar-nav nav-top ml-auto  d-flex justify-content-end" style="max-width:60%">
+            @*<li class="nav-item">
+                <a class="nav-link" href="@Url.Action("Index", "MSamplingInspectionRec")" target="_blank" title="行動版填報">行動版填報</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="@Url.Action("Index", "FlowChartTp_TestWeb")" target="_blank" title="管理標準">管理標準</a>
+            </li>*@
+            @{
+                if (userInfo != null && userInfo.SystemList != null)
+                {
+                    foreach (EQC.ViewModel.VSystemMenu system in userInfo.SystemList)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" href="../@system.PathName" title='@system.Name'> @system.Name</a>
+                        </li>
+                    }
+                }
+            }
+
+            <li class="nav-item">
+                <a class="nav-link" href="@Url.Action("Index", "TenderPlan")" title="回首頁">回首頁</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="@Url.Action("LoginOut", "Login")" title="登出">登出</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+    </a>
+
+<body>
+    <div id="WRAPPER" class="container-fluid">
+        <div style="position: absolute ;top:150px; right: 50px; z-index: 1; display: none;" id="info">
+            <img src="/Content/images1/info.png" style="
+    width: 400px;
+">
+        </div>
+        <!-- 內容開始 -->
+        <div class="main-left">
+            <div class="main-left" style="left: 0px;">
+                <div class="menu-control btn-color1">
+                    <i class="fa fa-chevron-left" aria-hidden="true"></i>
+                </div>
+                <div class="card" id="accordion" role="tablist" aria-multiselectable="true">
+                    @{
+                        if (userInfo != null && userInfo.MenuList != null)
+                        {
+                            foreach (EQC.ViewModel.VMenu menuVM in userInfo.MenuList.Where(w => w.ParentSeq > 0 && w.SystemTypeSeq == 1))
+                            {
+                                <div class="card">
+                                    <div class="card-header" role="tab" id="heading1">
+                                        <h4 class="card-title">
+                                            @if (!string.IsNullOrEmpty(menuVM.Url) && menuVM.Url.Split('/').Count() > 1)
+                                            {
+                                                <a class="collapsed" role="button" href="@Url.Action(menuVM.Url.Split('/')[1], menuVM.Url.Split('/')[0])">
+                                                    @menuVM.Name
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <a class="collapsed" role="button" href="#">
+                                                    @menuVM.Name
+                                                </a>
+                                            }
+                                        </h4>
+                                    </div>
+                                    <div id="collapse1" class="collapse" role="tabpanel" aria-labelledby="heading1" data-parent="#accordion"></div>
+                                </div>
+                            }
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="main-right">
+            <!-- <a class="header" href="#"></a> -->
+            <div class="d-flex mb-3 justify-content-end">
+                <div onclick="showInfo()">
+                    <img src="@Url.Content("~/Content/images1/info_logo.png")" style="width:80px; height:60px">
+                </div>
+                <div>
+
+                    <div class="name">
+                        歡迎！ &nbsp;@userInfo.DisplayName
+                    </div>
+                </div>
+            </div>
+
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">目前位置</li>
+                @{
+                    if (ViewBag.breadcrumb != null && ViewBag.breadcrumb.Count > 0)
+                    {
+                        foreach (EQC.ViewModel.VMenu item in ViewBag.breadcrumb)
+                        {
+                            <li class="breadcrumb-item">
+                                @if (item.Url == "")
+                                {
+                                    @item.Name
+                                }
+                                else
+                                {
+                                    <a class="collapsed" role="button" href="@item.Url">
+                                        @item.Name
+                                    </a>
+                                }
+                            </li>
+                        }
+                    }
+                    else
+                    {
+                        <li class="breadcrumb-item active" aria-current="page" title="@ViewBag.Title">
+                            @ViewBag.Title
+                        </li>
+                    }
+                }
+            </ol>
+            <h1>@ViewBag.Title</h1>
+            @RenderBody()
+        </div>
+    </div>
+    <footer class="inside_footer" id="Footer_front">
+        <div class="container d-flex justify-content-end" ">
+            <div class="mr-5">客服專線:0905-546-726</div>
+            <div>
+                經濟部水利署 Copyright © 2021 All Rights Reserved
+            </div>
+
+        </div>
+        <div id="gotop" class="btn-color1" title="回到最上方"><img src="@Url.Content("~/Content/images/icon-up.png")" alt="回到最上方icon"></div>
+        <script src="@Url.Content("~/Content/js/script.js")"></script>
+    </footer>
+    <!--自訂JS-->
+    <!-- JS Libs -->
+    <script defer src="@Url.Content("~/Scripts/assets/libs/popper.js/popper.min.js")"></script>
+    <script defer src="@Url.Content("~/Scripts/assets/libs/bootstrap/js/bootstrap.js")"></script>
+    <script defer src="@Url.Content("~/Scripts/assets/libs/holderjs/holder.min.js")"></script>
+    <!-- Own JS -->
+    <script defer src="@Url.Content("~/Scripts/assets/js/init.js")"></script>
+    <script defer src="@Url.Content("~/Scripts/assets/js/dashboard-version.js")"></script>
+    <script defer src="@Url.Content("~/Scripts/assets/js/animate.js")"></script>
+    <!-- Page Specific JS -->
+
+    <script>
+        $(function () {
+            $('.datepicker').datepicker({
+                dateFormat: 'yy/mm/dd',
+                regional: 'zh-TW',
+                changeMonth: true,
+                changeYear: true,
+            });
+        });
+    </script>
+
+    <script src=@Url.Content("~/Content/dist/js/app.js")></script>
+
+    <script>
+        new Vue({
+            //store,
+            //render: (h) => h(App),
+        }).$mount('#app')
+
+        localStorage.setItem('isAdmin', '@userInfo.IsAdmin');
+        localStorage.setItem('isEQCAdmin', '@userInfo.IsEQCAdmin');
+    </script>
+
+</body>
+
+</html>

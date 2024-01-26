@@ -1,0 +1,256 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+    <Schema Namespace="EQC_NEWModel1.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="TechnicalArtical">
+          <Key>
+            <PropertyRef Name="Seq" />
+          </Key>
+          <Property Name="Seq" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Title" Type="nvarchar" MaxLength="255" Nullable="false" />
+          <Property Name="Text" Type="ntext" />
+          <Property Name="CreateTime" Type="datetime" />
+          <Property Name="ModifyTime" Type="datetime" />
+          <Property Name="Author" Type="int" Nullable="false" />
+          <Property Name="Url" Type="text" />
+        </EntityType>
+        <EntityType Name="TechnicalComment">
+          <Key>
+            <PropertyRef Name="Seq" />
+          </Key>
+          <Property Name="Seq" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="TechnicalArticalSeq" Type="int" Nullable="false" />
+          <Property Name="Text" Type="ntext" Nullable="false" />
+          <Property Name="Author" Type="int" Nullable="false" />
+          <Property Name="CreateTime" Type="datetime" />
+          <Property Name="ModifyTime" Type="datetime" />
+        </EntityType>
+        <EntityType Name="TechnicalReply">
+          <Key>
+            <PropertyRef Name="TechnicalCommentSeq" />
+          </Key>
+          <Property Name="TechnicalCommentSeq" Type="int" Nullable="false" />
+          <Property Name="Text" Type="ntext" Nullable="false" />
+          <Property Name="Author" Type="int" Nullable="false" />
+          <Property Name="CreateTime" Type="datetime" />
+          <Property Name="ModifyTime" Type="datetime" />
+        </EntityType>
+        <EntityType Name="Thumb">
+          <Key>
+            <PropertyRef Name="Seq" />
+          </Key>
+          <Property Name="Seq" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="User" Type="int" Nullable="false" />
+          <Property Name="Reply" Type="int" Nullable="false" />
+        </EntityType>
+        <Association Name="FK_TechnicalComment_TechnicalArtical">
+          <End Role="TechnicalArtical" Type="Self.TechnicalArtical" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="TechnicalComment" Type="Self.TechnicalComment" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="TechnicalArtical">
+              <PropertyRef Name="Seq" />
+            </Principal>
+            <Dependent Role="TechnicalComment">
+              <PropertyRef Name="TechnicalArticalSeq" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_TechnicalReply_TechnicalComment">
+          <End Role="TechnicalComment" Type="Self.TechnicalComment" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="TechnicalReply" Type="Self.TechnicalReply" Multiplicity="0..1" />
+          <ReferentialConstraint>
+            <Principal Role="TechnicalComment">
+              <PropertyRef Name="Seq" />
+            </Principal>
+            <Dependent Role="TechnicalReply">
+              <PropertyRef Name="TechnicalCommentSeq" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="EQC_NEWModel1StoreContainer">
+          <EntitySet Name="TechnicalArtical" EntityType="Self.TechnicalArtical" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="TechnicalComment" EntityType="Self.TechnicalComment" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="TechnicalReply" EntityType="Self.TechnicalReply" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Thumb" EntityType="Self.Thumb" Schema="dbo" store:Type="Tables" />
+          <AssociationSet Name="FK_TechnicalComment_TechnicalArtical" Association="Self.FK_TechnicalComment_TechnicalArtical">
+            <End Role="TechnicalArtical" EntitySet="TechnicalArtical" />
+            <End Role="TechnicalComment" EntitySet="TechnicalComment" />
+          </AssociationSet>
+          <AssociationSet Name="FK_TechnicalReply_TechnicalComment" Association="Self.FK_TechnicalReply_TechnicalComment">
+            <End Role="TechnicalComment" EntitySet="TechnicalComment" />
+            <End Role="TechnicalReply" EntitySet="TechnicalReply" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema></edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="EQC_NEWModel1" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityType Name="TechnicalArtical">
+          <Key>
+            <PropertyRef Name="Seq" />
+          </Key>
+          <Property Name="Seq" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Title" Type="String" MaxLength="255" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="Text" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="CreateTime" Type="DateTime" Precision="3" />
+          <Property Name="ModifyTime" Type="DateTime" Precision="3" />
+          <Property Name="Author" Type="Int32" Nullable="false" />
+          <Property Name="Url" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
+          <NavigationProperty Name="TechnicalComment" Relationship="Self.FK_TechnicalComment_TechnicalArtical" FromRole="TechnicalArtical" ToRole="TechnicalComment" />
+        </EntityType>
+        <EntityType Name="TechnicalComment">
+          <Key>
+            <PropertyRef Name="Seq" />
+          </Key>
+          <Property Name="Seq" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="TechnicalArticalSeq" Type="Int32" Nullable="false" />
+          <Property Name="Text" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="Author" Type="Int32" Nullable="false" />
+          <Property Name="CreateTime" Type="DateTime" Precision="3" />
+          <Property Name="ModifyTime" Type="DateTime" Precision="3" />
+          <NavigationProperty Name="TechnicalArtical" Relationship="Self.FK_TechnicalComment_TechnicalArtical" FromRole="TechnicalComment" ToRole="TechnicalArtical" />
+          <NavigationProperty Name="TechnicalReply" Relationship="Self.FK_TechnicalReply_TechnicalComment" FromRole="TechnicalComment" ToRole="TechnicalReply" />
+        </EntityType>
+        <EntityType Name="TechnicalReply">
+          <Key>
+            <PropertyRef Name="TechnicalCommentSeq" />
+          </Key>
+          <Property Name="TechnicalCommentSeq" Type="Int32" Nullable="false" />
+          <Property Name="Text" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="Author" Type="Int32" Nullable="false" />
+          <Property Name="CreateTime" Type="DateTime" Precision="3" />
+          <Property Name="ModifyTime" Type="DateTime" Precision="3" />
+          <NavigationProperty Name="TechnicalComment" Relationship="Self.FK_TechnicalReply_TechnicalComment" FromRole="TechnicalReply" ToRole="TechnicalComment" />
+        </EntityType>
+        <Association Name="FK_TechnicalComment_TechnicalArtical">
+          <End Role="TechnicalArtical" Type="Self.TechnicalArtical" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="TechnicalComment" Type="Self.TechnicalComment" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="TechnicalArtical">
+              <PropertyRef Name="Seq" />
+            </Principal>
+            <Dependent Role="TechnicalComment">
+              <PropertyRef Name="TechnicalArticalSeq" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_TechnicalReply_TechnicalComment">
+          <End Role="TechnicalComment" Type="Self.TechnicalComment" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="TechnicalReply" Type="Self.TechnicalReply" Multiplicity="0..1" />
+          <ReferentialConstraint>
+            <Principal Role="TechnicalComment">
+              <PropertyRef Name="Seq" />
+            </Principal>
+            <Dependent Role="TechnicalReply">
+              <PropertyRef Name="TechnicalCommentSeq" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="Entities" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="TechnicalArtical" EntityType="Self.TechnicalArtical" />
+          <EntitySet Name="TechnicalComment" EntityType="Self.TechnicalComment" />
+          <EntitySet Name="TechnicalReply" EntityType="Self.TechnicalReply" />
+          <AssociationSet Name="FK_TechnicalComment_TechnicalArtical" Association="Self.FK_TechnicalComment_TechnicalArtical">
+            <End Role="TechnicalArtical" EntitySet="TechnicalArtical" />
+            <End Role="TechnicalComment" EntitySet="TechnicalComment" />
+          </AssociationSet>
+          <AssociationSet Name="FK_TechnicalReply_TechnicalComment" Association="Self.FK_TechnicalReply_TechnicalComment">
+            <End Role="TechnicalComment" EntitySet="TechnicalComment" />
+            <End Role="TechnicalReply" EntitySet="TechnicalReply" />
+          </AssociationSet>
+          <EntitySet Name="Thumb" EntityType="EQC_NEWModel1.Thumb" />
+        </EntityContainer>
+        <EntityType Name="Thumb">
+          <Key>
+            <PropertyRef Name="Seq" />
+          </Key>
+          <Property Name="Seq" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="User" Type="Int32" Nullable="false" />
+          <Property Name="Reply" Type="Int32" Nullable="false" />
+        </EntityType>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="EQC_NEWModel1StoreContainer" CdmEntityContainer="Entities">
+          <EntitySetMapping Name="TechnicalArtical">
+            <EntityTypeMapping TypeName="EQC_NEWModel1.TechnicalArtical">
+              <MappingFragment StoreEntitySet="TechnicalArtical">
+                <ScalarProperty Name="Seq" ColumnName="Seq" />
+                <ScalarProperty Name="Title" ColumnName="Title" />
+                <ScalarProperty Name="Text" ColumnName="Text" />
+                <ScalarProperty Name="CreateTime" ColumnName="CreateTime" />
+                <ScalarProperty Name="ModifyTime" ColumnName="ModifyTime" />
+                <ScalarProperty Name="Author" ColumnName="Author" />
+                <ScalarProperty Name="Url" ColumnName="Url" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="TechnicalComment">
+            <EntityTypeMapping TypeName="EQC_NEWModel1.TechnicalComment">
+              <MappingFragment StoreEntitySet="TechnicalComment">
+                <ScalarProperty Name="Seq" ColumnName="Seq" />
+                <ScalarProperty Name="TechnicalArticalSeq" ColumnName="TechnicalArticalSeq" />
+                <ScalarProperty Name="Text" ColumnName="Text" />
+                <ScalarProperty Name="Author" ColumnName="Author" />
+                <ScalarProperty Name="CreateTime" ColumnName="CreateTime" />
+                <ScalarProperty Name="ModifyTime" ColumnName="ModifyTime" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="TechnicalReply">
+            <EntityTypeMapping TypeName="EQC_NEWModel1.TechnicalReply">
+              <MappingFragment StoreEntitySet="TechnicalReply">
+                <ScalarProperty Name="TechnicalCommentSeq" ColumnName="TechnicalCommentSeq" />
+                <ScalarProperty Name="Text" ColumnName="Text" />
+                <ScalarProperty Name="Author" ColumnName="Author" />
+                <ScalarProperty Name="CreateTime" ColumnName="CreateTime" />
+                <ScalarProperty Name="ModifyTime" ColumnName="ModifyTime" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Thumb">
+            <EntityTypeMapping TypeName="EQC_NEWModel1.Thumb">
+              <MappingFragment StoreEntitySet="Thumb">
+                <ScalarProperty Name="Reply" ColumnName="Reply" />
+                <ScalarProperty Name="User" ColumnName="User" />
+                <ScalarProperty Name="Seq" ColumnName="Seq" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="false" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
+        <DesignerProperty Name="UseLegacyProvider" Value="false" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="无" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>

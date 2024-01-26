@@ -1,0 +1,60 @@
+﻿
+@{
+    ViewBag.Title = "跳轉中，請稍後。";
+    Layout = "~/Views/Shared/_LayoutMobile.cshtml";
+}
+
+@{
+
+
+    string UserNo = Request.Form["UserNo"];
+    string Mobile = Request.Form["Mobile"];
+    string Route = Request.Form["Route"];
+
+    ViewBag.UserNo = Request.Form["UserNo"];
+    ViewBag.Mobile = Request.Form["Mobile"];
+    ViewBag.Route = Request.Form["Route"];
+
+        @Scripts.Render("~/bundles/jquery")
+        <script>
+            try { // statements to try
+                 var Json = {
+                    userNo: "@UserNo",
+                    Mobile: "@Mobile",
+                    route : "@Route"
+                 };
+            }
+            catch (e) {
+                logMyErrors(e); // 將例外傳至例外處理機制
+                alert(e);
+            }
+    $.ajax({
+        url: "/Login/MobileEntryPoint",
+        type: "post",
+        dataType: "html",
+        data: Json,
+        success: function (config) {
+            var jsonData = JSON.parse(config);
+            console.log(jsonData);
+            if (jsonData.isLogin == true) {
+                home1Url = jsonData.homeUrl;
+                window.location.replace(home1Url);
+            }
+            else {
+                if (jsonData.errorMessage.length == 0) {
+
+                    alert('帳號 或 密碼 輸入錯誤 登入失敗!!');
+                } else {
+                    alert(config.data.errorMessage);
+                }
+            }
+        },
+        error: function (err) {
+            alert('帳號 或 密碼 輸入錯誤 登入失敗!!');
+        }
+    });
+        </script>
+       
+}
+
+

@@ -1,0 +1,56 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_MainLayout.cshtml";;
+}
+<div id="app">
+    <ul class="row justify-content-center">
+        <li class="col-12 col-md-6 col-xl-3 mb-2">
+            <a href="@Url.Action("Index", "EngAnalysisDecision")" class="h-100">
+                <div class="card bg-0 text-white h-100">
+                    <div class="card-body">
+                        <h2 class="card-title m-0 p-0">工程資訊彙整分析及決策資訊儀表板</h2>
+                    </div>
+                    <div class="card-img-bottom p-5 img01">
+                    </div>
+                </div>
+            </a>
+        </li>
+        <li class="col-12 col-md-6 col-xl-3 mb-2">
+            <a href="@Url.Action("Index", "EngSupervise")" class="h-100">
+                <div class="card bg-3 text-white h-100">
+                    <div class="card-body">
+                        <h2 class="card-title m-0 p-0">工程督導</h2>
+                    </div>
+                    <div class="card-img-bottom p-5 img02">
+                    </div>
+                </div>
+            </a>
+        </li>
+        <li class="col-12 col-md-6 col-xl-3 mb-2">
+            <a href="@Url.Action("Index", "EngForum")" class="h-100">
+                <div class="card bg-2 text-white h-100">
+                    <div class="card-body">
+                        <h2 class="card-title m-0 p-0">工程資訊交流平台</h2>
+                    </div>
+                    <div class="card-img-bottom p-5 img03">
+                    </div>
+                </div>
+            </a>
+        </li>
+        <li class="col-12 col-md-6 col-xl-3 mb-2">
+            <a href="@Url.Action("Index", "Users")" class="h-100">
+                <div class="card bg-R text-white h-100">
+                    <div class="card-body">
+                        <h2 class="card-title m-0 p-0">後台管理</h2>
+                    </div>
+                    <div class="card-img-bottom p-5 img04">
+                    </div>
+                </div>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+

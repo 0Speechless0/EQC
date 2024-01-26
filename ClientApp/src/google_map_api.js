@@ -1,0 +1,1 @@
+﻿window.googleMapKey = 'AIzaSyCqusfoZ66T3BmV04q40fTxsPvJuLmRmIw';//google map api key

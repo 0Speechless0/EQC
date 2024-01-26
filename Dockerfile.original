@@ -1,0 +1,13 @@
+# 使用的映像檔
+FROM mcr.microsoft.com/windows/servercore/iis:windowsservercore-1903
+
+# 移除容器 IIS 網站根目錄所有檔案
+RUN powershell -NoProfile -Command Remove-Item -Recurse C:\inetpub\wwwroot\*
+
+# 切換容器預設目錄至 IIS 網站根目錄資料夾
+WORKDIR /inetpub/wwwroot
+
+# 複製(部署)本機網站檔案至容器中
+# From: 本機相對 Dockerfile 檔案位置之相對路徑 build 資料夾下的所有檔案
+# To: container 目前工作目錄(WORKDIR)下的 chat/tw 資料夾中
+COPY . chat/tw

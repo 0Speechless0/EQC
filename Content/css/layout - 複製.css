@@ -1,0 +1,804 @@
+﻿@charset "utf-8";
+/* CSS Document */
+
+/* ---------------------共用設定------------------------*/
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    -webkit-text-size-adjust: none;
+}
+
+body {
+    --webkit-font-smoothing: antialiased;
+    font-family: 微軟正黑體, Arial, Helvetica, sans-serif;
+    line-height: 1.8;
+    background-color: #F9FDFF;
+    color: #3f3d56;
+}
+
+
+.clear {
+    clear: both;
+    height: 0;
+    font-size: 1px;
+    line-height: 0px;
+}
+
+#gotop,
+#mobile-gotop {
+    cursor: pointer;
+    display: none;
+}
+
+#gotop {
+    position: fixed;
+    right: 10px;
+    bottom: 10px;
+    width: 50px;
+    height: 50px;
+}
+
+#WRAPPER {
+    width: 100%;
+    min-height: 100%;
+}
+
+.container-fluid {
+    padding: 0;
+}
+
+header {
+    margin-bottom: 20px;
+}
+
+header .logo {
+    max-width: 300px;
+    margin-left: 20px;
+    margin-top: 10px;
+    --webkit-filter: drop-shadow(1px 1px 0px #fff);
+    filter: drop-shadow(1px 1px 0px #fff);
+}
+
+
+a:hover {
+    text-decoration: none;
+}
+
+ul {
+    padding-left: 0;
+}
+
+li {
+    list-style: none;
+}
+
+
+/* ---------------------登入區塊------------------------*/
+
+body.index {
+    background: url(../images/登入頁_v2.jpg) left center no-repeat;
+    background-size: cover;
+    padding: 0;
+}
+
+
+.box {
+    position: absolute;
+    top: 40%;
+    left: 90%;
+    transform: translate(-90%, -40%);
+    min-width: 280px;
+    max-width: 390px;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 10px;
+}
+
+
+.login {
+    padding: 40px;
+}
+
+.login form {
+    padding: 20px 0 0 0;
+}
+
+.login .form-group {
+    margin-bottom: 14px;
+}
+
+
+/* ---------------------連結、按鈕、顏色設定------------------------*/
+
+.underl {
+    text-decoration: underline;
+}
+
+.a-blue {
+    color: #0055ad;
+    font-size: 0.875em;
+}
+
+.a-blue:hover {
+    color: #0083C7;
+    transition: 0.3s;
+}
+
+.p-gray{
+    color: #999;
+    font-size: 0.875em;
+}
+
+.bg-gray{
+    background: #E2E2E2;
+}
+
+.a-red:hover {
+    color: #F87878;
+}
+
+.btn-shadow {
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 15%);
+
+}
+
+.btn-shadow:hover {
+    box-shadow: 0 0 0;
+    transition: .3s;
+}
+
+.btn-radius {
+    border-radius: 3px;
+}
+
+.btn-color1 {
+    background: #185356;
+    color: #fff;
+}
+
+.btn-color1:hover {
+    background: #127075;
+    color: #fff;
+}
+
+.btn-color2 {
+    background: #276E8C;
+    color: #fff;
+}
+
+.btn-color2:hover {
+    background: #3f87a6;
+    color: #fff;
+}
+
+.btn-color3 {
+    background: #E2E2E2;
+    color: #2E2A25;
+    transition: .3s;
+}
+
+.btn-color3:hover{
+    background: #666;
+    color: #fff;
+}
+
+.dragFile{
+    color: #666;
+    text-align: center;
+    padding: 1rem;
+    display: block;
+    width: 100%;
+    border: 1px dashed #666;
+}
+
+.btn-color3:hover .dragFile{
+    color: #E2E2E2;
+    border-color: #E2E2E2;
+}
+
+
+
+/* --------工程改善前中後----------- */
+
+.ing,.after,.before{
+    padding: 5px 15px;
+    text-align: center;
+    border-radius: 100px;
+}
+
+.ing {
+    
+    background: #F3CF43;
+    color: #3F3F3F;
+    
+}
+
+.after {
+    background: #85A728;
+    color: #fff;
+}
+
+.before {
+    background: #F87878;
+    color: #fff;
+}
+
+
+/* ---------------------內頁開始------------------------*/
+
+/* ----------上方menu----------- */
+
+.navbar {
+    background: #fff;
+    padding: .5rem 1rem;
+    box-shadow: 0 0px 5px rgb(51 51 102 / 20%);
+}
+
+.navbar-nav {
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    padding-left: 0;
+    margin-bottom: 0;
+    list-style: none;
+}
+
+.navbar-brand img {
+    width: 198px;
+    --webkit-filter: drop-shadow(1px 1px 0px #fff);
+    filter: drop-shadow(1px 1px 0px #fff);
+}
+
+
+.nav-top a:hover {
+    color: #000;
+    text-decoration: underline;
+}
+
+.navbar-nav .nav-link {
+    padding-right: 0;
+    padding-left: 0;
+}
+
+.nav-link:focus,
+.nav-link:hover {
+    text-decoration: none;
+}
+
+.nav-top .nav-item a {
+    color: #333333;
+    font-size: .95em;
+}
+
+.nav-top li.nav-item::before {
+    content: "";
+    display: block;
+    border-radius: 50%;
+    background: #5f9c0e;
+    width: 7px;
+    height: 7px;
+    position: absolute;
+    left: 0;
+    top: 18px;
+}
+
+.nav-top li.nav-item {
+    position: relative;
+    padding-left: 5px;
+    margin-left: 10px;
+}
+
+i.fa-bars {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+/* ---------banner---------- */
+
+a.header {
+    display: block;
+    text-align: center;
+    width: 100%;
+    height: 212px;
+    background: url(../images/banner.png) no-repeat center center;
+    background-size: cover;
+    margin-top: 130px;
+}
+
+.header img {
+    height: 100%;
+}
+
+/* ---------目前位置-------- */
+.breadcrumb {
+    background-color: transparent;
+}
+
+.breadcrumb a {
+    color: #3067A8;
+}
+
+/* ---------標題設定----------- */
+
+h1 {
+    font-size: 2rem !important;
+    font-weight: bold !important;
+    clear: both !important;
+    padding: 10px 20px !important;
+    background: -webkit-linear-gradient(right, #5d9d9f, #58a274) !important;
+    background: -o-linear-gradient(left, #5d9d9f, #58a274) !important;
+    background: -moz-linear-gradient(left, #5d9d9f, #58a274) !important;
+    background: linear-gradient(to left, #5d9d9f, #58a274) !important;
+    color: #fff !important;
+    border-radius: 5px !important;
+}
+
+
+h2 {
+    color: #5d9d9f;
+    font-size: 1.5em;
+    font-weight: bold;
+    vertical-align: middle;
+    margin: 1.5rem 0;
+    border-left: 8px solid;
+    padding-left: 10px;
+}
+
+.small-red {
+    color: #e91e63;
+    font-size: 1rem;
+    font-weight: normal;
+}
+
+.small-green {
+    color: #5d9d9f;
+    font-size: 1rem;
+    font-weight: normal;
+}
+
+.text-color1 {
+    color: #666666;
+}
+
+.text-color2 {
+    color: #fff;
+}
+
+/* -------------------------表格設定-------------------------- */
+
+.table i {
+    margin: 0 3px;
+}
+
+.table {
+    color: #666666;
+    margin: 20px 0px;
+}
+
+.table td,
+.table th {
+    padding: 0.75em;
+}
+
+.tableLayoutFixed{
+    table-layout: fixed;
+}
+
+.sort{
+    width: 76px;
+}
+
+.number{
+    width: 150px;
+}
+
+.twoInput{
+    width: 250px;
+}
+
+table textarea{
+    resize: none;
+}
+
+
+
+
+
+/* --------上下表格--------- */
+
+.table1 tbody tr td {
+    border-bottom: 1px solid #B1D1DE;
+    border-top: 0;
+}
+
+.table1 select {
+    margin-bottom: 10px;
+}
+
+.table1 thead tr th {
+    background: #99d2ce;
+    color: #002D44;
+    font-weight: normal;
+    text-align: center;
+    vertical-align: middle;
+    border: 1px solid #fff;
+}
+
+
+/* -------左右表格-------- */
+
+.table2{
+    table-layout: fixed;
+}
+
+.table2 tbody tr th {
+    background: #EEEEEE;
+    color: #2E2A25;
+    font-weight: bold;
+    text-align: left;
+    border: 1px solid #fff;
+    /*     border-left: 0;
+    border-right: 0; */
+    vertical-align: middle;
+    width: 160px;
+    min-width: 160px;
+}
+
+.table2>tbody>tr>td {
+    background: #EEEEEE;
+    border: 1px solid #fff;
+    border-left: 0;
+    border-right: 0;
+    vertical-align: middle;
+}
+
+
+
+/*--------rwd-table 響應式表格----------*/
+
+.rwd-table tr:nth-of-type(2n+1) {
+    background: #99d2ce;
+}
+
+.rwd-table tr:before {
+    content: attr(data-title);
+    display: block;
+    color: #002D44;
+    font-weight: bold;
+    font-size: 20px;
+    padding-left: 2rem;
+    margin-bottom: -30px;
+    margin-top: 20px;
+}
+
+.rwd-table th {
+    display: none;
+}
+
+.rwd-table td {
+    display: block;
+    border: 0px;
+}
+
+.rwd-table td:before {
+    content: attr(data-th);
+    display: block;
+    margin-bottom: 10px;
+    color: #002D44;
+}
+
+.rwd-table th,
+.rwd-table td {
+    text-align: left;
+}
+/* ------表單設定------- */
+
+.setFormcontentCenter{
+    max-width: 655px;
+    /*margin: auto;  shioulo20210519 表單欄位要靠左*/
+}
+
+
+
+.setFormcontentCenter .WidthasInput{
+    min-width: 201px;
+}
+
+
+/*-------頁籤設定-------*/
+
+.nav-tabs .nav-link {
+    border: 0;
+    color: #727272;
+}
+
+.nav-tabs .nav-link.active {
+    background: #3f87a6;
+}
+
+.nav-tabs .nav-item.show .nav-link,
+.nav-tabs .nav-link.active {
+    color: #fff;
+}
+
+.nav-tabs {
+    border-bottom: 2px solid #3f87a6;
+    margin-bottom: 20px;
+    margin-top: 20px;
+}
+
+
+/* -------歡迎登入人員------- */
+.name {
+    font-size: 1rem;
+    color: #006599;
+    text-align: right;
+}
+
+/* ----------footer 頁腳設定------ */
+
+
+footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    margin: 70px 0 0 0;
+    font-weight: normal;
+    font-size: 14px;
+    color: #fff;
+    background: #3f87a6;
+    text-align: center;
+    padding: 20px 0;
+}
+
+.inside_footer {
+    position: relative;
+    text-align: left;
+    background: #79b8b4;
+}
+
+
+/*-----gotop-----*/
+#gotop,
+#mobile-gotop {
+    cursor: pointer;
+    display: none;
+}
+
+#gotop {
+    position: fixed;
+    right: 10px;
+    bottom: 10px;
+    width: 45px;
+    height: 45px;
+    border-radius: 5px;
+    text-align: center;
+    line-height: 45px;
+}
+
+#gotop img {
+    width: 23px;
+    margin-top: -3px;
+    margin-right: 0;
+}
+
+/* -----------------mb_list1 抽驗清單------------------ */
+
+.mb_list1 a{
+    display: block;
+    position: relative;
+    width: 100%;
+    background: #EDF4F1;
+    border-radius: 3px;
+    padding: 15px;
+    margin-bottom: 10px;
+    transition: 0.3s;
+    border: 1px solid transparent;
+}
+
+.mb_list1 a:hover{
+border: 1px solid #276E8C;
+transition: 0.3s;
+}
+
+.mb_list1 h3,.mb_list1 h4{
+    font-size: 1rem;
+}
+
+.mb_list1 h3{
+    font-weight: bold;
+}
+
+.mb_list1 h4{
+    margin-bottom: 15px;
+    color: #276E8C;
+}
+
+.mb_list1 p{
+    margin-bottom: 0;
+    color: #6d6f6e;
+    
+}
+
+.mb_list1 .pr80{
+    padding-right: 80px;
+}
+
+.mb_list1 .tag{
+    position: absolute;
+    right: 15px;
+    bottom: 15px;
+    background: #276E8C;
+}
+
+
+
+/* ------------------------------後台------------------------------- */
+
+/* ---左邊MENU設定--- */
+.menu-control {
+    display: block;
+    width: 21px;
+    height: 70px;
+    position: absolute;
+    border-radius: 0 5px 5px 0;
+    padding-top: 22px;
+    text-align: center;
+    right: -21px;
+    top: 125px;
+    cursor: pointer;
+    z-index: 1000;
+}
+
+.menu-control i {
+    color: #fff;
+}
+
+.main-left {
+    background: #f7f7f7;
+    color: #666666;
+    padding-top: 80px;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 204px;
+    min-height: 100%;
+    transition: .5s;
+    z-index: 100;
+}
+
+.main-left .card {
+    margin-bottom: 0;
+    margin-top: 0;
+}
+
+.main-left .card-header {
+    padding: 0;
+}
+
+.main-left .card-header, .card{
+     border: none;
+}
+
+.main-left .card-title {
+    margin-bottom: 0;
+}
+
+.main-left .card-title a {
+    display: block;
+    width: 100%;
+    line-height: 25px;
+    text-decoration: none;
+    font-size: 1rem;
+    position: relative;
+    padding: 10px 15px;
+    color: #2E2A25;
+    font-weight: bold;
+    
+}
+
+#heading1>h4>a:hover,
+#heading2>h4>a:hover,
+#heading3>h4>a:hover,
+#heading4>h4>a:hover,
+#heading5>h4>a:hover,
+#heading6>h4>a:hover,
+#heading7>h4>a:hover{
+    background: #2E2A25 !important;
+    color: #fff !important;
+    transition: 0.3s;
+}
+
+.main-left .card-body {
+    padding: 0;
+}
+
+.main-left .card-body ul {
+    padding: 0;
+    margin-bottom: 0;
+}
+
+.main-left .card-body ul li:last-child {
+    border-bottom: none;
+}
+
+.main-left .card-body ul li a {
+    display: block;
+    width: 100%;
+    color: #221F1C;
+    background: #E2E2E2;
+    font-size: 1rem;
+    padding: 10px 15px 10px 60px;
+    position: relative;
+
+}
+
+.main-left .card-body ul li a:hover {
+    background-color: #5d9d9f;
+    text-decoration: none;
+    color: #fff;
+}
+
+.main-left .card-body ul li a:focus {
+    background-color: #5d9d9f;
+    text-decoration: none;
+    color: #fff;
+}
+
+
+/* -------右邊內容區塊------ */
+
+.main-right {
+    width: auto;
+    margin-left: 230px;
+    padding: 50px 35px 0 5px;
+    min-height: 100%;
+}
+
+.main-right a.header{
+    margin-top: 0;
+    margin-bottom: 10px;
+    border-bottom-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+}
+
+.main-right .form-group{
+    margin-bottom: 0;
+}
+
+.min720{
+    min-width: 720px;
+}
+
+.min910{
+    min-width: 910px;
+}
+
+.min1110{
+    min-width: 1110px;
+}
+
+.min1920{
+    min-width: 1920px;
+}
+
+.page-item.active .page-link {
+    z-index: 3;
+    color: #1F2D3D;
+    background-color: #DEE2E6;
+    border-color: #DEE2E6;
+}
+
+.ui-widget-content a {
+    color: #fff;
+}
+
+.a:not([href]):not([tabindex]):focus, a:not([href]):not([tabindex]):hover, a:not([href]):not([tabindex]) {
+    color: #fff;
+    text-decoration: none;
+}

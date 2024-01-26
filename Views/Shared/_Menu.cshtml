@@ -1,0 +1,63 @@
+﻿@model List<EQC.ViewModel.VMenu>
+@{
+    Layout = null;
+}
+
+@{int ww = 1; int subIndex = 1;
+    foreach (var item in Model.Where(p => p.ParentSeq == 0))
+    {
+    <li class="sidebar-menu__entry sidebar-menu__entry--nested">
+        <a href="javascript:;" class="sidebar-menu__entry__link">
+            @switch (ww)
+            {
+                case 1:
+                    <i class="fa fa-fw fa-copy sidebar-menu__entry__icon"></i>
+                    break;
+                case 2:
+                    <i class="fa fa-fw fa-cog sidebar-menu__entry__icon"></i>
+                    break;
+                case 3:
+                    <i class="fa fa-fw fa-file sidebar-menu__entry__icon"></i>
+                    break;
+                default:
+                    <i class="fa fa-fw fa-copy sidebar-menu__entry__icon"></i>
+                    break;
+            }
+            <span>@item.Name</span>
+        </a>
+        <ul class="sidebar-submenu">
+            @foreach (var item_C in Model.Where(p => p.ParentSeq == item.Seq))
+            {
+                <li class="sidebar-submenu__entry">
+                    <a class="sidebar-submenu__entry__link" href="@Url.Action("", item_C.Url)" onclick="setSession(@item_C.Seq)">@item_C.Name</a>
+                </li>
+                subIndex++;
+            }
+        </ul>
+        @{ ww++;}
+    </li>
+    }
+}
+
+<script type="text/javascript">
+    $(function () {
+        // 標記menu
+        $('[data-selected=True]').css("color", "#bee0f0");
+    
+    });
+    function setSession(seq) {
+        $.ajax({
+            url: '@Url.Action("SetSession", "Menu")',
+            dataType: 'json',
+            data: {
+                seq: seq,
+            },
+            type: 'post',
+            cache: false,
+            async: true,
+            success: function (data) {
+                
+            }
+        })
+    }
+</script>

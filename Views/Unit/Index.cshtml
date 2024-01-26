@@ -1,0 +1,10 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_BackendLayout.cshtml";
+}
+
+<div>
+    <input type="button" id="btnNew" value="新增" onclick="location.href='@Url.Action("Create", "Unit" , new { id=1 })'" />
+</div>
+<unit-list></unit-list>

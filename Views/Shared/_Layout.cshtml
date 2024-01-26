@@ -1,0 +1,104 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>經濟部水利署-水利工程品管系統</title>
+    <meta name="keywords" content="經濟部水利署,水利工程,品管系統">
+    <meta name="description" content="經濟部水利署-水利工程品管系統">
+    <link rel="icon" href="@Url.Content("~/Content/images/ROC_Water_Resources_Agency_Seal.svg")" type="image/ico" />
+    <link href="@Url.Content("~/Content/css/bootstrap.min.css")" rel="stylesheet">
+    <link href="@Url.Content("~/Content/css/fontawesome.min.css")" rel="stylesheet">
+    <!-- CSS -->
+    <link rel="stylesheet" href="@Url.Content("~/Scripts/assets/libs/font-awesome/css/font-awesome.css")" />
+    <link rel="stylesheet" href="@Url.Content("~/Scripts/assets/libs/jquery-ui/jquery-ui.min.css")" />
+
+    <!--icon font設定-->
+    <link href="@Url.Content("~/Content/css/all.css")" rel="stylesheet" />
+    <!--load all styles -->
+    <link href="@Url.Content("~/Content/css/layout.css")" rel="stylesheet" />
+    <!--自訂CSS-->
+    <link href="@Url.Content("~/Content/css/rwd.css")" rel="stylesheet" />
+
+    <!-- Page Specific CSS -->
+    <script src="@Url.Content("~/Scripts/assets/libs/jquery/jquery.js")"></script>
+    <script src="@Url.Content("~/Scripts/assets/libs/jquery-ui/jquery-ui.min.js")"></script>
+    <script src="@Url.Content("~/Scripts/assets/libs/jquery-ui-i18n/ui/i18n/datepicker-zh-TW.js")"></script>
+    <script src="@Url.Content("~/Scripts/assets/js/side-menu.js")"></script>
+    <script src="@Url.Content("~/Scripts/assets/js/layout.js")"></script>
+    <script src="@Url.Content("~/Scripts/assets/js/theme-config.js")"></script>
+
+    <script type="text/javascript" src="@Url.Content("~/Scripts/CountDown.js")"></script>
+</head>
+@{
+    EQC.Common.SessionManager sessionManager = new EQC.Common.SessionManager();
+    EQC.Common.UserInfo userInfo = sessionManager.GetUser();
+}
+<body class="bg-gray-100">
+    
+    <!-- 內容開始 -->
+    <div class="main-middle">
+        <!-- <a class="header" href="#"></a> -->
+        <div class="name">歡迎！ &nbsp;@userInfo.DisplayName </div>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                後台管理
+            </li>
+            <li class="breadcrumb-item active" aria-current="page" title="@ViewBag.Title">
+                @ViewBag.Title
+            </li>
+        </ol>
+        <h1 class="h1blue">@ViewBag.Title</h1>
+        @RenderBody()
+    </div>
+    <footer class="inside_footer text-right">
+        <div class="container d-flex justify-content-end"">
+            <div class="mr-5">客服專線:0905-546-726</div>
+            <div>
+                經濟部水利署 Copyright © 2021 All Rights Reserved
+            </div>
+            
+        </div>
+        <div id="gotop" class="btn-color1" title="回到最上方"><img src="@Url.Content("~/Content/images/icon-up.png")" alt="回到最上方icon"></div>
+        <script src="@Url.Content("~/Content/js/script.js")"></script>
+    </footer>
+    <!-- JS Libs -->
+    <script defer src="@Url.Content("~/Scripts/assets/libs/popper.js/popper.min.js")"></script>
+    <script defer src="@Url.Content("~/Scripts/assets/libs/bootstrap/js/bootstrap.js")"></script>
+    <script defer src="@Url.Content("~/Scripts/assets/libs/holderjs/holder.min.js")"></script>
+    <!-- Own JS -->
+    <script defer src="@Url.Content("~/Scripts/assets/js/init.js")"></script>
+    <script defer src="@Url.Content("~/Scripts/assets/js/dashboard-version.js")"></script>
+    <script defer src="@Url.Content("~/Scripts/assets/js/animate.js")"></script>
+    <!-- Page Specific JS -->
+
+    <script>
+        $(function () {
+            $('.datepicker').datepicker({
+                dateFormat: 'yy/mm/dd',
+                regional: 'zh-TW',
+                changeMonth: true,
+                changeYear: true,
+            });
+
+        });
+    </script>
+
+    <script src=@Url.Content("~/Content/dist/js/app.js")></script>
+
+    <script>
+        var app = new Vue({
+            //store,
+            //render: (h) => h(App),
+        }).$mount('#app');
+
+        localStorage.setItem('isAdmin', '@userInfo.IsAdmin');
+        localStorage.setItem('isEQCAdmin', '@userInfo.IsEQCAdmin');
+    </script>
+
+    @RenderSection("scripts", required: false)
+</body>
+</html>
+
+

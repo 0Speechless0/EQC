@@ -1,0 +1,193 @@
+﻿
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>經濟部水利署-水利工程品管系統</title>
+    <meta name="keywords" content="經濟部水利署,水利工程,品管系統">
+    <meta name="description" content="經濟部水利署-水利工程品管系統">
+    <link rel="icon" href="@Url.Content("~/Content/images1/ROC_Water_Resources_Agency_Seal.svg")" type="image/ico" />
+    <link href="@Url.Content("~/Content/css1/bootstrap.min.css")" rel="stylesheet">
+    <link href="@Url.Content("~/Content/css1/fontawesome.min.css")" rel="stylesheet">
+    <!-- CSS -->
+    <!-- Page Specific CSS -->
+    <script type="text/javascript" src="@Url.Content("~/Content/js/jquery-3.6.0.min.js")"></script>
+    <script type="text/javascript" src="@Url.Content("~/Content/js/bootstrap.min.js")"></script>
+    <script type="text/javascript" src="@Url.Content("~/Content/js/script.js")"></script>
+    <!--自訂RWD設定-->
+    <!--[if lt IE 9]>
+      <script src="@Url.Content("~/assets/js/html5shiv.min.js")"></script>
+      <script src="@Url.Content("~/assets/js/respond.min.js")"></script>
+    <![endif]-->
+</head>
+@{
+    EQC.Common.SessionManager sessionManager = new EQC.Common.SessionManager();
+    EQC.Common.UserInfo userInfo = sessionManager.GetUser();
+}
+<header>
+    <nav class="@ViewBag.nvaClass">
+        <a class="navbar-brand" href="@Url.Content(sessionManager.GetUserHome())" title="回首頁"><img src="@Url.Content("~/Content/images1/major_logo.png")" alt="經濟部水利署logo"></a>
+        <button class="navbar-toggler collapsed" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="主選單開合">
+            <i class="fas fa-bars fa-2x"></i>
+        </button>
+        <div class="navbar-collapse collapse" id="navbarCollapse" style="">
+            <ul class="navbar-nav nav-top ml-auto d-flex justify-content-end " style="max-width:60%">
+
+
+                @{
+                    if (userInfo != null && userInfo.SystemList != null)
+                    {
+                        foreach (EQC.ViewModel.VSystemMenu system in userInfo.SystemList)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" href="../@system.PathName" title='@system.Name'> @system.Name</a>
+                            </li>
+                        }
+                    }
+                }
+                <li class="nav-item">
+                    <a class="nav-link" href="@Url.Action("LoginOut", "Login")" title="登出">登出</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+</header>
+<body>
+    <div id="WRAPPER" class="container-fluid">
+        <!-- 內容開始 -->
+        <div class="main-right m-auto px-5">
+            <div class="mb-3">
+                <div class="d-flex justify-content-end">
+                    <div class="btn-group btn-group-toggle" style="
+                       margin: 5px 0px;
+                       padding: 3px 5px;
+                       ">
+                        <label class="btn btn-secondary active" style="
+                          background-color: #f3fafc;
+                          border-color: #00a3bf;
+                          ">
+                            <a href="/TemplateFile/教育訓練權限控管及建立標案.pdf" download="" class="m-2" style="color: #00879e;font-weight: bolder;">權限控管及建立標案 </a>
+                        </label>
+                        <label class="btn btn-secondary" style="
+                          background-color: #f3fafc;
+                          border-color: #00a3bf;
+                          ">
+                            <a href="/TemplateFile/教育訓練權限控管及建立標案.mp4" target="_blank" style="color: #00879e;font-weight: bolder;">影片</a>
+                        </label>
+                    </div>
+                    <div class="btn-group btn-group-toggle" style="
+                       margin: 5px 0px;
+                       padding: 3px 5px;
+                       ">
+                        <label class="btn btn-secondary active" style="
+                          background-color: #f3fafc;
+                          border-color: #00a3bf;
+                          ">
+                            <a href="/TemplateFile/教育訓練工程履約及資訊交流平台.pdf" class="m-2" style="color: #00879e;font-weight: bolder;">工程履約及資訊交流平台 </a>
+                        </label>
+                        <label class="btn btn-secondary" style="
+                          background-color: #f3fafc;
+                          border-color: #00a3bf;
+                          ">
+                            <a href="/TemplateFile/教育訓練工程履約及資訊交流平台.mp4" target="_blank" style="color: #00879e;font-weight: bolder;">影片</a>
+                        </label>
+                    </div>
+                    <div class="btn-group btn-group-toggle" style="
+                       margin: 5px 0px;
+                       padding: 3px 5px;
+                       ">
+                        <label class="btn btn-secondary active" style="
+                          background-color: #f3fafc;
+                          border-color: #00a3bf;
+                          ">
+                            <a href="/TemplateFile/教育訓練-APP操作IOS.pdf" class="m-2" style="color: #00879e;font-weight: bolder;">APP操作IOS </a>
+                        </label>
+                        <label class="btn btn-secondary" style="
+                          background-color: #f3fafc;
+                          border-color: #00a3bf;
+                          ">
+                            <a href="/TemplateFile/教育訓練-APP操作IOS.mp4" target="_blank" style="color: #00879e;font-weight: bolder;">影片</a>
+                        </label>
+                    </div>
+                    <div class="btn-group btn-group-toggle" style="
+                       margin: 5px 0px;
+                       padding: 3px 5px;
+                       ">
+                        <label class="btn btn-secondary active" style="
+                          background-color: #f3fafc;
+                          border-color: #00a3bf;
+                          ">
+                            <a href="/TemplateFile/教育訓練-APP操作Android.pdf" class="m-2" style="color: #00879e;font-weight: bolder;">APP操作Android </a>
+                        </label>
+                        <label class="btn btn-secondary" style="
+                          background-color: #f3fafc;
+                          border-color: #00a3bf;
+                          ">
+                            <a href="/TemplateFile/教育訓練-APP操作Android.mp4" target="_blank" style="color: #00879e;font-weight: bolder;">影片</a>
+                        </label>
+                    </div>
+                    <div class="ml-auto">
+                        <div class="name">
+                            <img class="role-icon" src="@Url.Content(@ViewBag.userIcon)">
+                            歡迎！ &nbsp;@userInfo.DisplayName @ViewBag.userUnit
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="@ViewBag.cardClass">
+                <div class="card-header">
+                    <h3 class="card-title font-weight-bold">@ViewBag.BarTitle</h3>
+                </div>
+                <div class="card-body">
+                    @RenderBody()
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="inside_footer footer-3" id="Footer_front">
+        <div class="container d-flex justify-content-end" ">
+            <div class="mr-5">客服專線:0905-546-726</div>
+            <div>
+                經濟部水利署 Copyright © 2021 All Rights Reserved
+            </div>
+
+        </div>
+        <div id="gotop" class="@ViewBag.gotopBtn" title="回到最上方"><img src="@Url.Content("~/Content/images1/icon-up.png")" alt="回到最上方icon"></div>
+    </footer>
+
+    <!-- CSS 設定-->
+    <link href="@Url.Content("~/Content/dist/css/app.css")" rel="stylesheet">
+    <link href="@Url.Content("~/Content/css1/all.css")" rel="stylesheet" />
+    <link href="@Url.Content("~/Content/css1/layout.css")" rel="stylesheet" />
+    <link href="@Url.Content("~/Content/css1/rwd.css")" rel="stylesheet" />
+
+    <!-- script>
+        $(function () {
+            $('.datepicker').datepicker({
+                dateFormat: 'yy/mm/dd',
+                regional: 'zh-TW',
+                changeMonth: true,
+                changeYear: true,
+            });
+
+        });
+    <script -->
+
+    <script src=@Url.Content("~/Content/dist/js/app.js")></script>
+
+    <script>
+        var app = new Vue({
+            //store,
+            //render: (h) => h(App),
+        }).$mount('#app');
+
+        localStorage.setItem('isAdmin', '@userInfo.IsAdmin');
+        localStorage.setItem('isEQCAdmin', '@userInfo.IsEQCAdmin');
+        localStorage.setItem('userSeq', '@userInfo.Seq');
+    </script>
+
+    @RenderSection("scripts", required: false)
+</body>
+</html>

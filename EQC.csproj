@@ -1,0 +1,2585 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="packages\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.1.11.1\build\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.props" Condition="Exists('packages\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.1.11.1\build\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.props')" />
+  <Import Project="packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props')" />
+  <!-- <Import Project="..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" /> -->
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>
+    </ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{2D20BBC6-C43F-4234-9087-73197E406068}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>EQC</RootNamespace>
+    <AssemblyName>EQC</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <MvcBuildViews>false</MvcBuildViews>
+    <UseIISExpress>true</UseIISExpress>
+    <Use64BitIISExpress />
+    <IISExpressSSLPort>44300</IISExpressSSLPort>
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+    <UseGlobalApplicationHostFile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+    <TypeScriptToolsVersion>3.9</TypeScriptToolsVersion>
+    <DockerLaunchAction>LaunchBrowser</DockerLaunchAction>
+    <DockerLaunchUrl>http://{ServiceIPAddress}</DockerLaunchUrl>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Antlr3.Runtime, Version=3.5.0.2, Culture=neutral, PublicKeyToken=eb42632606e9261f, processorArchitecture=MSIL">
+      <HintPath>packages\Antlr.3.5.0.2\lib\Antlr3.Runtime.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Aspose.Cells, Version=23.12.0.0, Culture=neutral, PublicKeyToken=716fcc553a201e56, processorArchitecture=MSIL">
+      <HintPath>packages\Aspose.Cells.23.12.0\lib\net40\Aspose.Cells.dll</HintPath>
+    </Reference>
+    <Reference Include="BouncyCastle.Crypto, Version=1.8.6.0, Culture=neutral, PublicKeyToken=0e99375e54769942, processorArchitecture=MSIL">
+      <HintPath>packages\Portable.BouncyCastle.1.8.6.7\lib\net40\BouncyCastle.Crypto.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="BouncyCastle.Cryptography, Version=2.0.0.0, Culture=neutral, PublicKeyToken=072edcf4a5328938, processorArchitecture=MSIL">
+      <HintPath>packages\BouncyCastle.Cryptography.2.2.1\lib\net461\BouncyCastle.Cryptography.dll</HintPath>
+    </Reference>
+    <Reference Include="DocumentFormat.OpenXml, Version=2.13.0.0, Culture=neutral, PublicKeyToken=8fb06cb64d019a17, processorArchitecture=MSIL">
+      <HintPath>packages\DocumentFormat.OpenXml.2.13.0\lib\net46\DocumentFormat.OpenXml.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>packages\EntityFramework.6.2.0\lib\net45\EntityFramework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Enums.NET, Version=4.0.0.0, Culture=neutral, PublicKeyToken=7ea1c1650d506225, processorArchitecture=MSIL">
+      <HintPath>packages\Enums.NET.4.0.1\lib\net45\Enums.NET.dll</HintPath>
+    </Reference>
+    <Reference Include="EQC.Proposal, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>.\EQC.Proposal.dll</HintPath>
+    </Reference>
+    <Reference Include="EQC.ProposalV2, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>.\EQC.ProposalV2.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.SharpZipLib, Version=1.3.3.11, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
+      <HintPath>packages\SharpZipLib.1.3.3\lib\net45\ICSharpCode.SharpZipLib.dll</HintPath>
+    </Reference>
+    <Reference Include="Independentsoft.Office, Version=2.0.680.18066, Culture=neutral, PublicKeyToken=76be97fe952f1ec7, processorArchitecture=MSIL">
+      <HintPath>packages\Independentsoft.Office.2.0.700\lib\net45\Independentsoft.Office.dll</HintPath>
+    </Reference>
+    <Reference Include="LinqKit.Core, Version=1.1.24.0, Culture=neutral, PublicKeyToken=bc217f8844052a91, processorArchitecture=MSIL">
+      <HintPath>packages\LinqKit.Core.1.1.24\lib\net45\LinqKit.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="log4net, Version=2.0.12.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>packages\log4net.2.0.12\lib\net45\log4net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="MathNet.Numerics, Version=4.15.0.0, Culture=neutral, PublicKeyToken=cd8b63ad3d691a37, processorArchitecture=MSIL">
+      <HintPath>packages\MathNet.Numerics.Signed.4.15.0\lib\net461\MathNet.Numerics.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=2.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Configuration.ConfigurationBuilders.Base, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.Configuration.ConfigurationBuilders.Base.2.0.0\lib\Net471\Microsoft.Configuration.ConfigurationBuilders.Base.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Configuration.ConfigurationBuilders.UserSecrets, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.Configuration.ConfigurationBuilders.UserSecrets.2.0.0\lib\Net471\Microsoft.Configuration.ConfigurationBuilders.UserSecrets.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.IO.RecyclableMemoryStream, Version=2.3.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.IO.RecyclableMemoryStream.2.3.2\lib\net462\Microsoft.IO.RecyclableMemoryStream.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Office.Interop.Word, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.Office.Interop.Word.15.0.4797.1003\lib\net20\Microsoft.Office.Interop.Word.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.VisualBasic" />
+    <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>packages\Newtonsoft.Json.13.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="NPOI.Core, Version=2.6.2.0, Culture=neutral, PublicKeyToken=0df73ec7942b34e1, processorArchitecture=MSIL">
+      <HintPath>packages\NPOI.2.6.2\lib\net472\NPOI.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="NPOI.OOXML, Version=2.6.2.0, Culture=neutral, PublicKeyToken=0df73ec7942b34e1, processorArchitecture=MSIL">
+      <HintPath>packages\NPOI.2.6.2\lib\net472\NPOI.OOXML.dll</HintPath>
+    </Reference>
+    <Reference Include="NPOI.OpenXml4Net, Version=2.6.2.0, Culture=neutral, PublicKeyToken=0df73ec7942b34e1, processorArchitecture=MSIL">
+      <HintPath>packages\NPOI.2.6.2\lib\net472\NPOI.OpenXml4Net.dll</HintPath>
+    </Reference>
+    <Reference Include="NPOI.OpenXmlFormats, Version=2.6.2.0, Culture=neutral, PublicKeyToken=0df73ec7942b34e1, processorArchitecture=MSIL">
+      <HintPath>packages\NPOI.2.6.2\lib\net472\NPOI.OpenXmlFormats.dll</HintPath>
+    </Reference>
+    <Reference Include="SixLabors.Fonts, Version=1.0.0.0, Culture=neutral, PublicKeyToken=d998eea7b14cab13, processorArchitecture=MSIL">
+      <HintPath>packages\SixLabors.Fonts.1.0.0\lib\netstandard2.0\SixLabors.Fonts.dll</HintPath>
+    </Reference>
+    <Reference Include="SixLabors.ImageSharp, Version=2.0.0.0, Culture=neutral, PublicKeyToken=d998eea7b14cab13, processorArchitecture=MSIL">
+      <HintPath>packages\SixLabors.ImageSharp.2.1.4\lib\net472\SixLabors.ImageSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Activities" />
+    <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.Memory, Version=4.0.1.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>packages\System.Memory.4.5.5\lib\net461\System.Memory.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Http.Formatting, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.AspNet.WebApi.Client.5.2.7\lib\net45\System.Net.Http.Formatting.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>packages\System.Runtime.CompilerServices.Unsafe.5.0.0\lib\net45\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Security" />
+    <Reference Include="System.Security.AccessControl, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>packages\System.Security.AccessControl.6.0.0\lib\net461\System.Security.AccessControl.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.Xml, Version=6.0.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>packages\System.Security.Cryptography.Xml.6.0.1\lib\net461\System.Security.Cryptography.Xml.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Security.Principal.Windows, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>packages\System.Security.Principal.Windows.5.0.0\lib\net461\System.Security.Principal.Windows.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Text.Encoding.CodePages, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>packages\System.Text.Encoding.CodePages.5.0.0\lib\net461\System.Text.Encoding.CodePages.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.DynamicData" />
+    <Reference Include="System.Web.Entity" />
+    <Reference Include="System.Web.ApplicationServices" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Web.Helpers, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.AspNet.WebPages.3.2.7\lib\net45\System.Web.Helpers.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.Http, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.AspNet.WebApi.Core.5.2.7\lib\net45\System.Web.Http.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.Http.WebHost, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.AspNet.WebApi.WebHost.5.2.7\lib\net45\System.Web.Http.WebHost.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.Mvc, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.AspNet.Mvc.5.2.7\lib\net45\System.Web.Mvc.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.Optimization, Version=1.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.AspNet.Web.Optimization.1.1.3\lib\net40\System.Web.Optimization.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.AspNet.Razor.3.2.7\lib\net45\System.Web.Razor.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.WebPages, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.AspNet.WebPages.3.2.7\lib\net45\System.Web.WebPages.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Deployment, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.AspNet.WebPages.3.2.7\lib\net45\System.Web.WebPages.Deployment.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.AspNet.WebPages.3.2.7\lib\net45\System.Web.WebPages.Razor.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Web.Abstractions" />
+    <Reference Include="System.Web.Routing" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.EnterpriseServices" />
+    <Reference Include="System.Net.Http">
+    </Reference>
+    <Reference Include="System.Net.Http.WebRequest">
+    </Reference>
+    <Reference Include="WebGrease, Version=1.6.5135.21930, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\WebGrease.1.6.0\lib\WebGrease.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="WindowsBase" />
+    <Reference Include="zxing, Version=0.16.6.0, Culture=neutral, PublicKeyToken=4e88037ac681fe60, processorArchitecture=MSIL">
+      <HintPath>packages\ZXing.Net.0.16.6\lib\net47\zxing.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="zxing.presentation, Version=0.16.6.0, Culture=neutral, PublicKeyToken=4e88037ac681fe60, processorArchitecture=MSIL">
+      <HintPath>packages\ZXing.Net.0.16.6\lib\net47\zxing.presentation.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="App_Start\BundleConfig.cs" />
+    <Compile Include="App_Start\FilterConfig.cs" />
+    <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="Common\APIUserFilter.cs" />
+    <Compile Include="Common\APITokenFilter.cs" />
+    <Compile Include="Common\CalUtils.cs" />
+    <Compile Include="Common\DistinctExtensions.cs" />
+    <Compile Include="Common\Encryption.cs" />
+    <Compile Include="Common\ExcelController.cs" />
+    <Compile Include="Common\ExcelProcesser.cs" />
+    <Compile Include="Common\IExcelImportService.cs" />
+    <Compile Include="Common\NotificationProcesser.cs" />
+    <Compile Include="Common\OfficeExtension.cs" />
+    <Compile Include="Common\Order.cs" />
+    <Compile Include="Common\PccesXMLUpdatedOuput.cs" />
+    <Compile Include="Controllers\APIRecordController.cs" />
+    <Compile Include="Detection\APIDetection.cs" />
+    <Compile Include="Detection\SuggestionDectection.cs" />
+    <Compile Include="Controllers\AmmeterRecordController.cs" />
+    <Compile Include="Common\WordImg.cs" />
+    <Compile Include="Common\WordUtility.cs" />
+    <Compile Include="Controllers\APIController.cs" />
+    <Compile Include="Controllers\CarbonEmissionSettingController.cs" />
+    <Compile Include="Controllers\CarbonEmissionViewController.cs" />
+    <Compile Include="Controllers\CarbonReductionCalController.cs" />
+    <Compile Include="Controllers\CarbonReductionController.cs" />
+    <Compile Include="Controllers\CEExportController.cs" />
+    <Compile Include="Controllers\Common\WebBaseController.cs" />
+    <Compile Include="Controllers\Common\WebBaseWithFileController.cs" />
+    <Compile Include="Controllers\ConstCheckUserController.cs" />
+    <Compile Include="Controllers\CourtVerdictController.cs" />
+    <Compile Include="Controllers\DelEngReportController.cs" />
+    <Compile Include="Controllers\EADWeaknessAnalysisController.cs" />
+    <Compile Include="Controllers\ECAskPaymentController.cs" />
+    <Compile Include="Controllers\ECPriceAdjustmentController.cs" />
+    <Compile Include="Controllers\ECProgressManageController.cs" />
+    <Compile Include="Controllers\EngAPIController.cs" />
+    <Compile Include="Controllers\EngApprovalImportController.cs" />
+    <Compile Include="Controllers\EngHistoryInfoController.cs" />
+    <Compile Include="Controllers\EngReportController.cs" />
+    <Compile Include="Controllers\EngReportFillReviewController.cs" />
+    <Compile Include="Controllers\EngReportFundReviewController.cs" />
+    <Compile Include="Controllers\EngReportMeetingController.cs" />
+    <Compile Include="Controllers\EngReportTransferController.cs" />
+    <Compile Include="Controllers\EngRiskFrontController.cs" />
+    <Compile Include="Controllers\EngRiskFrontFlowChartController.cs" />
+    <Compile Include="Controllers\EngRiskFrontManagementController.cs" />
+    <Compile Include="Controllers\EPCPriceAdjustmentController.cs" />
+    <Compile Include="Controllers\EPCProgressEngChangeController.cs" />
+    <Compile Include="Controllers\EPCSchEngProgressController.cs" />
+    <Compile Include="Controllers\EPCSchEngProgressSubController.cs" />
+    <Compile Include="Controllers\EQMCarbonEmissionCalController.cs" />
+    <Compile Include="Controllers\EQMEcologicalStaController.cs" />
+    <Compile Include="Controllers\ERAnnualFundingReviewController.cs" />
+    <Compile Include="Controllers\ERApprovedCaseController.cs" />
+    <Compile Include="Controllers\ERNeedAssessmentController.cs" />
+    <Compile Include="Controllers\ERProposalReviewController.cs" />
+    <Compile Include="Controllers\ERProposalWorkController.cs" />
+    <Compile Include="Controllers\InterFaceForFrontEnd\FileIOInterface.cs" />
+    <Compile Include="Controllers\InterFaceForFrontEnd\WebBaseInterface.cs" />
+    <Compile Include="Controllers\LoginRecordController.cs" />
+    <Compile Include="Controllers\MMFMaintenanceController.cs" />
+    <Compile Include="Controllers\MobileAPIController.cs" />
+    <Compile Include="Controllers\MSamplingInspectionRecControlle.cs" />
+    <Compile Include="Controllers\Common\MyController.cs" />
+    <Compile Include="Controllers\PriceIndexController.cs" />
+    <Compile Include="Controllers\PttInfoController.cs" />
+    <Compile Include="Controllers\RiskManagementController.cs" />
+    <Compile Include="Controllers\SignManagementController.cs" />
+    <Compile Include="API\SuggestionController.cs" />
+    <Compile Include="Controllers\SuperviseUnitCodeController.cs" />
+    <Compile Include="Controllers\TempFileController.cs" />
+    <Compile Include="Controllers\TenderCalFormController.cs" />
+    <Compile Include="Controllers\TenderPlanV2Controller.cs" />
+    <Compile Include="Controllers\ThsrController.cs" />
+    <Compile Include="Controllers\ToolPackageController.cs" />
+    <Compile Include="Controllers\TrainingImageController.cs" />
+    <Compile Include="Controllers\TreeController.cs" />
+    <Compile Include="Controllers\TreeManagementController.cs" />
+    <Compile Include="Controllers\UserNotificationController.cs" />
+    <Compile Include="EDMXModel\AmmeterRecord.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\APIRecord.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\APIUser.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\ApprovalModuleList.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\ApproverList.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\ApprovingUnitType.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\AuditCaseList.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\CarbonEmissionFactor.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\CarbonEmissionHeader.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\CarbonEmissionPayItem.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\CarbonReductionCal.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\CarbonReductionCalResult.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\CarbonReductionFactor.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\CarbonReductionNavvyFactor.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\CarbonReductionTruckFactor.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\CECheckTable.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\City.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\ConstCheckAppLock.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\ConstCheckList.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\ConstCheckRec.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\ConstCheckRecFile.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\ConstCheckRecResult.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\constCheckSignatures.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\ConstCheckUser.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\Country2WRAMapping.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\DrainList.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\EC_SupDailyDate.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\EngConstruction.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\EngMain.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\EngMaterialDeviceList.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\EngMaterialDeviceSummary.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\EngMaterialDeviceTestSummary.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\EngReportApprove.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\EngReportEstimatedCost.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\EngReportList.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\EngReportLocalCommunication.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\EngReportMainJobDescription.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\EngReportOnSiteConsultation.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\EngReportOption.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\EngReportType.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\EngRiskFrontHazardType.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\EngRiskFrontSubProjectDetail.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\EngRiskFrontSubProjectDetailTp.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\EngRiskFrontSubProjectList.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\EngRiskFrontSubProjectListTp.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\EnvirConsList.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\EnvironmentVar.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\EQC_NEW_Entities.cs" />
+    <Compile Include="EDMXModel\EquOperTestList.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\EYCentralLocalAddressList.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\Gravelfieldcoord.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\Menu.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\Model2.Context1.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Model2.Context.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\Model2.cs" />
+    <Compile Include="EDMXModel\Model2.Designer.cs">
+      <DependentUpon>Model2.cs</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\Model21.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\Model21.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Model2.edmx</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\Model3.Context.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Model3.Context.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\Model3.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Model3.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\Model3.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Model3.edmx</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\NationalSupervisedActivity.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\Notification.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\OccuSafeHealthList.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\PCCESPayItem.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\PCCESSMain.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\PCCESWorkItem.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\Position.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\PrjXML.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\PrjXMLTag.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\ProgressData.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\ProposalReviewAttributes.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\ProposalReviewType.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\PttCheckRecord.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\PttMain.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\PublicWorkFirmResume.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\ReportJobDescriptionList.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\RiverList.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\Role.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\SchEngProgressHeader.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\SchEngProgressPayItem.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\SchProgressHeader.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\SchProgressHeaderHistory.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\SchProgressHeaderHistoryProgress.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\SchProgressPayItem.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\SignatureFile.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\SqlDB.cs" />
+    <Compile Include="EDMXModel\Suggestion.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\SuggestionClass.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\SuggestionHead.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\SupDailyDate.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\SupDailyReportConstructionEquipment.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\SupDailyReportConstructionMaterial.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\SupDailyReportConstructionPerson.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\SupPlanOverview.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\ToolPackage.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\Town.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\TreeList.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\TreePlantEngType.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\TreePlantMain.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\TreePlantMonth.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\TreePlantNumList.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\TreePlantType.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\Unit.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\DbContext.cs" />
+    <Compile Include="EDMXModel\UserLoginRecord.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\UserMain.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\UserNotification.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\UserUnitPosition.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\VendorHireWorkList.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\wraControlPlanNo.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\CarbonCalInfo.cs" />
+    <Compile Include="Models\CarbonReductionCal.cs" />
+    <Compile Include="Models\ConstCheckAppLock.cs" />
+    <Compile Include="Models\CourtVerdict.cs">
+      <DependentUpon>Model1.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\DirectorInfo.cs" />
+    <Compile Include="Models\EngApprovalImportModel.cs" />
+    <Compile Include="Models\EngMainCopyModel.cs" />
+    <Compile Include="Models\EngRiskFrontFileModel.cs" />
+    <Compile Include="Models\EngSupervisorModel.cs" />
+    <Compile Include="Models\FlowChartTpDiagramModel.cs" />
+    <Compile Include="Models\Interface\EngMainRole.cs" />
+    <Compile Include="Models\AuditCaseListModel.cs" />
+    <Compile Include="Models\CarbonEmissionCustomizeModel.cs" />
+    <Compile Include="Models\CarbonEmissionFactorDetailModel.cs" />
+    <Compile Include="Models\CarbonEmissionFuelModel.cs" />
+    <Compile Include="Models\CarbonEmissionHeader2Model.cs" />
+    <Compile Include="Models\CarbonEmissionMachineModel.cs" />
+    <Compile Include="Models\CarbonEmissionMaterialModel.cs" />
+    <Compile Include="Models\CarbonEmissionPayItemInsertModel.cs" />
+    <Compile Include="Models\CarbonEmissionSettingImportModel.cs" />
+    <Compile Include="Models\CarbonEmissionSettingModel.cs" />
+    <Compile Include="Models\CarbonEmissionTradingDocModel.cs" />
+    <Compile Include="Models\CarbonEmissionWorkItemModel.cs" />
+    <Compile Include="Models\CECheckTableModel.cs" />
+    <Compile Include="Models\CECheckTableTreeModel.cs" />
+    <Compile Include="Models\CETreeModel.cs" />
+    <Compile Include="Models\EC_AskPaymentHeaderModel.cs" />
+    <Compile Include="Models\EC_AskPaymentPayItemModel.cs" />
+    <Compile Include="Models\EC_EngPriceAdjLockWorkItemModel.cs" />
+    <Compile Include="Models\EC_EngPriceAdjModel.cs" />
+    <Compile Include="Models\EC_EngPriceAdjWorkItemModel.cs" />
+    <Compile Include="Models\EC_SchEngProgressHeaderModel.cs" />
+    <Compile Include="Models\EC_SchEngProgressPayItem2Model.cs" />
+    <Compile Include="Models\EC_SchEngProgressPayItemModel.cs" />
+    <Compile Include="Models\EC_SchEngProgressWorkItemModel.cs" />
+    <Compile Include="Models\EC_SchProgressPayItem1Model.cs" />
+    <Compile Include="Models\EC_SchProgressPayItemModel.cs" />
+    <Compile Include="Models\EC_SupDailyDateModel.cs" />
+    <Compile Include="Models\EC_SupDailyReportConstructionEquipmentModel.cs" />
+    <Compile Include="Models\EC_SupDailyReportConstructionMaterialModel.cs" />
+    <Compile Include="Models\EC_SupDailyReportConstructionPersonModel.cs" />
+    <Compile Include="Models\EC_SupDailyReportMiscConstructionModel.cs" />
+    <Compile Include="Models\EC_SupDailyReportMiscModel.cs" />
+    <Compile Include="Models\EC_SupPlanOverviewModel.cs" />
+    <Compile Include="Models\EngPriceAdjLockWorkItemModel.cs" />
+    <Compile Include="Models\EngPriceAdjModel.cs" />
+    <Compile Include="Models\EngPriceAdjWorkItemModel.cs" />
+    <Compile Include="Models\EngReportEstimatedCostModel.cs" />
+    <Compile Include="Models\EngReportLocalCommunicationModel.cs" />
+    <Compile Include="Models\EngReportMainJobDescriptionModel.cs" />
+    <Compile Include="Models\EngReportOnSiteConsultationModel.cs" />
+    <Compile Include="Models\EngReportApproveModel.cs" />
+    <Compile Include="Models\EYCentralLocalAddressListModel.cs" />
+    <Compile Include="Models\GravelFieldCoordModel.cs" />
+    <Compile Include="Models\EngReportOptionModel.cs" />
+    <Compile Include="Models\EngRiskFrontEvaluationTeamModel.cs" />
+    <Compile Include="Models\EngRiskFrontListModel.cs" />
+    <Compile Include="Models\EngRiskFrontProjectOutlineFunctionModel.cs" />
+    <Compile Include="Models\EngRiskFrontProjectOutlineSiteEnvironmentModel.cs" />
+    <Compile Include="Models\EngRiskFrontProjectSelectionModel.cs" />
+    <Compile Include="Models\EngRiskFrontSubProjectDetailModel.cs" />
+    <Compile Include="Models\EngRiskFrontSubProjectListModel.cs" />
+    <Compile Include="Models\Model1.Context.cs" />
+    <Compile Include="Models\Model1.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Model1.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\Model1.Designer.cs" />
+    <Compile Include="Models\Model11.cs" />
+    <Compile Include="Models\Model11.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Model1.edmx</DependentUpon>
+    </Compile>
+    <Compile Include="Models\PCCESWorkItemModel.cs" />
+    <Compile Include="Models\PriceIndexItemModel.cs" />
+    <Compile Include="Models\PriceIndexKindModel.cs" />
+    <Compile Include="Models\PublicWorkFirmResumeModel.cs" />
+    <Compile Include="Models\QCStdModel.cs" />
+    <Compile Include="Models\QualityDeductionPoints.cs">
+      <DependentUpon>Model1.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\ReturnMessage.cs" />
+    <Compile Include="Models\Role.cs" />
+    <Compile Include="Models\SchEngProgressHeaderModel.cs" />
+    <Compile Include="Models\SchEngProgressPayItem2Model.cs" />
+    <Compile Include="Models\SchEngProgressPayItemModel.cs" />
+    <Compile Include="Models\SchEngProgressSubModel.cs" />
+    <Compile Include="Models\SchEngProgressWorkItemModel.cs" />
+    <Compile Include="Models\SchProgressHeaderHistoryProgressrModel.cs" />
+    <Compile Include="Models\SuperviseFillSamplingModel.cs" />
+    <Compile Include="Models\SuperviseScheduleFormModel.cs" />
+    <Compile Include="Models\SuperviseUnitCodeModel.cs" />
+    <Compile Include="Models\TechnicalArtical.cs">
+      <DependentUpon>Model1.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\TechnicalArticalMTag.cs">
+      <DependentUpon>Model1.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\THSR.cs">
+      <DependentUpon>Model1.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\UploadAuditFileResultModel.cs" />
+    <Compile Include="Models\UserMain.cs" />
+    <Compile Include="Models\UserMain2.cs" />
+    <Compile Include="Models\VendorHireWorkListModel.cs" />
+    <Compile Include="Models\WeaknessOrientedModel.cs" />
+    <Compile Include="Models\WorkItemModel.cs" />
+    <Compile Include="Schedulers\EmailForDepUser.cs" />
+    <Compile Include="Services\AmmeterRecordService.cs" />
+    <Compile Include="Services\APIStaticTokenService.cs" />
+    <Compile Include="Services\CarbonEmissionCalXMLService.cs" />
+    <Compile Include="Services\CarbonEmissionCustomizeService.cs" />
+    <Compile Include="Services\CarbonEmissionFuelService.cs" />
+    <Compile Include="Services\CarbonEmissionMachineService.cs" />
+    <Compile Include="Services\CarbonEmissionMaterialService.cs" />
+    <Compile Include="Services\CarbonEmissionSettingService.cs" />
+    <Compile Include="Services\CarbonReductionCalService.cs" />
+    <Compile Include="Services\CECheckTableeService.cs" />
+    <Compile Include="Services\CEExportService.cs" />
+    <Compile Include="Services\EngApprovalImportService.cs" />
+    <Compile Include="Services\EngHistoryInfoService.cs" />
+    <Compile Include="Services\EngOpenAPIService.cs" />
+    <Compile Include="Services\EngRiskFrontFlowChartService.cs" />
+    <Compile Include="Services\EngRiskFrontManagementService.cs" />
+    <Compile Include="Controllers\CarbonEmissionCalXMLController.cs" />
+    <Compile Include="Services\RecordService.cs" />
+    <Compile Include="Services\MobileAPIService.cs" />
+    <Compile Include="Services\RiskManagementService.cs" />
+    <Compile Include="Services\SignManagementService.cs" />
+    <Compile Include="Services\CourtVerdictService.cs" />
+    <Compile Include="Services\APIService.cs" />
+    <Compile Include="Services\EADWeaknessAnalysisService.cs" />
+    <Compile Include="Services\ECAskPaymentService.cs" />
+    <Compile Include="Services\ECPriceAdjustmentService.cs" />
+    <Compile Include="Services\ECSchProgressPayItemService.cs" />
+    <Compile Include="Services\ECSupDailyReportConstructionEquipmentService.cs" />
+    <Compile Include="Services\ECSupDailyReportConstructionMaterialService.cs" />
+    <Compile Include="Services\ECSupDailyReportConstructionPersonService.cs" />
+    <Compile Include="Services\ECSupDailyReportService.cs" />
+    <Compile Include="Services\EngReportService.cs" />
+    <Compile Include="Services\EngReportApproveService.cs" />
+    <Compile Include="Services\EngRiskFrontService.cs" />
+    <Compile Include="Services\EQMEcologicalStarService.cs" />
+    <Compile Include="Services\FlowChartDiagramService.cs" />
+    <Compile Include="Common\PccseXML.cs" />
+    <Compile Include="Common\SaveChangeStatus.cs" />
+    <Compile Include="Common\SessionFilter.cs" />
+    <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Common\SessionManager.cs" />
+    <Compile Include="Common\SuperviseUtils.cs" />
+    <Compile Include="Common\UploadFilesProcesser.cs" />
+    <Compile Include="Common\UserInfo.cs" />
+    <Compile Include="Common\Utils.cs" />
+    <Compile Include="Controllers\MobileControlle.cs" />
+    <Compile Include="Controllers\AppInstallController.cs" />
+    <Compile Include="Controllers\AuditCaseListController.cs" />
+    <Compile Include="Controllers\ConstructionImageController.cs" />
+    <Compile Include="Controllers\ControlPlanController.cs" />
+    <Compile Include="Controllers\EADCarbonEmissionController.cs" />
+    <Compile Include="Controllers\EADCommitteeController.cs" />
+    <Compile Include="Controllers\EADManufacturerController.cs" />
+    <Compile Include="Controllers\EADPlaneWeaknessController.cs" />
+    <Compile Include="Controllers\EADRiskController.cs" />
+    <Compile Include="Controllers\EPCAskPaymentController.cs" />
+    <Compile Include="Controllers\EPCProgressReportController.cs" />
+    <Compile Include="Controllers\ESCommitteeController.cs" />
+    <Compile Include="Controllers\EYCentralLocalAddressListController.cs" />
+    <Compile Include="Controllers\GravelFieldCoordController.cs" />
+    <Compile Include="Controllers\NSActivityController.cs" />
+    <Compile Include="Controllers\PublicWorkFirmResumeController.cs" />
+    <Compile Include="Controllers\QualityDeductionPointsController.cs" />
+    <Compile Include="Controllers\TechnicalController.cs" />
+    <Compile Include="Controllers\UnitCitiesController.cs" />
+    <Compile Include="Controllers\VendorHireWorkListController.cs" />
+    <Compile Include="Controllers\WeakTenderPlanEditController.cs" />
+    <Compile Include="Models\AskPaymentHeaderModel.cs" />
+    <Compile Include="Models\AskPaymentPayItemModel.cs" />
+    <Compile Include="Controllers\CEFactorController.cs" />
+    <Compile Include="Controllers\ChapterChartController.cs" />
+    <Compile Include="Controllers\CheckSheetController.cs" />
+    <Compile Include="Controllers\CityController.cs" />
+    <Compile Include="Controllers\CommonController.cs" />
+    <Compile Include="Controllers\ControlPlanController.cs" />
+    <Compile Include="Controllers\DelEngController.cs" />
+    <Compile Include="Controllers\EMDAuditController.cs" />
+    <Compile Include="Controllers\EngAnalysisDecisionController.cs" />
+    <Compile Include="Controllers\EngForumController.cs" />
+    <Compile Include="Controllers\EngManageController.cs" />
+    <Compile Include="Controllers\EngQualityManageController.cs" />
+    <Compile Include="Controllers\EngSuperviseController.cs" />
+    <Compile Include="Controllers\EPCEcologicalCheckController.cs" />
+    <Compile Include="Controllers\EPCEngMaterialAdjController.cs" />
+    <Compile Include="Controllers\EPCProgressManageController.cs" />
+    <Compile Include="Controllers\EPCQualityVerifyController.cs" />
+    <Compile Include="Controllers\EPCSchProgressController.cs" />
+    <Compile Include="Controllers\EPCTenderController.cs" />
+    <Compile Include="Controllers\EQMCarbonEmissionController.cs" />
+    <Compile Include="Controllers\EQMConstRiskEvalController.cs" />
+    <Compile Include="Controllers\EQMEcologicalCheckController.cs" />
+    <Compile Include="Controllers\ESPreWorkController.cs" />
+    <Compile Include="Controllers\ESQCPlaneWeaknessController.cs" />
+    <Compile Include="Controllers\ESScheduleController.cs" />
+    <Compile Include="Controllers\ESSuperviseFillController.cs" />
+    <Compile Include="Controllers\ESSuperviseStaController.cs" />
+    <Compile Include="Controllers\ExpertCommitteeController.cs" />
+    <Compile Include="Controllers\EYCentralLocalAddressListController.cs" />
+    <Compile Include="Controllers\FlowChartTpController.cs" />
+    <Compile Include="Controllers\FlowChartTp_TestWebController.cs" />
+    <Compile Include="Controllers\FrontDeskController.cs" />
+    <Compile Include="Controllers\GravelFieldCoordController.cs" />
+    <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\LoginController.cs" />
+    <Compile Include="Controllers\MainTypeController.cs" />
+    <Compile Include="Controllers\MBEngController.cs" />
+    <Compile Include="Controllers\MBListController.cs" />
+    <Compile Include="Controllers\MenuController.cs" />
+    <Compile Include="Controllers\MSamplingInspectionRecController.cs" />
+    <Compile Include="Controllers\NSActivityController.cs" />
+    <Compile Include="Controllers\PortalBuildController.cs" />
+    <Compile Include="Controllers\PortalCommitteeController.cs" />
+    <Compile Include="Controllers\PortalDepAdminController.cs" />
+    <Compile Include="Controllers\PortalDepUserController.cs" />
+    <Compile Include="Controllers\PortalOutDesignController.cs" />
+    <Compile Include="Controllers\PortalSupervisorController.cs" />
+    <Compile Include="Controllers\PublicWorkFirmResumeController.cs" />
+    <Compile Include="Controllers\QualityPlanTpController.cs" />
+    <Compile Include="Controllers\MMPlanTpController.cs" />
+    <Compile Include="Controllers\QCStdStController.cs" />
+    <Compile Include="Controllers\QCStdTpController.cs" />
+    <Compile Include="Controllers\RejectCompanyController.cs" />
+    <Compile Include="Controllers\RoleController.cs" />
+    <Compile Include="Controllers\SamplingInspectionRecControlle.cs" />
+    <Compile Include="Controllers\SamplingInspectionRecImproveControlle.cs" />
+    <Compile Include="Controllers\SharedController.cs" />
+    <Compile Include="Controllers\SIRApproveControlle.cs" />
+    <Compile Include="Controllers\SIRIApproveControlle.cs" />
+    <Compile Include="Controllers\SubTypeController.cs" />
+    <Compile Include="Controllers\QualityPlanControlle.cs" />
+    <Compile Include="Controllers\SupervisionPlanControlle.cs" />
+    <Compile Include="Controllers\EPCImportController.cs" />
+    <Compile Include="Controllers\TenderPlanControlle.cs" />
+    <Compile Include="Controllers\TownController.cs" />
+    <Compile Include="Controllers\UnitCitiesController.cs" />
+    <Compile Include="Controllers\UnitController.cs" />
+    <Compile Include="Controllers\VendorHireWorkListController.cs" />
+    <Compile Include="Controllers\WeakTenderPlanEditController.cs" />
+    <Compile Include="Global.asax.cs">
+      <DependentUpon>Global.asax</DependentUpon>
+    </Compile>
+    <Compile Include="Models\AppInstallModel.cs" />
+    <Compile Include="Models\CarbonEmissionFactorModel.cs" />
+    <Compile Include="Models\CarbonEmissionHeaderModel.cs" />
+    <Compile Include="Models\CarbonEmissionPayItemModel.cs" />
+    <Compile Include="Models\ConstRiskEvalModel.cs" />
+    <Compile Include="Models\EcologicalChecklist2Model.cs" />
+    <Compile Include="Models\EcologicalChecklistModel.cs" />
+    <Compile Include="Models\EngMaterialAdjModel.cs" />
+    <Compile Include="Models\EntitiesForTechnical.Context.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>EntitiesForTechnical.Context.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\EntitiesForTechnical.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>EntitiesForTechnical.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\EntitiesForTechnical.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>EntitiesForTechnical.edmx</DependentUpon>
+    </Compile>
+    <Compile Include="Models\ExpertCommitteeModel.cs" />
+    <Compile Include="Models\MajorEng.cs" />
+    <Compile Include="Models\NSActivityModel.cs" />
+    <Compile Include="Models\PayItemModel.cs" />
+    <Compile Include="Models\PrjXMLCommitteeModel.cs" />
+    <Compile Include="Models\PrjXMLExtModel.cs" />
+    <Compile Include="Models\PrjXMLMaterialAdjModel.cs" />
+    <Compile Include="Models\RVFileModel.cs" />
+    <Compile Include="Models\SchProgressHeaderModel.cs" />
+    <Compile Include="Models\SchProgressPayItemModel.cs" />
+    <Compile Include="Models\SupDailyDateModel.cs" />
+    <Compile Include="Models\SupDailyReportConstructionEquipmentModel.cs" />
+    <Compile Include="Models\SupDailyReportConstructionMaterialModel.cs" />
+    <Compile Include="Models\SupDailyReportConstructionPersonModel.cs" />
+    <Compile Include="Models\SupDailyReportExtensionModel.cs" />
+    <Compile Include="Models\SupDailyReportMiscConstructionModel.cs" />
+    <Compile Include="Models\SupDailyReportMiscModel.cs" />
+    <Compile Include="Models\SupDailyReportWorkModel.cs" />
+    <Compile Include="Models\SupDailyReportNoDurationModel.cs" />
+    <Compile Include="Models\SupDailyReportHolidayModel.cs" />
+    <Compile Include="Models\PaymentRecordModel.cs" />
+    <Compile Include="Models\ProgressDataModel.cs" />
+    <Compile Include="Models\BudgetingModel.cs" />
+    <Compile Include="Models\ChangeDesignDataModel.cs" />
+    <Compile Include="Models\BudgetKindModel.cs" />
+    <Compile Include="Models\SiteRelaterModel.cs" />
+    <Compile Include="Models\FullTimeEngineerModel.cs" />
+    <Compile Include="Models\SuperviseEngMode.cs" />
+    <Compile Include="Models\SuperviseFillMode.cs" />
+    <Compile Include="Models\SupervisePhaseMode.cs" />
+    <Compile Include="Models\SupervisorModel.cs" />
+    <Compile Include="Models\ChapterModel.cs" />
+    <Compile Include="Models\ChartMaintainModel.cs" />
+    <Compile Include="Models\ChartMaintainTpModel.cs" />
+    <Compile Include="Models\City.cs" />
+    <Compile Include="Models\ConstCheckControlTpModel.cs" />
+    <Compile Include="Models\ConstCheckListTpModel.cs" />
+    <Compile Include="Models\ConstCheckRecFileModel.cs" />
+    <Compile Include="Models\ConstCheckRecImproveFileModel.cs" />
+    <Compile Include="Models\ConstCheckRecImproveModel.cs" />
+    <Compile Include="Models\ConstCheckRecModel.cs" />
+    <Compile Include="Models\ConstCheckRecResultModel.cs" />
+    <Compile Include="Models\ConstCheckRecSheetModel.cs" />
+    <Compile Include="Models\BackwardDataModel.cs" />
+    <Compile Include="Models\EngAttachmentMode.cs" />
+    <Compile Include="Models\EngConstructionModel.cs" />
+    <Compile Include="Models\ContractorQualityControlModel.cs" />
+    <Compile Include="Models\SupPersonEquipmentModel.cs" />
+    <Compile Include="Models\SupPlanOverviewModel.cs" />
+    <Compile Include="Models\PrjXMLModel.cs" />
+    <Compile Include="Models\EngMainModel.cs" />
+    <Compile Include="Models\EngMaterialDeviceControlStModel.cs" />
+    <Compile Include="Models\EngMaterialDeviceControlTpModel.cs" />
+    <Compile Include="Models\EngMaterialDeviceListTpModel.cs" />
+    <Compile Include="Models\ConstCheckControlStModel.cs" />
+    <Compile Include="Models\EngMaterialDeviceListModel.cs" />
+    <Compile Include="Models\EngMaterialDeviceSummaryModel.cs" />
+    <Compile Include="Models\EngMaterialDeviceTestSummaryModel.cs" />
+    <Compile Include="Models\EngUploadHistoryModel.cs" />
+    <Compile Include="Models\EquOperControlStModel.cs" />
+    <Compile Include="Models\EquOperTestListModel.cs" />
+    <Compile Include="Models\EnvirConsControlTpModel.cs" />
+    <Compile Include="Models\ConstCheckListModel.cs" />
+    <Compile Include="Models\EnvirConsListModel.cs" />
+    <Compile Include="Models\EnvirConsListTpModel.cs" />
+    <Compile Include="Models\EquOperControlTpModel.cs" />
+    <Compile Include="Models\EquOperTestListTpModel.cs" />
+    <Compile Include="Models\FlowChartFileModel.cs" />
+    <Compile Include="Models\MasterConstCheckListTpModel.cs" />
+    <Compile Include="Models\MasterEngMaterialDeviceListTpModel.cs" />
+    <Compile Include="Models\MasterEnvirConsListTpModel.cs" />
+    <Compile Include="Models\MasterEquOperTestListTpModel.cs" />
+    <Compile Include="Models\MasterOccuSafeHealthListTpModel.cs" />
+    <Compile Include="Models\MyJsonResult.cs" />
+    <Compile Include="Models\MainType.cs" />
+    <Compile Include="Models\Menu.cs" />
+    <Compile Include="Models\NcrModel.cs" />
+    <Compile Include="Models\NgReportModel.cs" />
+    <Compile Include="Models\NgReportPhotoGroupMode.cs" />
+    <Compile Include="Models\Ntpc.cs" />
+    <Compile Include="Models\EnvirConsControlStModel.cs" />
+    <Compile Include="Models\OccuSafeHealthControlStModel.cs" />
+    <Compile Include="Models\OccuSafeHealthControlTpModel.cs" />
+    <Compile Include="Models\OccuSafeHealthListModel.cs" />
+    <Compile Include="Models\OccuSafeHealthListTpModel.cs" />
+    <Compile Include="Models\MasterPCCESPayItemModel.cs" />
+    <Compile Include="Models\PCCESPayItemModel.cs" />
+    <Compile Include="Models\PCCESSMainModel.cs" />
+    <Compile Include="Models\PetiFile.cs" />
+    <Compile Include="Models\PetiReply.cs" />
+    <Compile Include="Models\PetitionHistory.cs" />
+    <Compile Include="Models\PetitionStatus.cs" />
+    <Compile Include="Models\Position.cs" />
+    <Compile Include="Models\ResumeModel.cs" />
+    <Compile Include="Models\Stage.cs" />
+    <Compile Include="Models\QualityProjectListModel.cs" />
+    <Compile Include="Models\SupervisionProjectListModel.cs" />
+    <Compile Include="Models\QualityProjectTpModel.cs" />
+    <Compile Include="Models\SupervisionProjectTpModel.cs" />
+    <Compile Include="Models\TechnicalComment.cs">
+      <DependentUpon>EntitiesForTechnical.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\TechnicalReply.cs">
+      <DependentUpon>EntitiesForTechnical.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\TenderModel.cs" />
+    <Compile Include="Models\TestModel.cs" />
+    <Compile Include="Models\Thumb.cs">
+      <DependentUpon>EntitiesForTechnical.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\Town.cs" />
+    <Compile Include="Models\Unit.cs" />
+    <Compile Include="Models\UnitDispatch.cs" />
+    <Compile Include="Models\UnitModel.cs" />
+    <Compile Include="Models\UploadAuditFileModel.cs" />
+    <Compile Include="Models\UploadFileModel.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\AppInstallService.cs" />
+    <Compile Include="Services\AskPaymentService.cs" />
+    <Compile Include="Services\AuditCaseListService.cs" />
+    <Compile Include="Services\BaseService.cs" />
+    <Compile Include="Services\CarbonEmissionFactorService.cs" />
+    <Compile Include="Services\CarbonEmissionPayItemService.cs" />
+    <Compile Include="Services\ChapterService.cs" />
+    <Compile Include="Services\CityService.cs" />
+    <Compile Include="Services\CommonService.cs" />
+    <Compile Include="Services\ConfigManager.cs" />
+    <Compile Include="Services\ConstCheckRecApproveService.cs" />
+    <Compile Include="Services\ConstCheckRecFileService.cs" />
+    <Compile Include="Services\ConstCheckRecImproveApproveService.cs" />
+    <Compile Include="Services\ConstCheckRecImproveFileService.cs" />
+    <Compile Include="Services\ConstCheckRecImproveService.cs" />
+    <Compile Include="Services\ConstCheckRecResultService.cs" />
+    <Compile Include="Services\ConstRiskEvalService.cs" />
+    <Compile Include="Services\ConstructionImageService.cs" />
+    <Compile Include="Services\ControlPlanService.cs" />
+    <Compile Include="Services\EADCarbonEmissionService.cs" />
+    <Compile Include="Services\EADCommitteeService.cs" />
+    <Compile Include="Services\EADManufacturerService.cs" />
+    <Compile Include="Services\EADPlaneWeaknessService.cs" />
+    <Compile Include="Services\EADRiskService.cs" />
+    <Compile Include="Services\EcologicalChecklistService.cs" />
+    <Compile Include="Services\EngAnalysisDecisionService.cs" />
+    <Compile Include="Services\EngMaterialAdjService.cs" />
+    <Compile Include="Services\EPCCalendarService.cs" />
+    <Compile Include="Services\EPCProgressManageService.cs" />
+    <Compile Include="Services\EPCProgressReportService.cs" />
+    <Compile Include="Services\EPCQualityVerifyService.cs" />
+    <Compile Include="Services\ExcelImportService.cs" />
+    <Compile Include="Services\ExpertCommitteeService.cs" />
+    <Compile Include="Services\EYCentralLocalAddressListService.cs" />
+    <Compile Include="Services\GravelFieldCoordService.cs" />
+    <Compile Include="Services\NSActivityService.cs" />
+    <Compile Include="Services\OptionListService.cs" />
+    <Compile Include="Services\PortalDepUserService.cs" />
+    <Compile Include="Services\PriceAdjustmentService.cs" />
+    <Compile Include="Services\PriceIndexService.cs" />
+    <Compile Include="Services\PrjXMLCommitteeService.cs" />
+    <Compile Include="Services\PrjXMLMaterialAdjService.cs" />
+    <Compile Include="Services\PublicWorkFirmResumeService.cs" />
+    <Compile Include="Services\QualityDeductionPointsService.cs" />
+    <Compile Include="Services\RVFileService.cs" />
+    <Compile Include="Services\SchEngChangeService.cs" />
+    <Compile Include="Services\SchEngProgressService.cs" />
+    <Compile Include="Services\SchEngProgressSubService.cs" />
+    <Compile Include="Services\SchProgressPayItemService.cs" />
+    <Compile Include="Services\SupDailyReportConstructionEquipmentService.cs" />
+    <Compile Include="Services\SupDailyReportConstructionMaterialService.cs" />
+    <Compile Include="Services\SupDailyReportConstructionPersonService.cs" />
+    <Compile Include="Services\PrjXMLServic.cs" />
+    <Compile Include="Services\EPCTenderService.cs" />
+    <Compile Include="Services\EPCImportService.cs" />
+    <Compile Include="Services\ConstCheckRecService.cs" />
+    <Compile Include="Services\EMDAuditService.cs" />
+    <Compile Include="Services\EngMaterialDeviceListService.cs" />
+    <Compile Include="Services\EngMaterialDeviceControlStService.cs" />
+    <Compile Include="Services\EngUploadHistoryService.cs" />
+    <Compile Include="Services\EquOperControlStService.cs" />
+    <Compile Include="Services\ConstCheckControlTpService.cs" />
+    <Compile Include="Services\EquOperTestListService.cs" />
+    <Compile Include="Services\ConstCheckListTpService.cs" />
+    <Compile Include="Services\DBConn.cs" />
+    <Compile Include="Services\EngAttachmentService.cs" />
+    <Compile Include="Services\EngConstructionService.cs" />
+    <Compile Include="Services\EngMainService.cs" />
+    <Compile Include="Services\EngMaterialDeviceControlTpService.cs" />
+    <Compile Include="Services\EngMaterialDeviceListTpService.cs" />
+    <Compile Include="Services\ConstCheckControlStService.cs" />
+    <Compile Include="Services\EnvirConsControlTpService.cs" />
+    <Compile Include="Services\ConstCheckListService.cs" />
+    <Compile Include="Services\EnvirConsListTpService.cs" />
+    <Compile Include="Services\EquOperControlTpService.cs" />
+    <Compile Include="Services\EquOperTestListTpService.cs" />
+    <Compile Include="Services\HomeService.cs" />
+    <Compile Include="Services\MailService.cs" />
+    <Compile Include="Services\MainTypeService.cs" />
+    <Compile Include="Services\MBEngService.cs" />
+    <Compile Include="Services\MBListService.cs" />
+    <Compile Include="Services\MenuService.cs" />
+    <Compile Include="Services\EnvirConsControlStService.cs" />
+    <Compile Include="Services\NcrService.cs" />
+    <Compile Include="Services\OccuSafeHealthControlStService.cs" />
+    <Compile Include="Services\OccuSafeHealthControlTpService.cs" />
+    <Compile Include="Services\EnvirConsListService.cs" />
+    <Compile Include="Services\OccuSafeHealthListService.cs" />
+    <Compile Include="Services\OccuSafeHealthListTpService.cs" />
+    <Compile Include="Services\PCCESSMainService.cs" />
+    <Compile Include="Services\PositionService.cs" />
+    <Compile Include="Services\QCStdBaseService.cs" />
+    <Compile Include="Services\RoleService.cs" />
+    <Compile Include="Services\SignatureFileService.cs" />
+    <Compile Include="Services\SqlDB.cs" />
+    <Compile Include="Services\SubTypeService.cs" />
+    <Compile Include="Services\QualityProjectListService.cs" />
+    <Compile Include="Services\SupDailyReportService.cs" />
+    <Compile Include="Services\SuperviseCommitteeService.cs" />
+    <Compile Include="Services\SuperviseFillService.cs" />
+    <Compile Include="Services\SupervisePhaseService.cs" />
+    <Compile Include="Services\SuperviseStaService.cs" />
+    <Compile Include="Services\SuperviseUnitCodeService.cs" />
+    <Compile Include="Services\SupervisionProjectListService.cs" />
+    <Compile Include="Services\QualityProjectTpService.cs" />
+    <Compile Include="Services\SupervisionProjectTpService.cs" />
+    <Compile Include="Services\TechnicalService.cs" />
+    <Compile Include="Services\TenderCalFormService.cs" />
+    <Compile Include="Services\TenderPlanService.cs" />
+    <Compile Include="Services\ThsrService.cs" />
+    <Compile Include="Services\TownService.cs" />
+    <Compile Include="Services\TreePlantService.cs" />
+    <Compile Include="Services\UnitCitiesService.cs" />
+    <Compile Include="Services\UnitService.cs" />
+    <Compile Include="Services\UserRoleCheckService.cs" />
+    <Compile Include="Services\UserService.cs" />
+    <Compile Include="Controllers\UsersController.cs" />
+    <Compile Include="Services\VendorHireWorkListService .cs" />
+    <Compile Include="Services\WeakTenderPlanEditService.cs" />
+    <Compile Include="Services\WebBaseControlService.cs" />
+    <Compile Include="ViewModel\APIRecord.cs" />
+    <Compile Include="ViewModel\CarbonEmissionCTVModel.cs" />
+    <Compile Include="ViewModel\CarbonEmissionPayItemV2Model.cs" />
+    <Compile Include="ViewModel\CarbonEmissionPayItemV3Model.cs" />
+    <Compile Include="ViewModel\CarbonEmissionPayItemVModel.cs" />
+    <Compile Include="Services\VendorHireWorkListService .cs" />
+    <Compile Include="Services\WeakTenderPlanEditService.cs" />
+    <Compile Include="ViewModel\CarbonEmissionReportVModel.cs" />
+    <Compile Include="ViewModel\CarbonEmissionSettingVModel.cs" />
+    <Compile Include="ViewModel\CarbonReductionCalVM.cs" />
+    <Compile Include="ViewModel\CarbonReductionFactor.cs" />
+    <Compile Include="ViewModel\CarbonReductionNavvy.cs" />
+    <Compile Include="ViewModel\CarbonReductionTruckFactor.cs" />
+    <Compile Include="ViewModel\CarbonTradeEngsVModel.cs" />
+    <Compile Include="ViewModel\CCCTpModel.cs" />
+    <Compile Include="ViewModel\CEFEngsVModel.cs" />
+    <Compile Include="ViewModel\ChartPieVModel.cs" />
+    <Compile Include="ViewModel\ChartSeriesVModel.cs" />
+    <Compile Include="ViewModel\ChartVModel.cs" />
+    <Compile Include="ViewModel\ChartWordcloudVModel.cs" />
+    <Compile Include="ViewModel\ConstCheckListV2Model.cs" />
+    <Compile Include="ViewModel\ConstCheckRecOption1VModel.cs" />
+    <Compile Include="ViewModel\DateTimeVModel.cs" />
+    <Compile Include="ViewModel\EADCarbonEmissionVModel.cs" />
+    <Compile Include="ViewModel\EADCommitteeEngVModel.cs" />
+    <Compile Include="ViewModel\EADCommitteeVModel.cs" />
+    <Compile Include="ViewModel\EADEngCountVModel.cs" />
+    <Compile Include="ViewModel\EADEngFeeLevelVModel.cs" />
+    <Compile Include="ViewModel\EADEngStaVModel.cs" />
+    <Compile Include="ViewModel\EADManufacturerEngSafetyVModel.cs" />
+    <Compile Include="ViewModel\EADManufacturerEngScoreVModel.cs" />
+    <Compile Include="ViewModel\EADManufacturerEngVerdictVModel.cs" />
+    <Compile Include="ViewModel\EADManufacturerEngVModel.cs" />
+    <Compile Include="ViewModel\EADPlaneWeaknessEngVModel.cs" />
+    <Compile Include="ViewModel\EADPrjXML2VModel.cs" />
+    <Compile Include="ViewModel\EADPrjXMLVModel.cs" />
+    <Compile Include="ViewModel\EADPrjXMLVModel2.cs" />
+    <Compile Include="ViewModel\EADRiskEngVModel.cs" />
+    <Compile Include="ViewModel\EADUnitEngAmountVModel.cs" />
+    <Compile Include="ViewModel\EADWeaknessOrientedVModel.cs" />
+    <Compile Include="ViewModel\EADWeaknessVModel.cs" />
+    <Compile Include="ViewModel\ECAskPaymentEngVModel.cs" />
+    <Compile Include="ViewModel\ECAskPaymentHeaderVModel.cs" />
+    <Compile Include="ViewModel\ECAskPaymentPayItemListVModel.cs" />
+    <Compile Include="ViewModel\ECAskPaymentPayItemVModel.cs" />
+    <Compile Include="ViewModel\ECDailySVModel.cs" />
+    <Compile Include="ViewModel\ECDailyVModel.cs" />
+    <Compile Include="ViewModel\ECEngPriceAdjVModel.cs" />
+    <Compile Include="ViewModel\ECEngPriceAdjWorkItemGroupVModel.cs" />
+    <Compile Include="ViewModel\ECEngPriceAdjWorkItemVModel.cs" />
+    <Compile Include="ViewModel\ECPriceAdjustmentVModel.cs" />
+    <Compile Include="ViewModel\ECSupDailyDate1VModel.cs" />
+    <Compile Include="ViewModel\ECSupDailyDateVModel.cs" />
+    <Compile Include="ViewModel\ECSupDailyReportConstructionEquipmentModelVModel.cs" />
+    <Compile Include="ViewModel\ECSupPlanOverviewVModel.cs" />
+    <Compile Include="ViewModel\EHI_CheckRecPhotoVModel.cs" />
+    <Compile Include="ViewModel\EHI_ConstructionCheckVModel.cs" />
+    <Compile Include="ViewModel\EHI_EMDCatalogVModel.cs" />
+    <Compile Include="ViewModel\EHI_EMDVendorVModel.cs" />
+    <Compile Include="ViewModel\EHI_EngList2VModel.cs" />
+    <Compile Include="ViewModel\EHI_EngListBModel.cs" />
+    <Compile Include="ViewModel\EHI_EngListVModel.cs" />
+    <Compile Include="ViewModel\EHI_EquipmentReviewVModel.cs" />
+    <Compile Include="ViewModel\EHI_PerformanceScoreVModel.cs" />
+    <Compile Include="ViewModel\EHI_PlaneWeaknessVModel.cs" />
+    <Compile Include="ViewModel\EHI_PrjXMLVModel.cs" />
+    <Compile Include="ViewModel\EHI_SupervisionVModel.cs" />
+    <Compile Include="ViewModel\EHI_WorkSafetyTribunalVModel.cs" />
+    <Compile Include="ViewModel\EngApprovalImportVModel.cs" />
+    <Compile Include="ViewModel\EngLatLngVModel.cs" />
+    <Compile Include="ViewModel\EngMain1VModel.cs" />
+    <Compile Include="ViewModel\EngMaterialDeviceList2VModel.cs" />
+    <Compile Include="ViewModel\EngPlaneWeaknessVModel.cs" />
+    <Compile Include="ViewModel\EngPriceAdjWorkItemGroupVModel.cs" />
+    <Compile Include="ViewModel\EngPriceAdjWorkItemVModel.cs" />
+    <Compile Include="ViewModel\EngProgressVModel.cs" />
+    <Compile Include="Models\EngReportModel.cs" />
+    <Compile Include="ViewModel\EngReportEstimatedCostVModel.cs" />
+    <Compile Include="ViewModel\EngReportExcelVM.cs" />
+    <Compile Include="ViewModel\EngReportLocalCommunicationVModel.cs" />
+    <Compile Include="ViewModel\EngReportMainJobDescriptionVModel.cs" />
+    <Compile Include="ViewModel\EngReportOnSiteConsultationVModel.cs" />
+    <Compile Include="ViewModel\EngReportApproveVModel.cs" />
+    <Compile Include="ViewModel\EngReportVModel.cs" />
+    <Compile Include="ViewModel\EngRiskFrontFileVModel.cs" />
+    <Compile Include="ViewModel\EngRiskFrontProjectOutlineFunctionVModel.cs" />
+    <Compile Include="ViewModel\EngRiskFrontProjectOutlineSiteEnvironmentVModel.cs" />
+    <Compile Include="ViewModel\EngRiskFrontSubProjectDetail.cs" />
+    <Compile Include="ViewModel\EngRiskFrontSubProjectDetailTp.cs" />
+    <Compile Include="ViewModel\EngSamplingInspectionImproveListVModel.cs" />
+    <Compile Include="ViewModel\EngSamplingInspectionListVModel.cs" />
+    <Compile Include="ViewModel\EngRiskFrontEvaluationTeamVModel.cs" />
+    <Compile Include="ViewModel\EngRiskFrontListVModel.cs" />
+    <Compile Include="ViewModel\EngRiskFrontProjectSelectionVModel.cs" />
+    <Compile Include="ViewModel\EngRiskFrontSubProjectListVModel.cs" />
+    <Compile Include="ViewModel\EngSupervisorVModel.cs" />
+    <Compile Include="ViewModel\EnvirConsListV2Model.cs" />
+    <Compile Include="ViewModel\EPCAskPaymentEngVModel.cs" />
+    <Compile Include="ViewModel\EPCAskPaymentHeaderVModel.cs" />
+    <Compile Include="ViewModel\EPCAskPaymentPayItemListVModel.cs" />
+    <Compile Include="ViewModel\EPCAskPaymentPayItemVModel.cs" />
+    <Compile Include="ViewModel\EPCCalInfoVModel.cs" />
+    <Compile Include="ViewModel\EPCDailySVModel.cs" />
+    <Compile Include="ViewModel\EPCDailyVModel.cs" />
+    <Compile Include="ViewModel\EPCEngMainVModel.cs" />
+    <Compile Include="ViewModel\EPCEngMaterialAdjVModel.cs" />
+    <Compile Include="ViewModel\EPCEngPriceAdjVModel.cs" />
+    <Compile Include="ViewModel\EPCEngPrjVModel.cs" />
+    <Compile Include="ViewModel\EPCPriceAdjustmentVModel.cs" />
+    <Compile Include="ViewModel\EPCPrjXMLMaterialAdjVModel.cs" />
+    <Compile Include="ViewModel\EPCProgressEngChangeListVModel.cs" />
+    <Compile Include="ViewModel\EPCProgressRChartItemVModel.cs" />
+    <Compile Include="ViewModel\EPCProgressReportChart2VModel.cs" />
+    <Compile Include="ViewModel\EPCProgressRSchVModel.cs" />
+    <Compile Include="ViewModel\EPCQualityVerifyDoc1VModel.cs" />
+    <Compile Include="ViewModel\EPCQualityVerifyDoc2VModel.cs" />
+    <Compile Include="ViewModel\EPCReporWorkVModel.cs" />
+    <Compile Include="ViewModel\EPCReporNoDurationVModel.cs" />
+    <Compile Include="ViewModel\EPCReportHolidayVModel.cs" />
+    <Compile Include="ViewModel\EPCSchEngProgressHeaderVModel.cs" />
+    <Compile Include="ViewModel\EPCSchEngProgressSubVModel.cs" />
+    <Compile Include="ViewModel\EPCSchProgressChangeDateVModel.cs" />
+    <Compile Include="ViewModel\EPCSchProgressHeaderlVModel.cs" />
+    <Compile Include="ViewModel\EPCSchProgressV1Model.cs" />
+    <Compile Include="ViewModel\EPCSchProgressVModel.cs" />
+    <Compile Include="ViewModel\EPCSupDailyDate1VModel.cs" />
+    <Compile Include="ViewModel\EPCSupDailyDateVModel.cs" />
+    <Compile Include="ViewModel\EPCSupDailyReportConstructionEquipmentModelVModel.cs" />
+    <Compile Include="ViewModel\EPCSuperviseFillVModel.cs" />
+    <Compile Include="ViewModel\EPCSupPlanOverviewVModel.cs" />
+    <Compile Include="ViewModel\EPCTenderVModel.cs" />
+    <Compile Include="ViewModel\EPCEngTenderListVModel.cs" />
+    <Compile Include="ViewModel\EQMCalCarbonEmissionsVModel.cs" />
+    <Compile Include="ViewModel\EQMCarbonEmissionHeaderlVModel.cs" />
+    <Compile Include="ViewModel\EQMCarbonEmissionHeaderTradeVModel.cs" />
+    <Compile Include="ViewModel\EQMCarbonEmissionTradingDocVModel.cs" />
+    <Compile Include="ViewModel\EQMConstRiskEvalVModel.cs" />
+    <Compile Include="ViewModel\EQMEcologicalStaVModel.cs" />
+    <Compile Include="ViewModel\EQMEngVModel.cs" />
+    <Compile Include="ViewModel\EquOperTestListV2Model.cs" />
+    <Compile Include="ViewModel\ESCommitteeCheckStatisticsVModel.cs" />
+    <Compile Include="ViewModel\ESCommitteePhotoVModel.cs" />
+    <Compile Include="ViewModel\ESCommitteeTenderVModel.cs" />
+    <Compile Include="ViewModel\ESCommitteeVModel.cs" />
+    <Compile Include="ViewModel\ESQCPlaneWeakness1VModel.cs" />
+    <Compile Include="ViewModel\ESQCPlaneWeaknessVModel.cs" />
+    <Compile Include="ViewModel\ESQEngFilterVModel.cs" />
+    <Compile Include="ViewModel\ESQEngNameOptionsVModel.cs" />
+    <Compile Include="ViewModel\ESStaListVModel.cs" />
+    <Compile Include="ViewModel\ESSuperviseRecordSheetVModel.cs" />
+    <Compile Include="ViewModel\ExpertCommitteeVModel.cs" />
+    <Compile Include="ViewModel\GoJsLinkModel.cs" />
+    <Compile Include="ViewModel\GoJsModel.cs" />
+    <Compile Include="ViewModel\Interface\BindingCodeVM.cs" />
+    <Compile Include="ViewModel\Interface\CarbonReduction.cs" />
+    <Compile Include="ViewModel\Interface\miniStandardRecord.cs" />
+    <Compile Include="ViewModel\Interface\StandardRecord.cs" />
+    <Compile Include="ViewModel\Interface\UnitTreeJsonConvertor.cs" />
+    <Compile Include="ViewModel\OccuSafeHealthListV2Model.cs" />
+    <Compile Include="ViewModel\PriceIndexItemsVModel.cs" />
+    <Compile Include="ViewModel\PriceIndexListVModel.cs" />
+    <Compile Include="ViewModel\PrjXMLPlaneWeaknessVModel.cs" />
+    <Compile Include="ViewModel\PrjXMLTreeVModel.cs" />
+    <Compile Include="ViewModel\PrjXMLVModel.cs" />
+    <Compile Include="ViewModel\PrjXMLImportVModel.cs" />
+    <Compile Include="ViewModel\CCListTpEditModel.cs" />
+    <Compile Include="ViewModel\CCListTpMode.cs" />
+    <Compile Include="ViewModel\ChapterListModel.cs" />
+    <Compile Include="ViewModel\CMEditModel.cs" />
+    <Compile Include="ViewModel\Common\SelectVM.cs" />
+    <Compile Include="ViewModel\ConstCheckRecImproveVModel.cs" />
+    <Compile Include="ViewModel\ConstCheckRecOptionVModel.cs" />
+    <Compile Include="ViewModel\ControlStVModel.cs" />
+    <Compile Include="ViewModel\EngConstruction.cs" />
+    <Compile Include="ViewModel\EngConstructionEngInfoVModel.cs" />
+    <Compile Include="ViewModel\EngConstructionList.cs" />
+    <Compile Include="ViewModel\EngConstructionListVModel.cs" />
+    <Compile Include="ViewModel\EngConstructionOptionsVModel.cs" />
+    <Compile Include="ViewModel\EngMain.cs" />
+    <Compile Include="ViewModel\EngMaterialDeviceSummaryVModel.cs" />
+    <Compile Include="ViewModel\EngMaterialDeviceTestSummaryVModel.cs" />
+    <Compile Include="ViewModel\EngNameOptionsVModel.cs" />
+    <Compile Include="ViewModel\EngUploadHistoryVModel.cs" />
+    <Compile Include="ViewModel\EquOperTestListVModel.cs" />
+    <Compile Include="ViewModel\ECCTpModel.cs" />
+    <Compile Include="ViewModel\ECListTpEditModel.cs" />
+    <Compile Include="ViewModel\ECListTpModel.cs" />
+    <Compile Include="ViewModel\EMDCTpModel.cs" />
+    <Compile Include="ViewModel\EMDListTpEditModel.cs" />
+    <Compile Include="ViewModel\EMDListTpModel.cs" />
+    <Compile Include="ViewModel\EngAttachmentVMode.cs" />
+    <Compile Include="ViewModel\EngConstructionVModel.cs" />
+    <Compile Include="ViewModel\EngMainEditVModel.cs" />
+    <Compile Include="ViewModel\EngMainVModel.cs" />
+    <Compile Include="ViewModel\EngExecUnitsVModel.cs" />
+    <Compile Include="ViewModel\EngYearsVModel.cs" />
+    <Compile Include="ViewModel\EOCTpModel.cs" />
+    <Compile Include="ViewModel\EOTListTpEditModel.cs" />
+    <Compile Include="ViewModel\EOTListTpModel.cs" />
+    <Compile Include="ViewModel\MenuRoleVM.cs" />
+    <Compile Include="ViewModel\MyJson.cs" />
+    <Compile Include="ViewModel\EnvirConsListVModel.cs" />
+    <Compile Include="ViewModel\ConstCheckListVModel.cs" />
+    <Compile Include="ViewModel\EngMaterialDeviceListVModel.cs" />
+    <Compile Include="ViewModel\NcrVModel.cs" />
+    <Compile Include="ViewModel\OSHCTpModel.cs" />
+    <Compile Include="ViewModel\OccuSafeHealthListVModel.cs" />
+    <Compile Include="ViewModel\OSHListTpEditModel.cs" />
+    <Compile Include="ViewModel\OSHListTpModel.cs" />
+    <Compile Include="ViewModel\RejectCompanyVModel.cs" />
+    <Compile Include="ViewModel\ResumeVModel.cs" />
+    <Compile Include="Models\SearchCodition.cs" />
+    <Compile Include="ViewModel\SelectIntOptionMode.cs" />
+    <Compile Include="ViewModel\SelectOptionMode.cs" />
+    <Compile Include="ViewModel\QualityProjectTpEditModel.cs" />
+    <Compile Include="ViewModel\SignatureFileVM.cs" />
+    <Compile Include="ViewModel\SPTpEditModel.cs" />
+    <Compile Include="ViewModel\QualityProjectListVModel.cs" />
+    <Compile Include="ViewModel\EPCReportExtensionVModel.cs" />
+    <Compile Include="ViewModel\SupDailyReportExtensionVModel.cs" />
+    <Compile Include="ViewModel\SupDailyReportWorkVModel.cs" />
+    <Compile Include="ViewModel\SuperviseEng1VMode.cs" />
+    <Compile Include="ViewModel\SuperviseEngPreWordVMode.cs" />
+    <Compile Include="ViewModel\SuperviseEngSchedule1VModel.cs" />
+    <Compile Include="ViewModel\SuperviseEngSchedule2VModel.cs" />
+    <Compile Include="ViewModel\SuperviseEngScheduleVMode.cs" />
+    <Compile Include="ViewModel\SuperviseEngSuperviseFillVMode.cs" />
+    <Compile Include="ViewModel\SuperviseEngTHSRVMode.cs" />
+    <Compile Include="ViewModel\SuperviseEngVMode.cs" />
+    <Compile Include="ViewModel\SuperviseFillCommitteeScoreVModel.cs" />
+    <Compile Include="ViewModel\SuperviseFillCommitteeVModel.cs" />
+    <Compile Include="ViewModel\SuperviseFillVMode.cs" />
+    <Compile Include="ViewModel\SupervisionProjectListVModel.cs" />
+    <Compile Include="ViewModel\TenderCalForm.cs" />
+    <Compile Include="ViewModel\ThemeTraningNode.cs" />
+    <Compile Include="ViewModel\ThsrFilterVM.cs" />
+    <Compile Include="ViewModel\TreeEngMainEditVModel.cs" />
+    <Compile Include="ViewModel\TreePlantMainPrj.cs" />
+    <Compile Include="ViewModel\TreePlantMainVM.cs" />
+    <Compile Include="ViewModel\TreePlantMonthVM.cs" />
+    <Compile Include="ViewModel\UModel.cs" />
+    <Compile Include="ViewModel\UploadAuditFileResultVModel.cs" />
+    <Compile Include="ViewModel\UploadAuditFileVModel.cs" />
+    <Compile Include="ViewModel\VCCCheckStand.cs" />
+    <Compile Include="ViewModel\VCityModel.cs" />
+    <Compile Include="ViewModel\MyVMenu.cs" />
+    <Compile Include="ViewModel\VCity.cs" />
+    <Compile Include="ViewModel\VItem.cs" />
+    <Compile Include="ViewModel\VMainType.cs" />
+    <Compile Include="ViewModel\VPosition.cs" />
+    <Compile Include="ViewModel\VRole.cs" />
+    <Compile Include="ViewModel\VSubType.cs" />
+    <Compile Include="ViewModel\VSystemMenu.cs" />
+    <Compile Include="ViewModel\VTown.cs" />
+    <Compile Include="ViewModel\VTownModel.cs" />
+    <Compile Include="ViewModel\VUnit.cs" />
+    <Compile Include="ViewModel\VUserMain.cs" />
+    <Compile Include="Models\_EngMainEditVModel.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="bin\EQC.dll" />
+    <Content Include="bin\EQC.pdb" />
+    <Content Include="ClientApp\.gitignore" />
+    <Content Include="ClientApp\babel.config.js" />
+    <Content Include="ClientApp\src\assets\css\all.css" />
+    <Content Include="ClientApp\src\assets\css\bootstrap.min.css" />
+    <Content Include="ClientApp\src\assets\css\fontawesome.css" />
+    <Content Include="ClientApp\src\assets\css\fontawesome.min.css" />
+    <Content Include="ClientApp\src\assets\css\layout.css" />
+    <Content Include="ClientApp\src\assets\css\rwd.css" />
+    <Content Include="ClientApp\src\assets\css\solid.css" />
+    <Content Include="ClientApp\src\assets\css\solid.min.css" />
+    <Content Include="ClientApp\src\assets\fonts\fontawesome-webfont.svg" />
+    <Content Include="ClientApp\src\assets\images\banner.png" />
+    <Content Include="ClientApp\src\assets\images\icon-up.png" />
+    <Content Include="ClientApp\src\assets\images\major_logo.png" />
+    <Content Include="ClientApp\src\assets\images\newtitle-bg.png" />
+    <Content Include="ClientApp\src\assets\images\ROC_Water_Resources_Agency_Seal.svg" />
+    <Content Include="ClientApp\src\assets\images\title-bg.gif" />
+    <Content Include="ClientApp\src\assets\images\web-name.png" />
+    <Content Include="ClientApp\src\assets\images\登入頁_v2.jpg" />
+    <Content Include="ClientApp\src\assets\js\bootstrap.min.js" />
+    <Content Include="ClientApp\src\assets\js\html5shiv.min.js" />
+    <Content Include="ClientApp\src\assets\js\jquery-1.9.1.min.js" />
+    <Content Include="ClientApp\src\assets\js\jquery.blockUI.js" />
+    <Content Include="ClientApp\src\assets\js\respond.min.js" />
+    <Content Include="ClientApp\src\assets\js\script.js" />
+    <Content Include="ClientApp\src\assets\logo.png" />
+    <Content Include="ClientApp\src\assets\webfonts\fa-brands-400.svg" />
+    <Content Include="ClientApp\src\assets\webfonts\fa-regular-400.svg" />
+    <Content Include="ClientApp\src\assets\webfonts\fa-solid-900.svg" />
+    <Content Include="ClientApp\src\Backend\City\CityEdit.vue" />
+    <Content Include="ClientApp\src\Backend\RiskManagement\gojs\Builder.js" />
+    <Content Include="ClientApp\src\Backend\Type\MainTypeList.vue" />
+    <Content Include="ClientApp\src\Backend\Type\MainTypeEdit.vue" />
+    <Content Include="ClientApp\src\Backend\Type\SubTypeList.vue" />
+    <Content Include="ClientApp\src\Backend\Type\SubTypeEdit.vue" />
+    <Content Include="ClientApp\src\Backend\Role\RoleList.vue" />
+    <Content Include="ClientApp\src\Backend\Unit\UnitList.vue" />
+    <Content Include="ClientApp\src\Backend\Unit\UnitEdit.vue" />
+    <Content Include="ClientApp\src\Backend\Position\PositionList.vue" />
+    <Content Include="ClientApp\src\Backend\Position\PositionEdit.vue" />
+    <Content Include="ClientApp\src\Backend\Town\TownList.vue" />
+    <Content Include="ClientApp\src\Backend\Menu\MenuList.vue" />
+    <Content Include="ClientApp\src\components\SIdentify.vue" />
+    <Content Include="ClientApp\src\assets\fonts\fontawesome-webfont.eot" />
+    <Content Include="ClientApp\src\assets\fonts\fontawesome-webfont.ttf" />
+    <Content Include="ClientApp\src\assets\fonts\fontawesome-webfont.woff" />
+    <Content Include="ClientApp\src\assets\fonts\fontawesome-webfont.woff2" />
+    <Content Include="ClientApp\src\assets\fonts\FontAwesome.otf" />
+    <Content Include="ClientApp\src\assets\webfonts\fa-brands-400.eot" />
+    <Content Include="ClientApp\src\assets\webfonts\fa-brands-400.ttf" />
+    <Content Include="ClientApp\src\assets\webfonts\fa-brands-400.woff" />
+    <Content Include="ClientApp\src\assets\webfonts\fa-brands-400.woff2" />
+    <Content Include="ClientApp\src\assets\webfonts\fa-regular-400.eot" />
+    <Content Include="ClientApp\src\assets\webfonts\fa-regular-400.ttf" />
+    <Content Include="ClientApp\src\assets\webfonts\fa-regular-400.woff" />
+    <Content Include="ClientApp\src\assets\webfonts\fa-regular-400.woff2" />
+    <Content Include="ClientApp\src\assets\webfonts\fa-solid-900.eot" />
+    <Content Include="ClientApp\src\assets\webfonts\fa-solid-900.ttf" />
+    <Content Include="ClientApp\src\assets\webfonts\fa-solid-900.woff" />
+    <Content Include="ClientApp\src\assets\webfonts\fa-solid-900.woff2" />
+    <Content Include="ClientApp\src\Backend\ChapterChart\ChapterChartMaintain.vue" />
+    <Content Include="ClientApp\src\Backend\FlowChart\FlowChart.vue" />
+    <Content Include="ClientApp\src\Backend\FlowChart\FlowChartChapter5.vue" />
+    <Content Include="ClientApp\src\Backend\FlowChart\FlowChartChapter6.vue" />
+    <Content Include="ClientApp\src\Backend\FlowChart\FlowChartChapter701.vue" />
+    <Content Include="ClientApp\src\Backend\FlowChart\FlowChartChapter702.vue" />
+    <Content Include="ClientApp\src\Backend\FlowChart\FlowChartChapter703.vue" />
+    <Content Include="ClientApp\src\Backend\MMPlan\MMPlan.vue" />
+    <Content Include="ClientApp\src\Backend\QCStdBase\QCStdBase.vue" />
+    <Content Include="ClientApp\src\Backend\QCStdBase\QCStdBase5StdMaterialAndEquipment.vue" />
+    <Content Include="ClientApp\src\Backend\QCStdBase\QCStdBase6StdEquipmentFunction.vue" />
+    <Content Include="ClientApp\src\Backend\QCStdBase\QCStdBase701Stdconstruction.vue" />
+    <Content Include="ClientApp\src\Backend\QCStdBase\QCStdBase702Stdconstruction.vue" />
+    <Content Include="ClientApp\src\Backend\QCStdBase\QCStdBase703Stdconstruction.vue" />
+    <Content Include="ClientApp\src\Backend\CheckRecordSheet\CheckSheet.vue" />
+    <Content Include="ClientApp\src\Backend\CheckRecordSheet\CheckSheet6.vue" />
+    <Content Include="ClientApp\src\Backend\CheckRecordSheet\CheckSheet701.vue" />
+    <Content Include="ClientApp\src\Backend\CheckRecordSheet\CheckSheet702.vue" />
+    <Content Include="ClientApp\src\Backend\CheckRecordSheet\CheckSheet703.vue" />
+    <Content Include="ClientApp\src\Backend\CheckRecordSheet\CheckSheet5.vue" />
+    <Content Include="ClientApp\src\Backend\QualityPlan\QualityPlan.vue" />
+    <Content Include="ClientApp\src\Backend\DelEng\DelEng.vue" />
+    <Content Include="ClientApp\src\Backend\FlowChart_Test\FlowChartChapter5_Test.vue" />
+    <Content Include="ClientApp\src\Backend\FlowChart_Test\FlowChartChapter6_Test.vue" />
+    <Content Include="ClientApp\src\Backend\FlowChart_Test\FlowChartChapter701_Test.vue" />
+    <Content Include="ClientApp\src\Backend\FlowChart_Test\FlowChartChapter702_Test.vue" />
+    <Content Include="ClientApp\src\Backend\FlowChart_Test\FlowChartChapter703_Test.vue" />
+    <Content Include="ClientApp\src\Backend\FlowChart_Test\FlowChart_Test.vue" />
+    <Content Include="ClientApp\src\Backend\FlowChart_Test\QCStdBase5StdMaterialAndEquipment.vue" />
+    <Content Include="ClientApp\src\Backend\FlowChart_Test\QCStdBase6StdEquipmentFunction.vue" />
+    <Content Include="ClientApp\src\Backend\FlowChart_Test\QCStdBase701Stdconstruction.vue" />
+    <Content Include="ClientApp\src\Backend\FlowChart_Test\QCStdBase702Stdconstruction.vue" />
+    <Content Include="ClientApp\src\Backend\FlowChart_Test\QCStdBase703Stdconstruction.vue" />
+    <Content Include="ClientApp\src\Backend\ExpertCommittee\EC_Edit.vue" />
+    <Content Include="ClientApp\src\Backend\ExpertCommittee\EC_List.vue" />
+    <Content Include="ClientApp\src\Backend\CarbonEmissionFactor\CEFactor_Edit.vue" />
+    <Content Include="ClientApp\src\Backend\RejectCompany\RC_List.vue" />
+    <Content Include="ClientApp\src\Backend\AuditCaseList\AuditCaseList.vue" />
+    <Content Include="ClientApp\src\Backend\EYCentralLocalAddressList\EYCentralLocalAddressList.vue" />
+    <Content Include="ClientApp\src\Backend\GravelFieldCoord\GravelFieldCoord.vue" />
+    <Content Include="ClientApp\src\Backend\NationalSupervisedActivity\NationalSupervisedActivity.vue" />
+    <Content Include="ClientApp\src\Backend\PublicWorkFirmResume\PublicWorkFirmResume.vue" />
+    <Content Include="ClientApp\src\Backend\VendorHireWorkList\VendorHireWorkList.vue" />
+    <Content Include="ClientApp\src\Backend\ControlPlan\ControlPlan.vue" />
+    <Content Include="ClientApp\src\Backend\UnitCities\UnitCities.vue" />
+    <Content Include="ClientApp\src\Backend\WeakTenderPlanEdit\WeakTenderPlanEdit.vue" />
+    <Content Include="ClientApp\src\Backend\CarbonEmission\CarbonEmission.vue" />
+    <Content Include="ClientApp\src\Backend\QualityDeductionPoints\QualityDeductionPoints.vue" />
+    <Content Include="ClientApp\src\Backend\CarbonEmissionFactor\CCTIndex.vue" />
+    <Content Include="ClientApp\src\Backend\CarbonEmissionFactor\CEFactor_SubList.vue" />
+    <Content Include="ClientApp\src\Backend\CarbonEmissionFactor\MMFM_Main.vue" />
+    <Content Include="ClientApp\src\Backend\CarbonEmissionFactor\Tab_Fuel.vue" />
+    <Content Include="ClientApp\src\Backend\CarbonEmissionFactor\Tab_Machine.vue" />
+    <Content Include="ClientApp\src\Backend\CarbonEmissionFactor\Tab_Material.vue" />
+    <Content Include="ClientApp\src\Backend\RiskManagement\ConstructionTree.vue" />
+    <Content Include="ClientApp\src\Backend\RiskManagement\Index.vue" />
+    <Content Include="ClientApp\src\Backend\RiskManagement\lookup.vue" />
+    <Content Include="ClientApp\src\Backend\RiskManagement\RiskList.vue" />
+    <Content Include="ClientApp\src\Backend\DelEngReport\DelEngReport.vue" />
+    <None Include=".dockerignore">
+      <DependentUpon>Dockerfile</DependentUpon>
+    </None>
+    <None Include="ClientApp\src\components\grid1-component.vue" />
+    <None Include="ClientApp\src\Backend\City\CityList.vue" />
+    <Content Include="ClientApp\src\Common\Common.js" />
+    <Content Include="ClientApp\src\Common\date.js" />
+    <None Include="ClientApp\src\EngReport\NeedAssessment\NeedAssessmentView.vue" />
+    <None Include="ClientApp\src\EngRiskFront\EngRiskFront.vue" />
+    <Content Include="ClientApp\src\EngRiskFront\gojs\Builder.js" />
+    <Content Include="ClientApp\src\EPC\ProgressManage\CalendarSetting.vue" />
+    <Content Include="ClientApp\src\FrontDesk\TenderPlan\TenderPlanEdit.vue" />
+    <Content Include="ClientApp\src\FrontDesk\TenderPlan\TenderPlanList.vue" />
+    <Content Include="ClientApp\src\main.js" />
+    <Content Include="ClientApp\src\mobile.js" />
+    <Content Include="ClientApp\src\store\index.js" />
+    <Content Include="ClientApp\src\sub1.js" />
+    <Content Include="ClientApp\src\sub2.js" />
+    <Content Include="ClientApp\vue.config.js" />
+    <Content Include="Content\bootstrap-grid.css" />
+    <Content Include="Content\bootstrap-grid.min.css" />
+    <Content Include="Content\bootstrap-reboot.css" />
+    <Content Include="Content\bootstrap-reboot.min.css" />
+    <Content Include="Content\bootstrap.css" />
+    <Content Include="Content\bootstrap.min.css" />
+    <Content Include="Content\css1\all.css" />
+    <Content Include="Content\css1\app.css" />
+    <Content Include="Content\css1\bootstrap.min.css" />
+    <Content Include="Content\css1\drag - 複製.css" />
+    <Content Include="Content\css1\drag.css" />
+    <Content Include="Content\css1\fontawesome.css" />
+    <Content Include="Content\css1\fontawesome.min.css" />
+    <Content Include="Content\css1\layout - 複製.css" />
+    <Content Include="Content\css1\layout.css" />
+    <Content Include="Content\css1\rwd - 複製.css" />
+    <Content Include="Content\css1\rwd.css" />
+    <Content Include="Content\css1\solid.css" />
+    <Content Include="Content\css1\solid.min.css" />
+    <Content Include="Content\css\all.css" />
+    <Content Include="Content\css\bootstrap.min.css" />
+    <Content Include="Content\css\drag.css" />
+    <Content Include="Content\css\fontawesome.css" />
+    <Content Include="Content\css\fontawesome.min.css" />
+    <Content Include="Content\css\layout.css" />
+    <Content Include="Content\css\rwd.css" />
+    <Content Include="Content\css\solid.css" />
+    <Content Include="Content\css\solid.min.css" />
+    <Content Include="Content\dist\css\app.css" />
+    <Content Include="Content\dist\favicon.ico" />
+    <Content Include="Content\dist\img\可能性.png" />
+    <Content Include="Content\dist\img\嚴重度.png" />
+    <Content Include="Content\dist\img\風險值風險等級.png" />
+    <Content Include="Content\dist\index.html" />
+    <Content Include="Content\dist\js\app.js" />
+    <Content Include="Content\fonts\fontawesome-webfont.svg" />
+    <Content Include="Content\images1\0203_menu-bg.png" />
+    <Content Include="Content\images1\banner.png" />
+    <Content Include="Content\images1\eqc.wra.gov.tw_AppInstall.png" />
+    <Content Include="Content\images1\icon-001-manager.png" />
+    <Content Include="Content\images1\icon-002-agency.png" />
+    <Content Include="Content\images1\icon-003-design.png" />
+    <Content Include="Content\images1\icon-004-supervisor.png" />
+    <Content Include="Content\images1\icon-005-construction.png" />
+    <Content Include="Content\images1\icon-006-committee.png" />
+    <Content Include="Content\images1\icon-up.png" />
+    <Content Include="Content\images1\img01.jpg" />
+    <Content Include="Content\images1\img02.jpg" />
+    <Content Include="Content\images1\img03.jpg" />
+    <Content Include="Content\images1\img04.jpg" />
+    <Content Include="Content\images1\img05.jpg" />
+    <Content Include="Content\images1\img06.jpg" />
+    <Content Include="Content\images1\info.png" />
+    <Content Include="Content\images1\info_logo.png" />
+    <Content Include="Content\images1\mainpage-bg.jpg" />
+    <Content Include="Content\images1\major_logo.png" />
+    <Content Include="Content\images1\navbar-bg-0.png" />
+    <Content Include="Content\images1\navbar-bg-1%28測試站%29.png" />
+    <Content Include="Content\images1\navbar-bg-1.png" />
+    <Content Include="Content\images1\navbar-bg-2%28測試站%29.png" />
+    <Content Include="Content\images1\navbar-bg-2.png" />
+    <Content Include="Content\images1\navbar-bg-3%28測試站%29.png" />
+    <Content Include="Content\images1\navbar-bg-3.png" />
+    <Content Include="Content\images1\navbar-bg-4.png" />
+    <Content Include="Content\images1\navbar-bg-5%28測試站%29.png" />
+    <Content Include="Content\images1\navbar-bg-5.png" />
+    <Content Include="Content\images1\navbar-bg-B%28測試站%29.png" />
+    <Content Include="Content\images1\navbar-bg-B.png" />
+    <Content Include="Content\images1\navbar-bg-G%28測試站%29.png" />
+    <Content Include="Content\images1\navbar-bg-G.png" />
+    <Content Include="Content\images1\navbar-bg-P%28測試站%29.png" />
+    <Content Include="Content\images1\navbar-bg-P.png" />
+    <Content Include="Content\images1\navbar-bg-R%28測試站%29.png" />
+    <Content Include="Content\images1\navbar-bg-R.png" />
+    <Content Include="Content\images1\navbar-bg.png" />
+    <Content Include="Content\images1\navbar-bg2.png" />
+    <Content Include="Content\images1\newtitle-bg.png" />
+    <Content Include="Content\images1\pattern-A.png" />
+    <Content Include="Content\images1\pattern-B.png" />
+    <Content Include="Content\images1\pattern-C.png" />
+    <Content Include="Content\images1\pattern.png" />
+    <Content Include="Content\images1\ROC_Water_Resources_Agency_Seal.svg" />
+    <Content Include="Content\images1\testAPP.png" />
+    <Content Include="Content\images1\title-bg.gif" />
+    <Content Include="Content\images1\web-name.png" />
+    <Content Include="Content\images1\web-name_1.png" />
+    <Content Include="Content\images1\登入頁_v2.jpg" />
+    <Content Include="Content\images1\登入頁_v5-1.jpg" />
+    <Content Include="Content\images\banner.png" />
+    <Content Include="Content\images\icon-up.png" />
+    <Content Include="Content\images\mainpage-bg.jpg" />
+    <Content Include="Content\images\major_logo.png" />
+    <Content Include="Content\images\navbar-bg-0.png" />
+    <Content Include="Content\images\navbar-bg-1-developement.png" />
+    <Content Include="Content\images\navbar-bg-1.png" />
+    <Content Include="Content\images\navbar-bg-2-developement.png" />
+    <Content Include="Content\images\navbar-bg-2.png" />
+    <Content Include="Content\images\navbar-bg-3-developement.png" />
+    <Content Include="Content\images\navbar-bg-3.png" />
+    <Content Include="Content\images\navbar-bg-4.png" />
+    <Content Include="Content\images\navbar-bg-5-developement.png" />
+    <Content Include="Content\images\navbar-bg-5.png" />
+    <Content Include="Content\images\navbar-bg-B-developement.png" />
+    <Content Include="Content\images\navbar-bg-B.png" />
+    <Content Include="Content\images\navbar-bg-G-developement.png" />
+    <Content Include="Content\images\navbar-bg-G.png" />
+    <Content Include="Content\images\navbar-bg-P-developement.png" />
+    <Content Include="Content\images\navbar-bg-P.png" />
+    <Content Include="Content\images\navbar-bg-R-developement.png" />
+    <Content Include="Content\images\navbar-bg-R.png" />
+    <Content Include="Content\images\navbar-bg.png" />
+    <Content Include="Content\images\navbar-bg2.png" />
+    <Content Include="Content\images\newtitle-bg.png" />
+    <Content Include="Content\images\pattern-A.png" />
+    <Content Include="Content\images\pattern-B.png" />
+    <Content Include="Content\images\pattern-C.png" />
+    <Content Include="Content\images\pattern.png" />
+    <Content Include="Content\images\ROC_Water_Resources_Agency_Seal.svg" />
+    <Content Include="Content\images\title-bg.gif" />
+    <Content Include="Content\images\uploaded_img1.png" />
+    <Content Include="Content\images\uploaded_img2.png" />
+    <Content Include="Content\images\web-name.png" />
+    <Content Include="Content\images\web-name_1.png" />
+    <Content Include="Content\images\可能性.png" />
+    <Content Include="Content\images\嚴重度.png" />
+    <Content Include="Content\images\工程提案命名原則.jpg" />
+    <Content Include="Content\images\登入頁_v2.jpg" />
+    <Content Include="Content\images\風險值風險等級.png" />
+    <Content Include="Content\js\bootstrap.min.js" />
+    <Content Include="Content\js\html5shiv.min.js" />
+    <Content Include="Content\js\jquery-3.3.1.min.js" />
+    <Content Include="Content\js\jquery-3.6.0.min.js" />
+    <Content Include="Content\js\jquery.blockUI.js" />
+    <Content Include="Content\js\respond.min.js" />
+    <Content Include="Content\js\script-1.js" />
+    <Content Include="Content\js\script.js" />
+    <Content Include="Content\qrcode.js" />
+    <Content Include="Content\webfonts\fa-brands-400.svg" />
+    <Content Include="Content\webfonts\fa-regular-400.svg" />
+    <Content Include="Content\webfonts\fa-solid-900.svg" />
+    <Content Include="ClientApp\src\FrontDesk\SIRApprove\EngInfo.vue" />
+    <Content Include="ClientApp\src\FrontDesk\SIRApprove\PhotoList.vue" />
+    <Content Include="ClientApp\src\FrontDesk\SIRApprove\SamplingInspectionRecEdit.vue" />
+    <Content Include="ClientApp\src\FrontDesk\SIRApprove\SamplingInspectionRecList.vue" />
+    <Content Include="ClientApp\src\FrontDesk\SIRApprove\SIRApproveList.vue" />
+    <Content Include="ClientApp\src\FrontDesk\SIRIApprove\NCR.vue" />
+    <Content Include="ClientApp\src\FrontDesk\SIRIApprove\PhotoList.vue" />
+    <Content Include="ClientApp\src\FrontDesk\SIRIApprove\Report.vue" />
+    <Content Include="ClientApp\src\FrontDesk\SIRIApprove\SamplingInspectionRecImproveEdit.vue" />
+    <Content Include="ClientApp\src\FrontDesk\SIRIApprove\SamplingInspectionRecImproveList.vue" />
+    <Content Include="ClientApp\src\FrontDesk\SIRIApprove\SIRIApproveEdit.vue" />
+    <Content Include="ClientApp\src\FrontDesk\SIRIApprove\SIRIApproveList.vue" />
+    <Content Include="ClientApp\src\FrontDesk\SamplingInspectionRecImprove\PhotoGroup.vue" />
+    <Content Include="ClientApp\src\FrontDesk\SamplingInspectionRecImprove\PhotoGroupList.vue" />
+    <Content Include="ClientApp\src\FrontDesk\SamplingInspectionRecImprove\PhotoListItem.vue" />
+    <Content Include="ClientApp\src\FrontDesk\EMDAudit\BigImg.vue" />
+    <Content Include="ClientApp\src\FrontDesk\AppInstall\AppInstall.vue" />
+    <Content Include="ClientApp\src\EPC\Import\ImportXML.vue" />
+    <Content Include="ClientApp\src\EPC\Tender\TenderList.vue" />
+    <Content Include="ClientApp\src\EPC\Tender\TenderEdit.vue" />
+    <Content Include="ClientApp\src\EPC\Tender\TenderEdit_BaseData.vue" />
+    <Content Include="ClientApp\src\EPC\Tender\TenderEdit_ContractorQualityControl.vue" />
+    <Content Include="ClientApp\src\EPC\Tender\TenderEdit_Supervisor.vue" />
+    <Content Include="ClientApp\src\EPC\Tender\TenderEdit_FullTimeEngineer.vue" />
+    <Content Include="ClientApp\src\EPC\Tender\TenderEdit_SiteRelate.vue" />
+    <Content Include="ClientApp\src\EPC\Tender\TenderEdit_Budgeting.vue" />
+    <Content Include="ClientApp\src\EPC\Tender\TenderEdit_ChangeDesignData.vue" />
+    <Content Include="ClientApp\src\EPC\Tender\TenderEdit_ProgressData.vue" />
+    <Content Include="ClientApp\src\EPC\Tender\TenderEdit_BackwardData.vue" />
+    <Content Include="ClientApp\src\EPC\Tender\TenderEdit_PaymentRecord.vue" />
+    <Content Include="ClientApp\src\EPC\ProgressManage\PM_Main.vue" />
+    <Content Include="ClientApp\src\EPC\ProgressManage\PM_Supervision.vue" />
+    <Content Include="ClientApp\src\EPC\ProgressManage\PM_Construction.vue" />
+    <Content Include="ClientApp\src\EPC\ProgressManage\PM_ScheProgress.vue" />
+    <Content Include="EDMXModel\Model2.Context.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Model2.Context1.cs</LastGenOutput>
+    </Content>
+    <Content Include="EDMXModel\Model2.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Model21.cs</LastGenOutput>
+    </Content>
+    <Content Include="EDMXModel\Model3.Context.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>Model3.edmx</DependentUpon>
+      <LastGenOutput>Model3.Context.cs</LastGenOutput>
+    </Content>
+    <Content Include="EDMXModel\Model3.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>Model3.edmx</DependentUpon>
+      <LastGenOutput>Model3.cs</LastGenOutput>
+    </Content>
+    <Content Include="Models\EntitiesForTechnical.Context.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>EntitiesForTechnical.edmx</DependentUpon>
+      <LastGenOutput>EntitiesForTechnical.Context.cs</LastGenOutput>
+    </Content>
+    <Content Include="Models\EntitiesForTechnical.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>EntitiesForTechnical.edmx</DependentUpon>
+      <LastGenOutput>EntitiesForTechnical.cs</LastGenOutput>
+    </Content>
+    <Content Include="Models\Model1.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Model1.cs</LastGenOutput>
+    </Content>
+    <Content Include="Scripts\bootstrap.bundle.js" />
+    <Content Include="Scripts\bootstrap.bundle.min.js" />
+    <Content Include="Scripts\bootstrap.js" />
+    <Content Include="Scripts\bootstrap.min.js" />
+    <Content Include="Scripts\esm\popper-utils.js" />
+    <Content Include="Scripts\esm\popper-utils.min.js" />
+    <Content Include="Scripts\esm\popper.js" />
+    <Content Include="Scripts\esm\popper.min.js" />
+    <Content Include="Scripts\index.js.flow" />
+    <Content Include="Scripts\esm\popper.min.js.map" />
+    <Content Include="Scripts\esm\popper.js.map" />
+    <Content Include="Scripts\esm\popper-utils.min.js.map" />
+    <Content Include="Scripts\esm\popper-utils.js.map" />
+    <Content Include="Scripts\bootstrap.min.js.map" />
+    <Content Include="Scripts\bootstrap.js.map" />
+    <Content Include="Scripts\bootstrap.bundle.min.js.map" />
+    <Content Include="Scripts\bootstrap.bundle.js.map" />
+    <Content Include="Content\bootstrap.min.css.map" />
+    <Content Include="Content\bootstrap.css.map" />
+    <Content Include="Content\bootstrap-reboot.min.css.map" />
+    <Content Include="Content\bootstrap-reboot.css.map" />
+    <Content Include="Content\bootstrap-grid.min.css.map" />
+    <Content Include="Content\bootstrap-grid.css.map" />
+    <Content Include="Content\dist\js\app.js.map" />
+    <Content Include="Content\css1\bootstrap.min.css.map" />
+    <Content Include="ClientApp\src\EPC\QualityVerify\QV_Main.vue" />
+    <Content Include="ClientApp\src\EPC\QualityVerify\QV_Supervise.vue" />
+    <Content Include="ClientApp\src\EngSupervise\PreWork\PreWorkEngList.vue" />
+    <Content Include="ClientApp\src\EngSupervise\QCPlaneWeakness\QCPlaneWeaknessList.vue" />
+    <Content Include="ClientApp\src\EngSupervise\Schedule\ScheduleList.vue" />
+    <Content Include="ClientApp\src\EngSupervise\SuperviseFill\SuperviseFillEdit.vue" />
+    <Content Include="ClientApp\src\EngSupervise\SuperviseFill\SuperviseFillList.vue" />
+    <Content Include="ExcelTemplate\PublicWorkFirmResume.xlsx" />
+    <Content Include="ExcelTemplate\VendorHireWorkList.xlsx" />
+    <Content Include="ExcelTemplate\GravelFieldCoord.xlsx" />
+    <Content Include="ExcelTemplate\EYCentralLocalAddressList.xlsx" />
+    <Content Include="ExcelTemplate\AuditCaseList.xlsx" />
+    <Content Include="ClientApp\src\EPC\EcologicalCheck\EC_List.vue" />
+    <Content Include="ClientApp\src\EQM\CarbonEmission\CE_List.vue" />
+    <Content Include="ClientApp\src\EQM\ConstRiskEval\CRE_List.vue" />
+    <Content Include="ClientApp\src\EQM\EcologicalCheck\EC_List.vue" />
+    <Content Include="ClientApp\src\EPC\Tender\TenderEdit2.vue" />
+    <Content Include="ClientApp\src\EPC\Tender\TenderEdit2_Committee.vue" />
+    <Content Include="ClientApp\src\EPC\Tender\TenderEdit2_MaterialAdj.vue" />
+    <Content Include="ClientApp\src\EPC\Tender\TenderEdit2_PlanEdit.vue" />
+    <Content Include="ClientApp\src\EPC\Tender\TenderPlanEdit2.vue" />
+    <Content Include="ExcelTemplate\AuditCaseList.xlsx" />
+    <Content Include="ExcelTemplate\EYCentralLocalAddressList.xlsx" />
+    <Content Include="ExcelTemplate\GravelFieldCoord.xlsx" />
+    <Content Include="ExcelTemplate\PublicWorkFirmResume.xlsx" />
+    <Content Include="ExcelTemplate\VendorHireWorkList.xlsx" />
+    <Content Include="ClientApp\src\components\ImportExcel.vue" />
+    <Content Include="ClientApp\src\components\importExcelSign.vue" />
+    <Content Include="ClientApp\src\components\ImportTemplate.vue" />
+    <Content Include="ClientApp\src\components\ImportTemplateWithoutSign.vue" />
+    <Content Include="ExcelTemplate\QualityDeductionPoints.xlsx" />
+    <Content Include="ExcelTemplate\ControlPlan.xlsx" />
+    <Content Include="ExcelTemplate\UnitCities.xlsx" />
+    <Content Include="ClientApp\src\EPC\ProgressManage\PM_Construction_EditEquipment.vue" />
+    <Content Include="ClientApp\src\EPC\ProgressManage\PM_Construction_EditMaterial.vue" />
+    <Content Include="ClientApp\src\EPC\ProgressManage\PM_Construction_EditPerson.vue" />
+    <Content Include="ExcelTemplate\NSActivity.xlsx" />
+    <Content Include="ClientApp\src\EngAD\AnalysisDecision.vue" />
+    <Content Include="ClientApp\src\PortalDepUser\PortalDepUser.vue" />
+    <Content Include="ClientApp\src\Technical\addArtical.vue" />
+    <Content Include="ClientApp\src\Technical\FormWithFileTemplate.vue" />
+    <Content Include="ClientApp\src\Technical\TechnicalArtical.vue" />
+    <Content Include="ClientApp\src\Technical\TechnicalMainPage.vue" />
+    <Content Include="ClientApp\src\Technical\TechnicalNarbar.vue" />
+    <Content Include="ClientApp\src\Technical\TechnicalQuestion.vue" />
+    <Content Include="ClientApp\src\Technical\UploadComponent.vue" />
+    <Content Include="ClientApp\src\EngAD\CarbonEmission\CarbonEmission.vue" />
+    <Content Include="ClientApp\src\EngAD\CarbonEmission\CE_Items.vue" />
+    <Content Include="ClientApp\src\EngAD\CommitteeAnalysis.vue" />
+    <Content Include="ClientApp\src\EngAD\ManufacturerAnalysis.vue" />
+    <Content Include="ClientApp\src\EngAD\PlaneWeaknessAnalysis.vue" />
+    <Content Include="ClientApp\src\EngAD\PlaneWeakness\EngList.vue" />
+    <Content Include="ClientApp\src\EngAD\PlaneWeakness\PlaneWeaknessAnalysis.vue" />
+    <Content Include="ClientApp\src\EngAD\Risk\EngList.vue" />
+    <Content Include="ClientApp\src\EngAD\Risk\RiskAnalysis.vue" />
+    <Content Include="ExcelTemplate\CarbonEmissionFactor.xlsx" />
+    <Content Include="ExcelTemplate\ExpertCommittee.xlsx" />
+    <Content Include="ExcelTemplate\RejectCompany.xls" />
+    <Content Include="ClientApp\src\EPC\ProgressManage\CalenderSetting.vue" />
+    <Content Include="ClientApp\src\EPC\ProgressReport\PR_Chart1.vue" />
+    <Content Include="ClientApp\src\EPC\ProgressReport\PR_Chart2.vue" />
+    <Content Include="ClientApp\src\EPC\ProgressReport\PR_Chart3.vue" />
+    <Content Include="ClientApp\src\EPC\ProgressReport\PR_Main.vue" />
+    <Content Include="ClientApp\src\EngAD\UnitEngList.vue" />
+    <Content Include="ClientApp\src\EPC\Tender\zDel-TenderPlanEdit2.vue" />
+    <Content Include="ClientApp\src\EPC\ProgressManage\PM_AskPayment.vue" />
+    <Content Include="ClientApp\src\EngSupervise\Committee\CommitteeHome.vue" />
+    <Content Include="ClientApp\src\EngSupervise\Committee\PhotoList.vue" />
+    <Content Include="ClientApp\src\EngSupervise\Committee\SIRRecEdit.vue" />
+    <Content Include="ClientApp\src\EngSupervise\Committee\ViewChapterPhoto.vue" />
+    <Content Include="ClientApp\src\EngSupervise\SuperviseSta\SuperviseStaList.vue" />
+    <Content Include="ExcelTemplate\材料機具燃料維護-材料.xlsx" />
+    <Content Include="ExcelTemplate\材料機具燃料維護-機具.xlsx" />
+    <Content Include="ExcelTemplate\材料機具燃料維護-燃料.xlsx" />
+    <Content Include="ExcelTemplate\督導紀錄機關編碼.xlsx" />
+    <Content Include="ClientApp\src\EngReport\AnnualFundingReview\AnnualFundingReviewList.vue" />
+    <Content Include="ClientApp\src\EngReport\ApprovedCase\ApprovedCaseList.vue" />
+    <Content Include="ClientApp\src\EngReport\NeedAssessment\NeedAssessmentEdit.vue" />
+    <Content Include="ClientApp\src\EngReport\NeedAssessment\NeedAssessmentList.vue" />
+    <Content Include="ClientApp\src\EngReport\ProposalReview\ProposalReviewEdit.vue" />
+    <Content Include="ClientApp\src\EngReport\ProposalReview\ProposalReviewList.vue" />
+    <Content Include="ClientApp\src\EngReport\ProposalWork\ProposalWorkList.vue" />
+    <EntityDeploy Include="EDMXModel\Model2.edmx">
+      <Generator>EntityModelCodeGenerator</Generator>
+      <LastGenOutput>Model21.Designer.cs</LastGenOutput>
+    </EntityDeploy>
+    <Content Include="EDMXModel\Model2.edmx.diagram">
+      <DependentUpon>Model2.edmx</DependentUpon>
+    </Content>
+    <Content Include="ExcelTemplate\核定碳排量匯入.xlsx" />
+    <Content Include="ClientApp\src\EngReport\ProposalReview\ProposalReviewView.vue" />
+    <Content Include="ClientApp\src\EngRiskFront\ConstructionTree.vue" />
+    <Content Include="ClientApp\src\EngRiskFront\lookup.vue" />
+    <EntityDeploy Include="EDMXModel\Model3.edmx">
+      <Generator>EntityModelCodeGenerator</Generator>
+      <LastGenOutput>Model3.Designer.cs</LastGenOutput>
+    </EntityDeploy>
+    <Content Include="EDMXModel\Model3.edmx.diagram">
+      <DependentUpon>Model3.edmx</DependentUpon>
+    </Content>
+    <Content Include="ExcelTemplate\工程核定資料匯入.xlsx" />
+    <Content Include="ExcelTemplate\CarbonReductionFactor.xlsx" />
+    <EntityDeploy Include="Models\Model1.edmx">
+      <Generator>EntityModelCodeGenerator</Generator>
+      <LastGenOutput>Model11.Designer.cs</LastGenOutput>
+    </EntityDeploy>
+    <Content Include="Models\Model1.edmx.diagram">
+      <DependentUpon>Model1.edmx</DependentUpon>
+    </Content>
+    <None Include="Dockerfile" />
+    <None Include="Properties\PublishProfiles\FolderProfile.pubxml" />
+    <None Include="Properties\PublishProfiles\registry.hub.docker.com_kbb37038106.pubxml" />
+    <None Include="Properties\PublishProfiles\registry.hub.docker.com_kbb370381061.pubxml" />
+    <None Include="Scripts\jquery-3.6.0.intellisense.js" />
+    <Content Include="Scripts\jquery-3.6.0.js" />
+    <Content Include="Scripts\jquery-3.6.0.min.js" />
+    <Content Include="Scripts\jquery-3.6.0.slim.js" />
+    <Content Include="Scripts\jquery-3.6.0.slim.min.js" />
+    <None Include="Scripts\jquery.validate-vsdoc.js" />
+    <Content Include="Scripts\jquery.validate.js" />
+    <Content Include="Scripts\jquery.validate.min.js" />
+    <Content Include="Scripts\jquery.validate.unobtrusive.js" />
+    <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
+    <Content Include="Scripts\js\bootstrap.min.js" />
+    <Content Include="Scripts\js\html5shiv.min.js" />
+    <Content Include="Scripts\js\respond.min.js" />
+    <Content Include="Scripts\js\script.js" />
+    <Content Include="Scripts\js\jquery-3.6.0.min.js" />
+    <Content Include="favicon.ico" />
+    <Content Include="Global.asax" />
+    <Content Include="Content\Site.css" />
+    <Content Include="ClientApp\package.json" />
+    <Content Include="ClientApp\README.md" />
+    <Content Include="ClientApp\src\App.vue" />
+    <Content Include="ClientApp\src\components\HelloWorld.vue" />
+    <Content Include="ClientApp\src\Backend\UserManager\UsersList.vue" />
+    <Content Include="ClientApp\src\components\capi.vue" />
+    <Content Include="ClientApp\src\Backend\Login\Login.vue" />
+    <Content Include="Scripts\assets\css\bootstrap.css" />
+    <Content Include="Scripts\assets\css\plugins\ag-grid\ag-grid.css" />
+    <Content Include="Scripts\assets\css\plugins\ag-grid\ag-theme-bootstrap.css" />
+    <Content Include="Scripts\assets\css\style.css" />
+    <Content Include="Scripts\assets\favicons\favicon.ico" />
+    <Content Include="Scripts\assets\img\logos\chiayi-logo.png" />
+    <Content Include="Scripts\assets\js\ag-grid.js" />
+    <Content Include="Scripts\assets\js\animate.js" />
+    <Content Include="Scripts\assets\js\dashboard-version.js" />
+    <Content Include="Scripts\assets\js\faker.js" />
+    <Content Include="Scripts\assets\js\init.js" />
+    <Content Include="Scripts\assets\js\layout.js" />
+    <Content Include="Scripts\assets\js\nested-dropdown.js" />
+    <Content Include="Scripts\assets\js\side-menu.js" />
+    <Content Include="Scripts\assets\js\theme-config.js" />
+    <Content Include="Scripts\assets\libs\bootstrap\js\bootstrap.js" />
+    <Content Include="Scripts\assets\libs\font-awesome\css\font-awesome.css" />
+    <Content Include="Scripts\assets\libs\font-awesome\css\font-awesome.min.css" />
+    <Content Include="Scripts\assets\libs\font-awesome\fonts\fontawesome-webfont.svg" />
+    <Content Include="Scripts\assets\libs\holderjs\holder.min.js" />
+    <Content Include="Scripts\assets\libs\jquery-ui-i18n\ui\i18n\datepicker-zh-TW.js" />
+    <Content Include="Scripts\assets\libs\jquery-ui-i18n\ui\widgets\datepicker.js" />
+    <Content Include="Scripts\assets\libs\jquery-ui\images\ui-icons_444444_256x240.png" />
+    <Content Include="Scripts\assets\libs\jquery-ui\images\ui-icons_555555_256x240.png" />
+    <Content Include="Scripts\assets\libs\jquery-ui\images\ui-icons_777620_256x240.png" />
+    <Content Include="Scripts\assets\libs\jquery-ui\images\ui-icons_777777_256x240.png" />
+    <Content Include="Scripts\assets\libs\jquery-ui\images\ui-icons_cc0000_256x240.png" />
+    <Content Include="Scripts\assets\libs\jquery-ui\images\ui-icons_ffffff_256x240.png" />
+    <Content Include="Scripts\assets\libs\jquery-ui\jquery-ui.min.css" />
+    <Content Include="Scripts\assets\libs\jquery-ui\jquery-ui.min.js" />
+    <Content Include="Scripts\assets\libs\jquery\jquery.js" />
+    <Content Include="Scripts\assets\libs\popper.js\popper.min.js" />
+    <Content Include="Scripts\CountDown.js" />
+    <Content Include="ClientApp\src\test1.vue" />
+    <Content Include="Scripts\assets\css\bootstrap.css.map" />
+    <Content Include="Scripts\assets\css\plugins\ag-grid\ag-grid.css.map" />
+    <Content Include="Scripts\assets\css\plugins\ag-grid\ag-theme-bootstrap.css.map" />
+    <Content Include="Scripts\assets\css\style.css.map" />
+    <Content Include="Scripts\assets\js\ag-grid.js.map" />
+    <Content Include="Scripts\assets\js\animate.js.map" />
+    <Content Include="Scripts\assets\js\dashboard-version.js.map" />
+    <Content Include="Scripts\assets\js\faker.js.map" />
+    <Content Include="Scripts\assets\js\init.js.map" />
+    <Content Include="Scripts\assets\js\layout.js.map" />
+    <Content Include="Scripts\assets\js\nested-dropdown.js.map" />
+    <Content Include="Scripts\assets\js\side-menu.js.map" />
+    <Content Include="Scripts\assets\js\theme-config.js.map" />
+    <Content Include="Scripts\assets\libs\bootstrap\js\bootstrap.js.map" />
+    <Content Include="Scripts\assets\libs\font-awesome\css\font-awesome.css.map" />
+    <Content Include="Scripts\assets\libs\font-awesome\fonts\fontawesome-webfont.eot" />
+    <Content Include="Scripts\assets\libs\font-awesome\fonts\fontawesome-webfont.ttf" />
+    <Content Include="Scripts\assets\libs\font-awesome\fonts\fontawesome-webfont.woff" />
+    <Content Include="Scripts\assets\libs\font-awesome\fonts\fontawesome-webfont.woff2" />
+    <Content Include="Scripts\assets\libs\font-awesome\fonts\FontAwesome.otf" />
+    <Content Include="Scripts\assets\libs\popper.js\popper.min.js.map" />
+    <Content Include="ClientApp\src\components\ModalIdle.vue" />
+    <Content Include="log4net.config" />
+    <Content Include="ClientApp\src\components\QCStdBase.vue" />
+    <Content Include="ClientApp\src\components\QCStdBase5StdMaterialAndEquipment.vue" />
+    <Content Include="ClientApp\src\components\QCStdBase6StdEquipmentFunction.vue" />
+    <Content Include="ClientApp\src\components\QCStdBase701Stdconstruction.vue" />
+    <Content Include="ClientApp\src\components\QCStdBase702Stdconstruction.vue" />
+    <Content Include="ClientApp\src\components\QCStdBase703Stdconstruction.vue" />
+    <Content Include="Content\fonts\fontawesome-webfont.eot" />
+    <Content Include="Content\fonts\fontawesome-webfont.ttf" />
+    <Content Include="Content\fonts\fontawesome-webfont.woff" />
+    <Content Include="Content\fonts\fontawesome-webfont.woff2" />
+    <Content Include="Content\fonts\FontAwesome.otf" />
+    <Content Include="Content\webfonts\fa-brands-400.eot" />
+    <Content Include="Content\webfonts\fa-brands-400.ttf" />
+    <Content Include="Content\webfonts\fa-brands-400.woff" />
+    <Content Include="Content\webfonts\fa-brands-400.woff2" />
+    <Content Include="Content\webfonts\fa-regular-400.eot" />
+    <Content Include="Content\webfonts\fa-regular-400.ttf" />
+    <Content Include="Content\webfonts\fa-regular-400.woff" />
+    <Content Include="Content\webfonts\fa-regular-400.woff2" />
+    <Content Include="Content\webfonts\fa-solid-900.eot" />
+    <Content Include="Content\webfonts\fa-solid-900.ttf" />
+    <Content Include="Content\webfonts\fa-solid-900.woff" />
+    <Content Include="Content\webfonts\fa-solid-900.woff2" />
+    <Content Include="Content\css\bootstrap.min.css.map" />
+    <Content Include="ExcelTemplate\GeneralReport.xls" />
+    <Content Include="ExcelTemplate\ProcessingReport.xls" />
+    <Content Include="ExcelTemplate\UnfoundedCase.xls" />
+    <Content Include="ClientApp\src\FrontDesk\SupervisionPlan\SupervisionPlanList.vue" />
+    <Content Include="Content\js\bootstrap.min.js.map" />
+    <Content Include="ClientApp\src\FrontDesk\SupervisionPlan\SupervisionPlanEdit.vue" />
+    <Content Include="ClientApp\src\FrontDesk\SupervisionPlan\SupervisionPlanEdit_Chapter5Summary.vue" />
+    <Content Include="ClientApp\src\FrontDesk\SupervisionPlan\SupervisionPlanEdit_Chapter5.vue" />
+    <Content Include="ClientApp\src\FrontDesk\SupervisionPlan\SupervisionPlanEdit_Chapter6.vue" />
+    <Content Include="ClientApp\src\FrontDesk\SupervisionPlan\SupervisionPlanEdit_Chapter701.vue" />
+    <Content Include="ClientApp\src\FrontDesk\SupervisionPlan\SupervisionPlanEdit_Chapter702.vue" />
+    <Content Include="ClientApp\src\FrontDesk\SupervisionPlan\SupervisionPlanEdit_Chapter703.vue" />
+    <Content Include="ClientApp\src\FrontDesk\SupervisionPlan\EngInfo.vue" />
+    <Content Include="ClientApp\src\FrontDesk\SupervisionPlan\FlowChartModal.vue" />
+    <Content Include="ClientApp\src\FrontDesk\SupervisionPlan\QCStdEdit.vue" />
+    <Content Include="ClientApp\src\FrontDesk\SupervisionPlan\QCStdEdit_Chapter703.vue" />
+    <Content Include="ClientApp\src\FrontDesk\SupervisionPlan\QCStdEdit_Chapter702.vue" />
+    <Content Include="ClientApp\src\FrontDesk\SupervisionPlan\QCStdEdit_Chapter701.vue" />
+    <Content Include="ClientApp\src\FrontDesk\SupervisionPlan\QCStdEdit_Chapter6.vue" />
+    <Content Include="ClientApp\src\FrontDesk\SupervisionPlan\QCStdEdit_Chapter5.vue" />
+    <Content Include="ClientApp\src\FrontDesk\SupervisionPlan\FlowChartEdit.vue" />
+    <Content Include="ClientApp\src\FrontDesk\SupervisionPlan\QCStdModal.vue" />
+    <Content Include="ClientApp\src\FrontDesk\QualityPlan\QualityPlanList.vue" />
+    <Content Include="ClientApp\src\FrontDesk\EMDAudit\EMDAuditEdit.vue" />
+    <Content Include="ClientApp\src\FrontDesk\EMDAudit\EMDAuditEdit_Tab1.vue" />
+    <Content Include="ClientApp\src\FrontDesk\EMDAudit\EMDAuditEdit_Tab2.vue" />
+    <Content Include="ClientApp\src\FrontDesk\EMDAudit\EMDAuditList.vue" />
+    <Content Include="ClientApp\src\FrontDesk\EMDAudit\EngInfo.vue" />
+    <Content Include="ClientApp\src\Mobile\Eng.vue" />
+    <Content Include="ClientApp\src\Mobile\List.vue" />
+    <Content Include="ClientApp\src\FrontDesk\EMDAudit\EMDAuditEdit_Tab1_1.vue" />
+    <Content Include="ClientApp\src\FrontDesk\EMDAudit\EMDAuditEdit_Tab1_2.vue" />
+    <Content Include="ClientApp\src\FrontDesk\EMDAudit\EMDAuditEdit_Tab1_3.vue" />
+    <Content Include="ClientApp\src\FrontDesk\EMDAudit\EMDAuditEdit_Tab1_4.vue" />
+    <Content Include="ClientApp\src\FrontDesk\EMDAudit\EMDAuditEdit_Tab1_5.vue" />
+    <Content Include="ClientApp\src\FrontDesk\EMDAudit\MaterialInfo.vue" />
+    <Content Include="ClientApp\src\FrontDesk\EMDAudit\EMDAuditEdit_Tab1_6.vue" />
+    <Content Include="ClientApp\src\FrontDesk\SamplingInspectionRec\SamplingInspectionRecList.vue" />
+    <Content Include="ClientApp\src\FrontDesk\SamplingInspectionRec\EngInfo.vue" />
+    <Content Include="ClientApp\src\FrontDesk\SamplingInspectionRec\PhotoList.vue" />
+    <Content Include="ClientApp\src\FrontDesk\SamplingInspectionRec\SamplingInspectionRecEdit.vue" />
+    <Content Include="ClientApp\src\FrontDesk\SamplingInspectionRecImprove\SamplingInspectionRecImproveList.vue" />
+    <Content Include="ClientApp\src\FrontDesk\SamplingInspectionRecImprove\NCR.vue" />
+    <Content Include="ClientApp\src\FrontDesk\SamplingInspectionRecImprove\PhotoList.vue" />
+    <Content Include="ClientApp\src\FrontDesk\SamplingInspectionRecImprove\Report.vue" />
+    <Content Include="ClientApp\src\FrontDesk\SamplingInspectionRecImprove\SamplingInspectionRecImproveEdit.vue" />
+    <Content Include="ClientApp\src\FrontDesk\MSamplingInspectionRec\EngInfo.vue" />
+    <Content Include="ClientApp\src\FrontDesk\MSamplingInspectionRec\PhotoList.vue" />
+    <Content Include="ClientApp\src\FrontDesk\MSamplingInspectionRec\SamplingInspectionRecEdit.vue" />
+    <Content Include="ClientApp\src\FrontDesk\MSamplingInspectionRec\SamplingInspectionRecList.vue" />
+    <Content Include="Scripts\modernizr-2.8.3.js" />
+    <Content Include="Scripts\popper-utils.js" />
+    <Content Include="Scripts\popper-utils.min.js" />
+    <Content Include="Scripts\popper.js" />
+    <Content Include="Scripts\popper.min.js" />
+    <Content Include="Scripts\src\index.js" />
+    <Content Include="Scripts\src\methods\defaults.js" />
+    <Content Include="Scripts\src\methods\destroy.js" />
+    <Content Include="Scripts\src\methods\disableEventListeners.js" />
+    <Content Include="Scripts\src\methods\enableEventListeners.js" />
+    <Content Include="Scripts\src\methods\placements.js" />
+    <Content Include="Scripts\src\methods\update.js" />
+    <Content Include="Scripts\src\modifiers\applyStyle.js" />
+    <Content Include="Scripts\src\modifiers\arrow.js" />
+    <Content Include="Scripts\src\modifiers\computeStyle.js" />
+    <Content Include="Scripts\src\modifiers\flip.js" />
+    <Content Include="Scripts\src\modifiers\hide.js" />
+    <Content Include="Scripts\src\modifiers\index.js" />
+    <Content Include="Scripts\src\modifiers\inner.js" />
+    <Content Include="Scripts\src\modifiers\keepTogether.js" />
+    <Content Include="Scripts\src\modifiers\offset.js" />
+    <Content Include="Scripts\src\modifiers\preventOverflow.js" />
+    <Content Include="Scripts\src\modifiers\shift.js" />
+    <Content Include="Scripts\src\utils\clockwise.js" />
+    <Content Include="Scripts\src\utils\computeAutoPlacement.js" />
+    <Content Include="Scripts\src\utils\debounce.js" />
+    <Content Include="Scripts\src\utils\find.js" />
+    <Content Include="Scripts\src\utils\findCommonOffsetParent.js" />
+    <Content Include="Scripts\src\utils\findIndex.js" />
+    <Content Include="Scripts\src\utils\getBordersSize.js" />
+    <Content Include="Scripts\src\utils\getBoundaries.js" />
+    <Content Include="Scripts\src\utils\getBoundingClientRect.js" />
+    <Content Include="Scripts\src\utils\getClientRect.js" />
+    <Content Include="Scripts\src\utils\getFixedPositionOffsetParent.js" />
+    <Content Include="Scripts\src\utils\getOffsetParent.js" />
+    <Content Include="Scripts\src\utils\getOffsetRect.js" />
+    <Content Include="Scripts\src\utils\getOffsetRectRelativeToArbitraryNode.js" />
+    <Content Include="Scripts\src\utils\getOppositePlacement.js" />
+    <Content Include="Scripts\src\utils\getOppositeVariation.js" />
+    <Content Include="Scripts\src\utils\getOuterSizes.js" />
+    <Content Include="Scripts\src\utils\getParentNode.js" />
+    <Content Include="Scripts\src\utils\getPopperOffsets.js" />
+    <Content Include="Scripts\src\utils\getReferenceNode.js" />
+    <Content Include="Scripts\src\utils\getReferenceOffsets.js" />
+    <Content Include="Scripts\src\utils\getRoot.js" />
+    <Content Include="Scripts\src\utils\getRoundedOffsets.js" />
+    <Content Include="Scripts\src\utils\getScroll.js" />
+    <Content Include="Scripts\src\utils\getScrollParent.js" />
+    <Content Include="Scripts\src\utils\getStyleComputedProperty.js" />
+    <Content Include="Scripts\src\utils\getSupportedPropertyName.js" />
+    <Content Include="Scripts\src\utils\getViewportOffsetRectRelativeToArtbitraryNode.js" />
+    <Content Include="Scripts\src\utils\getWindow.js" />
+    <Content Include="Scripts\src\utils\getWindowSizes.js" />
+    <Content Include="Scripts\src\utils\includeScroll.js" />
+    <Content Include="Scripts\src\utils\index.js" />
+    <Content Include="Scripts\src\utils\isBrowser.js" />
+    <Content Include="Scripts\src\utils\isFixed.js" />
+    <Content Include="Scripts\src\utils\isFunction.js" />
+    <Content Include="Scripts\src\utils\isIE.js" />
+    <Content Include="Scripts\src\utils\isModifierEnabled.js" />
+    <Content Include="Scripts\src\utils\isModifierRequired.js" />
+    <Content Include="Scripts\src\utils\isNumeric.js" />
+    <Content Include="Scripts\src\utils\isOffsetContainer.js" />
+    <Content Include="Scripts\src\utils\removeEventListeners.js" />
+    <Content Include="Scripts\src\utils\runModifiers.js" />
+    <Content Include="Scripts\src\utils\setAttributes.js" />
+    <Content Include="Scripts\src\utils\setStyles.js" />
+    <Content Include="Scripts\src\utils\setupEventListeners.js" />
+    <Content Include="Scripts\umd\popper-utils.js" />
+    <Content Include="Scripts\umd\popper-utils.min.js" />
+    <Content Include="Scripts\umd\popper.js" />
+    <Content Include="Scripts\umd\popper.min.js" />
+    <Content Include="Views\Gravelfieldcoord\Index.cshtml" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Web.Debug.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </Content>
+    <Content Include="Web.Release.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </Content>
+    <Content Include="Views\Web.config" />
+    <Content Include="Views\_ViewStart.cshtml" />
+    <Content Include="Views\Shared\Error.cshtml" />
+    <Content Include="Views\Shared\_Layout.cshtml" />
+    <Content Include="Views\Home\About.cshtml" />
+    <Content Include="Views\Home\Contact.cshtml" />
+    <Content Include="Views\Home\Index.cshtml" />
+    <Content Include="Views\Users\Index.cshtml" />
+    <Content Include="Views\Login\Index.cshtml" />
+    <Content Include="Views\City\Index.cshtml" />
+    <Content Include="Views\City\Create.cshtml" />
+    <Content Include="Views\MainType\Index.cshtml" />
+    <Content Include="Views\MainType\Create.cshtml" />
+    <Content Include="Views\SubType\Index.cshtml" />
+    <Content Include="Views\SubType\Create.cshtml" />
+    <Content Include="Views\Role\Index.cshtml" />
+    <Content Include="Views\Unit\Index.cshtml" />
+    <Content Include="Views\Unit\Create.cshtml" />
+    <Content Include="Views\Position\Index.cshtml" />
+    <Content Include="Views\Position\Create.cshtml" />
+    <Content Include="Views\Town\Index.cshtml" />
+    <Content Include="Views\Town\Create.cshtml" />
+    <Content Include="Views\Shared\_NoneLayout.cshtml" />
+    <Content Include="Views\Shared\_BackendLayout.cshtml" />
+    <Content Include="Views\Shared\_Menu.cshtml" />
+    <Content Include="Views\Menu\Index.cshtml" />
+    <Content Include="Views\FrontDesk\Index.cshtml" />
+    <Content Include="Views\FrontDesk\TenderPlanList.cshtml" />
+    <Content Include="Views\Shared\_LayoutFrontDesk.cshtml" />
+    <Content Include="Views\ChapterChart\ChapterChart.cshtml" />
+    <Content Include="Views\FlowChartTp\FlowChart.cshtml" />
+    <Content Include="Views\QCStdTp\QCStdBase.cshtml" />
+    <Content Include="Views\MMPlanTp\MMPlan.cshtml" />
+    <Content Include="Views\SupervisionPlan\Index.cshtml" />
+    <Content Include="Views\TenderPlan\TenderPlanEdit.cshtml" />
+    <Content Include="Views\TenderPlan\TenderPlanList.cshtml" />
+    <Content Include="Views\CheckSheet\CheckSheet.cshtml" />
+    <Content Include="TemplateFile\抽查紀錄表維護-5-材料品質抽驗紀錄表.docx" />
+    <Content Include="TemplateFile\抽查紀錄表維護-5-材料品質抽驗紀錄表1.docx" />
+    <Content Include="TemplateFile\抽查紀錄表維護-6-設備運轉測試抽驗紀錄表.docx" />
+    <Content Include="TemplateFile\抽查紀錄表維護-6-設備運轉測試抽驗紀錄表1.docx" />
+    <Content Include="TemplateFile\抽查紀錄表維護-701-施工抽查紀錄表.docx" />
+    <Content Include="TemplateFile\抽查紀錄表維護-701-施工抽查紀錄表1.docx" />
+    <Content Include="TemplateFile\抽查紀錄表維護-702-生態保育措施抽查紀錄表.docx" />
+    <Content Include="TemplateFile\抽查紀錄表維護-702-生態保育措施抽查紀錄表1.docx" />
+    <Content Include="TemplateFile\抽查紀錄表維護-703-汛期工地防災減災抽查紀錄表.docx" />
+    <Content Include="TemplateFile\抽查紀錄表維護-703-汛期工地防災減災抽查紀錄表1.docx" />
+    <Content Include="Views\SupervisionPlan\SupervisionPlanEdit.cshtml" />
+    <Content Include="Views\SupervisionPlan\SupervisionPlanList.cshtml" />
+    <Content Include="Views\SupervisionPlan\QCStdEdit.cshtml" />
+    <Content Include="Views\SupervisionPlan\FlowChartEdit.cshtml" />
+    <Content Include="Views\QualityPlanTp\Index.cshtml" />
+    <Content Include="Views\QualityPlan\Index.cshtml" />
+    <Content Include="Views\EMDAudit\EMDAuditEdit.cshtml" />
+    <Content Include="Views\EMDAudit\EMDAuditList.cshtml" />
+    <Content Include="Views\MBEng\index.cshtml" />
+    <Content Include="Views\MBList\index.cshtml" />
+    <Content Include="Views\Shared\_LayoutMobile.cshtml" />
+    <Content Include="Views\SamplingInspectionRec\Index.cshtml" />
+    <Content Include="Views\SamplingInspectionRec\Edit.cshtml" />
+    <Content Include="TemplateFile\1-施工抽查-抽查紀錄表.docx" />
+    <Content Include="TemplateFile\2-設備運轉-抽查紀錄表.docx" />
+    <Content Include="TemplateFile\3-職業安全-抽查紀錄表.docx" />
+    <Content Include="TemplateFile\4-環境保育-抽查紀錄表.docx" />
+    <Content Include="Views\SamplingInspectionRecImprove\Index.cshtml" />
+    <Content Include="Views\SamplingInspectionRecImprove\Edit.cshtml" />
+    <Content Include="Scripts\js\bootstrap.min.js.map" />
+    <Content Include="TemplateFile\表7-44-不符合事項報告.docx" />
+    <Content Include="TemplateFile\表7-44-不符合事項報告0.docx" />
+    <Content Include="TemplateFile\表7-44-不符合事項報告1.docx" />
+    <Content Include="TemplateFile\表7-45-NCR程序追蹤改善表.docx" />
+    <Content Include="TemplateFile\表7-45-NCR程序追蹤改善表0.docx" />
+    <Content Include="TemplateFile\表7-45-NCR程序追蹤改善表1.docx" />
+    <Content Include="TemplateFile\表7-46-改善照片.docx" />
+    <Content Include="Views\DelEng\Index.cshtml" />
+    <Content Include="Views\MSamplingInspectionRec\Edit.cshtml" />
+    <Content Include="Views\MSamplingInspectionRec\Index.cshtml" />
+    <Content Include="TemplateFile\表5-1材料設備送審管制總表.docx" />
+    <Content Include="TemplateFile\表5-2材料設備檢%28試%29驗管制總表.docx" />
+    <Content Include="Views\SIRApprove\Index.cshtml" />
+    <Content Include="Views\SIRIApprove\Edit.cshtml" />
+    <Content Include="Views\SIRIApprove\Index.cshtml" />
+    <Content Include="Views\Mobile\Index.cshtml" />
+    <Content Include="Views\FlowChartTp_TestWeb\Index.cshtml" />
+    <Content Include="Views\Shared\_BackendLayout_FlowTest.cshtml" />
+    <Content Include="Views\MSamplingInspectionRec\API_Post_Test.cshtml" />
+    <Content Include="Views\Shared\_LayoutFrontDesk_TenderPlan.cshtml" />
+    <Content Include="Views\AppInstall\Index.cshtml" />
+    <Content Include="Views\EPCImport\Index.cshtml" />
+    <Content Include="Views\EPCTender\Index.cshtml" />
+    <Content Include="Views\EPCTender\TenderEdit.cshtml" />
+    <Content Include="Views\EPCProgressManage\Index.cshtml" />
+    <None Include="packages.config" />
+    <Content Include="Scripts\jquery-3.6.0.slim.min.map" />
+    <Content Include="Scripts\jquery-3.6.0.min.map" />
+    <Content Include="Scripts\umd\popper.min.js.map" />
+    <Content Include="Scripts\umd\popper.js.map" />
+    <Content Include="Scripts\umd\popper.js.flow" />
+    <Content Include="Scripts\umd\popper-utils.min.js.map" />
+    <Content Include="Scripts\umd\popper-utils.js.map" />
+    <Content Include="Scripts\README.md" />
+    <Content Include="Scripts\popper.min.js.map" />
+    <Content Include="Scripts\popper.js.map" />
+    <Content Include="Scripts\popper-utils.min.js.map" />
+    <Content Include="Scripts\popper-utils.js.map" />
+    <Content Include="Views\Shared\_LayoutPortalBuild.cshtml" />
+    <Content Include="Views\Shared\_LayoutPortalCommittee.cshtml" />
+    <Content Include="Views\Shared\_LayoutPortalDepAdmin.cshtml" />
+    <Content Include="Views\Shared\_LayoutPortalDepUser.cshtml" />
+    <Content Include="Views\Shared\_LayoutPortalOutDesign.cshtml" />
+    <Content Include="Views\Shared\_LayoutPortalSupervisor.cshtml" />
+    <Content Include="Views\PortalBuild\Index.cshtml" />
+    <Content Include="Views\PortalCommittee\Index.cshtml" />
+    <Content Include="Views\PortalDepAdmin\Index.cshtml" />
+    <Content Include="Views\PortalDepUser\Index.cshtml" />
+    <Content Include="Views\PortalOutDesign\Index.cshtml" />
+    <Content Include="Views\PortalSupervisor\Index.cshtml" />
+    <Content Include="Views\EngAnalysisDecision\Index.cshtml" />
+    <Content Include="Views\EngForum\Index.cshtml" />
+    <Content Include="Views\Shared\_LayoutEngAnalysisDecision.cshtml" />
+    <Content Include="Views\Shared\_LayoutEngForum.cshtml" />
+    <Content Include="Views\Shared\_LayoutPortalAdmin.cshtml" />
+    <Content Include="Views\Shared\_LayoutEngAnalysisDecisionPage.cshtml" />
+    <Content Include="Views\Shared\_LayoutEngManage.cshtml" />
+    <Content Include="Views\Shared\_LayoutEngQualityManage.cshtml" />
+    <Content Include="Views\EngManage\Index.cshtml" />
+    <Content Include="Views\EngQualityManage\Index.cshtml" />
+    <Content Include="Views\EPCQualityVerify\Index.cshtml" />
+    <Content Include="Views\EngSupervise\Index.cshtml" />
+    <Content Include="Views\ESPreWork\Index.cshtml" />
+    <Content Include="Views\ESQCPlaneWeakness\Index.cshtml" />
+    <Content Include="Views\ExpertCommittee\Edit.cshtml" />
+    <Content Include="Views\ExpertCommittee\Index.cshtml" />
+    <Content Include="Views\ESSchedule\Index.cshtml" />
+    <Content Include="Views\ESSuperviseFill\Edit.cshtml" />
+    <Content Include="Views\ESSuperviseFill\Index.cshtml" />
+    <Content Include="Views\CEFactor\Edit.cshtml" />
+    <Content Include="Views\RejectCompany\Index.cshtml" />
+    <Content Include="Views\Shared\_LayoutEngSupervise.cshtml" />
+    <Content Include="Views\EQMCarbonEmission\Index.cshtml" />
+    <Content Include="Views\EQMConstRiskEval\Index.cshtml" />
+    <Content Include="Views\EQMEcologicalCheck\Index.cshtml" />
+    <Content Include="Views\ESSuperviseSta\Index.cshtml" />
+    <Content Include="TemplateFile\品質計畫-監造計畫範例%28110.02.04%29_註記.docx" />
+    <Content Include="TemplateFile\督導統計-基本資訊.docx" />
+    <Content Include="TemplateFile\督導統計-委員出席費請領單.docx" />
+    <Content Include="TemplateFile\督導統計-督導人員紀錄表.docx" />
+    <Content Include="TemplateFile\督導統計-督導意見表.docx" />
+    <Content Include="TemplateFile\督導統計-督導行程表.docx" />
+    <Content Include="TemplateFile\督導統計-簽到簿.docx" />
+    <Content Include="TemplateFile\督導統計-經濟部水利署督導作業.xlsx" />
+    <Content Include="TemplateFile\碳排放量估算表.xlsx" />
+    <Content Include="Views\AuditCaseList\Index.cshtml" />
+    <Content Include="Views\EYCentralLocalAddressList\Index.cshtml" />
+    <Content Include="Views\PublicWorkFirmResume\Index.cshtml" />
+    <Content Include="Views\VendorHireWorkList\Index.cshtml" />
+    <Content Include="Views\WeakTenderPlanEdit\Index.cshtml" />
+    <Content Include="Views\NSActivity\Index.cshtml" />
+    <Content Include="Views\ControlPlan\Index.cshtml" />
+    <Content Include="Views\UnitCities\Index.cshtml" />
+    <Content Include="TemplateFile\進度管理-工程範本.xlsx" />
+    <Content Include="TemplateFile\進度管理-施工日誌.xlsx" />
+    <Content Include="Views\EPCEcologicalCheck\Index.cshtml" />
+    <Content Include="Views\EPCTender\TenderPlanEdit.cshtml" />
+    <Content Include="Views\AuditCaseList\Index.cshtml" />
+    <Content Include="Views\EYCentralLocalAddressList\Index.cshtml" />
+    <Content Include="Views\Gravelfieldcoord\Index.cshtml" />
+    <Content Include="Views\NSActivity\Index.cshtml" />
+    <Content Include="Views\PublicWorkFirmResume\Index.cshtml" />
+    <Content Include="Views\VendorHireWorkList\Index.cshtml" />
+    <Content Include="Views\WeakTenderPlanEdit\Index.cshtml" />
+    <Content Include="TemplateFile\督導統計-公共工程施工查核常見缺失態樣統計表.docx" />
+    <Content Include="Views\QualityDeductionPoints\Index.cshtml" />
+    <Content Include="Views\ControlPlan\Index.cshtml" />
+    <Content Include="Views\UnitCities\Index.cshtml" />
+    <Content Include="Views\EADCarbonEmission\Index.cshtml" />
+    <Content Include="Views\EADCommittee\Index.cshtml" />
+    <Content Include="Views\EADManufacturer\Index.cshtml" />
+    <Content Include="Views\EADPlaneWeakness\Index.cshtml" />
+    <Content Include="TemplateFile\水利工程履約風險分析.xlsx" />
+    <Content Include="Views\EADRisk\Index.cshtml" />
+    <Content Include="TemplateFile\附錄五_公共工程監造報表V2.docx" />
+    <Content Include="TemplateFile\附錄四_公共工程施工日誌V2.docx" />
+    <Content Include="Views\ESCommittee\Edit.cshtml" />
+    <Content Include="Views\ESCommittee\Index.cshtml" />
+    <Content Include="Views\ConstructionImage\ConstructionImage.cshtml" />
+    <Content Include="Views\EPCProgressReport\Index.cshtml" />
+    <Content Include="Views\EngAnalysisDecision\GovEngList.cshtml" />
+    <Content Include="TemplateFile\B-7_工程施工執行資料表_102.12.版.docx" />
+    <Content Include="TemplateFile\施工抽查成果統計總表.docx" />
+    <Content Include="TemplateFile\進度管理-估驗請款單.xlsx" />
+    <Content Include="TemplateFile\進度管理-估驗請款調整.xlsx" />
+    <Content Include="Views\ESCommittee\SIREdit.cshtml" />
+    <Content Include="Views\ESCommittee\ViewCP.cshtml" />
+    <Content Include="Views\FlowChartTp_TestWeb\Index2.cshtml" />
+    <Content Include="Views\MSamplingInspectionRec\Index2.cshtml" />
+    <Content Include="Views\Thsr\Index.cshtml" />
+    <Content Include="Views\CourtVerdict\Index.cshtml" />
+    <Content Include="TemplateFile\物價指數清單.xlsx" />
+    <Content Include="Views\PriceIndex\Edit.cshtml" />
+    <Content Include="Views\Mobile\Index2.cshtml" />
+    <Content Include="Views\API\Index.cshtml" />
+    <Content Include="Views\Shared\MainLayout.cshtml" />
+    <Content Include="Views\EQMCarbonEmissionCal\Index.cshtml" />
+    <Content Include="TemplateFile\水利署碳排管制表.xlsx" />
+    <Content Include="Views\Shared\_MainLayout.cshtml" />
+    <Content Include="Views\CEFactor\CCT.cshtml" />
+    <Content Include="TemplateFile\材料機具燃料維護-材料.xlsx" />
+    <Content Include="TemplateFile\材料機具燃料維護-機具.xlsx" />
+    <Content Include="TemplateFile\材料機具燃料維護-燃料.xlsx" />
+    <Content Include="Views\MMFMaintenance\Index.cshtml" />
+    <Content Include="TemplateFile\教育訓練-APP操作Android.pdf" />
+    <Content Include="TemplateFile\教育訓練-APP操作IOS.pdf" />
+    <Content Include="TemplateFile\教育訓練工程履約及資訊交流平台.pdf" />
+    <Content Include="TemplateFile\教育訓練權限控管及建立標案.pdf" />
+    <Content Include="TemplateFile\施工階段之工程案件-生態檢核.docx" />
+    <Content Include="TemplateFile\規劃設計階段之工程案件-生態檢核.docx" />
+    <Content Include="Views\EQMEcologicalSta\Index.cshtml" />
+    <Content Include="TemplateFile\水利署工程督導行程表.xlsx" />
+    <Content Include="TemplateFile\材料機具燃料維護-自定義.xlsx" />
+    <Content Include="TemplateFile\品質管制弱面報表.xlsx" />
+    <Content Include="TemplateFile\督導填報-督導紀錄表.xlsx" />
+    <Content Include="TemplateFile\督導紀錄機關編碼.xlsx" />
+    <Content Include="Views\SuperviseUnitCode\Index.cshtml" />
+    <Content Include="TemplateFile\碳排量計算-工程碳排放量檢核表.xlsx" />
+    <Content Include="TemplateFile\碳排量計算-附件1-節能減碳簡易檢核表1111019修正.docx" />
+    <Content Include="Views\EngReportFillReview\Index.cshtml" />
+    <Content Include="Views\EngReportFundReview\Index.cshtml" />
+    <Content Include="Views\EngReportMeeting\Index.cshtml" />
+    <Content Include="Views\EngReportTransfer\Index.cshtml" />
+    <Content Include="Views\EngReport\Index.cshtml" />
+    <Content Include="Views\EADWeaknessAnalysis\Index.cshtml" />
+    <Content Include="Views\Tree\Index.cshtml" />
+    <Content Include="Views\ERAnnualFundingReview\Index.cshtml" />
+    <Content Include="Views\ERApprovedCase\Index.cshtml" />
+    <Content Include="Views\ERNeedAssessment\Edit.cshtml" />
+    <Content Include="Views\ERNeedAssessment\Index.cshtml" />
+    <Content Include="Views\ERProposalReview\Edit.cshtml" />
+    <Content Include="Views\ERProposalReview\Index.cshtml" />
+    <Content Include="Views\ERProposalWork\Index.cshtml" />
+    <Content Include="TemplateFile\抽驗標準管理維護-施工抽查管理標準.xlsx" />
+    <Content Include="TemplateFile\抽驗標準管理維護-材料管理標準.xlsx" />
+    <Content Include="TemplateFile\抽驗標準管理維護-環境保育管理標準.xlsx" />
+    <Content Include="TemplateFile\抽驗標準管理維護-職業安全衛生管理標準.xlsx" />
+    <Content Include="TemplateFile\抽驗標準管理維護-設備運轉測試標準.xlsx" />
+    <Content Include="TemplateFile\監造計畫產製-施工抽查管理標準.xlsx" />
+    <Content Include="TemplateFile\監造計畫產製-材料管理標準.xlsx" />
+    <Content Include="TemplateFile\監造計畫產製-環境保育管理標準.xlsx" />
+    <Content Include="TemplateFile\監造計畫產製-職業安全衛生管理標準.xlsx" />
+    <Content Include="TemplateFile\監造計畫產製-設備運轉測試標準.xlsx" />
+    <Content Include="Views\CarbonEmissionSetting\Index.cshtml" />
+    <Content Include="Views\SignManagement\Index.cshtml" />
+    <Content Include="TemplateFile\進度管理-工程範本-工變.xlsx" />
+    <Content Include="Views\EPCProgressEngChange\Index.cshtml" />
+    <Content Include="Views\AmmeterRecord\Index.cshtml" />
+    <Content Include="TemplateFile\提案審查表.docx" />
+    <Content Include="TemplateFile\提案需求評估表vf.docx" />
+    <Content Include="TemplateFile\提案需求評估表vf_Temp.docx" />
+    <Content Include="Views\ERNeedAssessment\EView.cshtml" />
+    <Content Include="Views\ERProposalReview\EView.cshtml" />
+    <Content Include="Views\ERApprovedCase\EView.cshtml" />
+    <Content Include="Views\ERAnnualFundingReview\EView.cshtml" />
+    <Content Include="Views\ERProposalWork\EView.cshtml" />
+    <Content Include="Views\CarbonEmissionView\Index2.cshtml" />
+    <Content Include="Views\CarbonEmissionView\Index.cshtml" />
+    <Content Include="TemplateFile\TreeCollection.xlsx" />
+    <Content Include="TemplateFile\TreeSchAreaTreeCollection.xlsx" />
+    <Content Include="TemplateFile\統計報表-工程碳排量資料表_總表.xlsx" />
+    <Content Include="Views\EngRiskFront\Index.cshtml" />
+    <Content Include="TemplateFile\碳排量計算匯出資料.xlsx" />
+    <Content Include="Views\CEExport\Index.cshtml" />
+    <Content Include="TemplateFile\TreeCollection.xlsx" />
+    <Content Include="TemplateFile\TreeSchAreaTreeCollection.xlsx" />
+    <Content Include="Views\CarbonEmissionView\Index2.cshtml" />
+    <Content Include="Views\CarbonEmissionView\Index.cshtml" />
+    <Content Include="Views\RiskManagement\Index.cshtml" />
+    <Content Include="Views\ConstCheckUser\Index.cshtml" />
+    <Content Include="Views\ToolPackage\Index.cshtml" />
+    <Content Include="Views\EngHistoryInfo\Index.cshtml" />
+    <Content Include="TemplateFile\施工風險評估.docx" />
+    <Content Include="TemplateFile\112先期檢討報部vf_SA.xlsx" />
+    <Content Include="TemplateFile\112先期檢討會議附件vf_SA.xlsx" />
+    <Content Include="Views\CarbonReduction\Index.cshtml" />
+    <Content Include="TemplateFile\施工減碳係數0830.xlsx" />
+    <Content Include="Views\CarbonEmissionCalXML\Index.cshtml" />
+    <Content Include="Views\LoginRecord\Index.cshtml" />
+    <Content Include="Views\DelEngReport\Index.cshtml" />
+    <Content Include="Views\CarbonReductionCal\Index.cshtml" />
+    <Content Include="TemplateFile\水利署碳排管制表%28詳細%29.xlsx" />
+    <Content Include="Views\UserNotification\Index.cshtml" />
+    <Content Include="Views\TrainingImage\Index.cshtml" />
+    <Content Include="Views\EngApprovalImport\Index.cshtml" />
+    <Content Include="TemplateFile\統計報表-工程碳排量資料表_總表V2.xlsx" />
+    <Content Include="Views\CarbonReduction\ViewIndex.cshtml" />
+    <Content Include="Views\CarbonReduction\ViewIndex2.cshtml" />
+    <Content Include="Views\TreeManagement\Index.cshtml" />
+    <Content Include="Views\APIRecord\Index.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="App_Data\" />
+    <Folder Include="Download\" />
+    <Folder Include="FileUploads\Technical\TechnicalArticals\" />
+    <Folder Include="FileUploads\Technical\TechnicalComments\" />
+    <Folder Include="FileUploads\Technical\TechnicalReplys\" />
+    <Folder Include="TemporaryDocument\" />
+    <Folder Include="Views\Common\" />
+    <Folder Include="Views\Default\" />
+    <Folder Include="Views\EngAPI\" />
+    <Folder Include="Views\EngRiskFrontFlowChart\" />
+    <Folder Include="Views\EngRiskFrontManagement\" />
+    <Folder Include="Views\MobileAPI\" />
+    <Folder Include="Views\PttInfo\" />
+    <Folder Include="Views\Ptt\" />
+    <Folder Include="Views\Suggestion\" />
+    <Folder Include="Views\TempFile\" />
+    <Folder Include="Views\TenderCalForm\" />
+    <Folder Include="Views\Type\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <COMReference Include="Microsoft.Office.Core">
+      <Guid>{2DF8D04C-5BFA-101B-BDE5-00AA0044DE52}</Guid>
+      <VersionMajor>2</VersionMajor>
+      <VersionMinor>5</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>primary</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+    <COMReference Include="Microsoft.Office.Interop.Excel">
+      <Guid>{00020813-0000-0000-C000-000000000046}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>7</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>primary</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+    <COMReference Include="VBIDE">
+      <Guid>{0002E157-0000-0000-C000-000000000046}</Guid>
+      <VersionMajor>5</VersionMajor>
+      <VersionMinor>3</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>primary</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+  </ItemGroup>
+  <ItemGroup>
+    <TypeScriptCompile Include="Scripts\index.d.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="connectionStrings.config">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </None>
+  </ItemGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets')" />
+  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
+  <Target Name="MvcBuildViews" AfterTargets="AfterBuild" Condition="'$(MvcBuildViews)'=='true'">
+    <AspNetCompiler VirtualPath="temp" PhysicalPath="$(WebProjectOutputDir)" />
+  </Target>
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>True</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>15252</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>https://localhost:44300/</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>此專案參考這部電腦上所缺少的 NuGet 套件。請啟用 NuGet 套件還原，以下載該套件。如需詳細資訊，請參閱 http://go.microsoft.com/fwlink/?LinkID=322105。缺少的檔案是 {0}。</ErrorText>
+    </PropertyGroup>
+    <!-- <Error Condition="!Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" /> -->
+    <Error Condition="!Exists('packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" />
+    <Error Condition="!Exists('packages\NETStandard.Library.2.0.0\build\netstandard2.0\NETStandard.Library.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\NETStandard.Library.2.0.0\build\netstandard2.0\NETStandard.Library.targets'))" />
+    <Error Condition="!Exists('packages\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.1.11.1\build\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.1.11.1\build\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.props'))" />
+    <Error Condition="!Exists('packages\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.1.11.1\build\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.1.11.1\build\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.targets'))" />
+  </Target>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target> -->
+  <Target Name="CopyRoslynFiles" AfterTargets="AfterBuild" Condition="!$(Disable_CopyWebApplication) And '$(OutDir)' != '$(OutputPath)'">
+    <ItemGroup>
+      <RoslynFiles Include="$(CscToolPath)\*" />
+    </ItemGroup>
+    <MakeDir Directories="$(WebProjectOutputDir)\bin\roslyn" />
+    <Copy SourceFiles="@(RoslynFiles)" DestinationFolder="$(WebProjectOutputDir)\bin\roslyn" SkipUnchangedFiles="true" Retries="$(CopyRetryCount)" RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)" />
+  </Target>
+  <Import Project="packages\NETStandard.Library.2.0.0\build\netstandard2.0\NETStandard.Library.targets" Condition="Exists('packages\NETStandard.Library.2.0.0\build\netstandard2.0\NETStandard.Library.targets')" />
+  <Import Project="packages\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.1.11.1\build\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.targets" Condition="Exists('packages\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.1.11.1\build\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.targets')" />
+</Project>

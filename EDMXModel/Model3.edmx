@@ -1,0 +1,213 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+    <Schema Namespace="EQC_AlexModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="CarbonReductionFactor">
+          <Key>
+            <PropertyRef Name="Seq" />
+          </Key>
+          <Property Name="Seq" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Type1" Type="nvarchar" MaxLength="50" />
+          <Property Name="Type2" Type="nvarchar" MaxLength="50" />
+          <Property Name="Description" Type="nvarchar" MaxLength="250" />
+          <Property Name="Unit" Type="nvarchar" MaxLength="50" />
+          <Property Name="KgCo2e" Type="decimal" Precision="10" Scale="4" Nullable="false" />
+          <Property Name="Code" Type="nvarchar" MaxLength="50" />
+          <Property Name="CreateTime" Type="datetime" />
+          <Property Name="ModifyTime" Type="datetime" />
+          <Property Name="ModifyUserSeq" Type="int" />
+          <Property Name="CreateUserSeq" Type="int" />
+        </EntityType>
+        <EntityType Name="CarbonReductionNavvyFactor">
+          <Key>
+            <PropertyRef Name="Seq" />
+          </Key>
+          <Property Name="Seq" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Type1" Type="nvarchar" MaxLength="50" />
+          <Property Name="Type2" Type="nvarchar" MaxLength="50" />
+          <Property Name="Description" Type="nvarchar" MaxLength="250" />
+          <Property Name="Unit" Type="nvarchar" MaxLength="50" />
+          <Property Name="PC120" Type="decimal" Precision="10" Scale="4" Nullable="false" />
+          <Property Name="PC200" Type="decimal" Precision="10" Scale="4" Nullable="false" />
+          <Property Name="PC300" Type="decimal" Precision="10" Scale="4" Nullable="false" />
+          <Property Name="PC400" Type="decimal" Precision="10" Scale="4" Nullable="false" />
+          <Property Name="Code" Type="nvarchar" MaxLength="50" />
+          <Property Name="CreateTime" Type="datetime" />
+          <Property Name="ModifyTime" Type="datetime" />
+          <Property Name="CreateUserSeq" Type="int" />
+          <Property Name="ModifyUserSeq" Type="int" />
+        </EntityType>
+        <EntityType Name="CarbonReductionTruckFactor">
+          <Key>
+            <PropertyRef Name="Seq" />
+          </Key>
+          <Property Name="Seq" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Type1" Type="nvarchar" MaxLength="50" />
+          <Property Name="Type2" Type="nvarchar" MaxLength="50" />
+          <Property Name="Description" Type="nvarchar" MaxLength="250" />
+          <Property Name="Unit" Type="nvarchar" MaxLength="50" />
+          <Property Name="15T" Type="decimal" Precision="10" Scale="4" Nullable="false" />
+          <Property Name="21T" Type="decimal" Precision="10" Scale="4" Nullable="false" />
+          <Property Name="35T" Type="decimal" Precision="10" Scale="4" Nullable="false" />
+          <Property Name="Code" Type="nvarchar" MaxLength="50" />
+          <Property Name="CreateTime" Type="datetime" />
+          <Property Name="ModifyTime" Type="datetime" />
+          <Property Name="CreateUserSeq" Type="int" />
+          <Property Name="ModifyUserSeq" Type="int" />
+        </EntityType>
+        <EntityContainer Name="EQC_AlexModelStoreContainer">
+          <EntitySet Name="CarbonReductionFactor" EntityType="Self.CarbonReductionFactor" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="CarbonReductionNavvyFactor" EntityType="Self.CarbonReductionNavvyFactor" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="CarbonReductionTruckFactor" EntityType="Self.CarbonReductionTruckFactor" Schema="dbo" store:Type="Tables" />
+        </EntityContainer>
+      </Schema></edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="EQC_AlexModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityType Name="CarbonReductionFactor">
+          <Key>
+            <PropertyRef Name="Seq" />
+          </Key>
+          <Property Name="Seq" Type="Int32" Nullable="false" />
+          <Property Name="Type1" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Type2" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Description" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
+          <Property Name="Unit" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="KgCo2e" Type="Decimal" Precision="10" Scale="4" Nullable="false" />
+          <Property Name="Code" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="CreateTime" Type="DateTime" Precision="3" />
+          <Property Name="ModifyTime" Type="DateTime" Precision="3" />
+          <Property Name="ModifyUserSeq" Type="Int32" />
+          <Property Name="CreateUserSeq" Type="Int32" />
+        </EntityType>
+        <EntityType Name="CarbonReductionNavvyFactor">
+          <Key>
+            <PropertyRef Name="Seq" />
+          </Key>
+          <Property Name="Seq" Type="Int32" Nullable="false" />
+          <Property Name="Type1" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Type2" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Description" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
+          <Property Name="Unit" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="PC120" Type="Decimal" Precision="10" Scale="4" Nullable="false" />
+          <Property Name="PC200" Type="Decimal" Precision="10" Scale="4" Nullable="false" />
+          <Property Name="PC300" Type="Decimal" Precision="10" Scale="4" Nullable="false" />
+          <Property Name="PC400" Type="Decimal" Precision="10" Scale="4" Nullable="false" />
+          <Property Name="Code" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="CreateTime" Type="DateTime" Precision="3" />
+          <Property Name="ModifyTime" Type="DateTime" Precision="3" />
+          <Property Name="CreateUserSeq" Type="Int32" />
+          <Property Name="ModifyUserSeq" Type="Int32" />
+        </EntityType>
+        <EntityType Name="CarbonReductionTruckFactor">
+          <Key>
+            <PropertyRef Name="Seq" />
+          </Key>
+          <Property Name="Seq" Type="Int32" Nullable="false" />
+          <Property Name="Type1" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Type2" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Description" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
+          <Property Name="Unit" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="C15T" Type="Decimal" Precision="10" Scale="4" Nullable="false" />
+          <Property Name="C21T" Type="Decimal" Precision="10" Scale="4" Nullable="false" />
+          <Property Name="C35T" Type="Decimal" Precision="10" Scale="4" Nullable="false" />
+          <Property Name="Code" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="CreateTime" Type="DateTime" Precision="3" />
+          <Property Name="ModifyTime" Type="DateTime" Precision="3" />
+          <Property Name="CreateUserSeq" Type="Int32" />
+          <Property Name="ModifyUserSeq" Type="Int32" />
+        </EntityType>
+        <EntityContainer Name="EQC_NEW_Entities2" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="CarbonReductionFactor" EntityType="Self.CarbonReductionFactor" />
+          <EntitySet Name="CarbonReductionNavvyFactor" EntityType="Self.CarbonReductionNavvyFactor" />
+          <EntitySet Name="CarbonReductionTruckFactor" EntityType="Self.CarbonReductionTruckFactor" />
+        </EntityContainer>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="EQC_AlexModelStoreContainer" CdmEntityContainer="EQC_NEW_Entities2">
+          <EntitySetMapping Name="CarbonReductionFactor">
+            <EntityTypeMapping TypeName="EQC_AlexModel.CarbonReductionFactor">
+              <MappingFragment StoreEntitySet="CarbonReductionFactor">
+                <ScalarProperty Name="CreateUserSeq" ColumnName="CreateUserSeq" />
+                <ScalarProperty Name="ModifyUserSeq" ColumnName="ModifyUserSeq" />
+                <ScalarProperty Name="Seq" ColumnName="Seq" />
+                <ScalarProperty Name="Type1" ColumnName="Type1" />
+                <ScalarProperty Name="Type2" ColumnName="Type2" />
+                <ScalarProperty Name="Description" ColumnName="Description" />
+                <ScalarProperty Name="Unit" ColumnName="Unit" />
+                <ScalarProperty Name="KgCo2e" ColumnName="KgCo2e" />
+                <ScalarProperty Name="Code" ColumnName="Code" />
+                <ScalarProperty Name="CreateTime" ColumnName="CreateTime" />
+                <ScalarProperty Name="ModifyTime" ColumnName="ModifyTime" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="CarbonReductionNavvyFactor">
+            <EntityTypeMapping TypeName="EQC_AlexModel.CarbonReductionNavvyFactor">
+              <MappingFragment StoreEntitySet="CarbonReductionNavvyFactor">
+                <ScalarProperty Name="ModifyUserSeq" ColumnName="ModifyUserSeq" />
+                <ScalarProperty Name="CreateUserSeq" ColumnName="CreateUserSeq" />
+                <ScalarProperty Name="Seq" ColumnName="Seq" />
+                <ScalarProperty Name="Type1" ColumnName="Type1" />
+                <ScalarProperty Name="Type2" ColumnName="Type2" />
+                <ScalarProperty Name="Description" ColumnName="Description" />
+                <ScalarProperty Name="Unit" ColumnName="Unit" />
+                <ScalarProperty Name="PC120" ColumnName="PC120" />
+                <ScalarProperty Name="PC200" ColumnName="PC200" />
+                <ScalarProperty Name="PC300" ColumnName="PC300" />
+                <ScalarProperty Name="PC400" ColumnName="PC400" />
+                <ScalarProperty Name="Code" ColumnName="Code" />
+                <ScalarProperty Name="CreateTime" ColumnName="CreateTime" />
+                <ScalarProperty Name="ModifyTime" ColumnName="ModifyTime" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="CarbonReductionTruckFactor">
+            <EntityTypeMapping TypeName="EQC_AlexModel.CarbonReductionTruckFactor">
+              <MappingFragment StoreEntitySet="CarbonReductionTruckFactor">
+                <ScalarProperty Name="ModifyUserSeq" ColumnName="ModifyUserSeq" />
+                <ScalarProperty Name="CreateUserSeq" ColumnName="CreateUserSeq" />
+                <ScalarProperty Name="Seq" ColumnName="Seq" />
+                <ScalarProperty Name="Type1" ColumnName="Type1" />
+                <ScalarProperty Name="Type2" ColumnName="Type2" />
+                <ScalarProperty Name="Description" ColumnName="Description" />
+                <ScalarProperty Name="Unit" ColumnName="Unit" />
+                <ScalarProperty Name="C15T" ColumnName="15T" />
+                <ScalarProperty Name="C21T" ColumnName="21T" />
+                <ScalarProperty Name="C35T" ColumnName="35T" />
+                <ScalarProperty Name="Code" ColumnName="Code" />
+                <ScalarProperty Name="CreateTime" ColumnName="CreateTime" />
+                <ScalarProperty Name="ModifyTime" ColumnName="ModifyTime" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="false" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
+        <DesignerProperty Name="UseLegacyProvider" Value="false" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="無" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>

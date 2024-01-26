@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="d09c16144e75432a9168c85bef1b6e4c" Name="Diagram1">
+        <EntityTypeShape EntityType="EntitiesForTechnical.TechnicalArtical" Width="1.5" PointX="0.75" PointY="1" />
+        <EntityTypeShape EntityType="EntitiesForTechnical.TechnicalCommnet" Width="1.5" PointX="3" PointY="1" />
+        <EntityTypeShape EntityType="EntitiesForTechnical.TechnicalReply" Width="1.5" PointX="5.25" PointY="1.25" />
+        <AssociationConnector Association="EntitiesForTechnical.FK_TechnicalCommnet_TechnicalArtical" />
+        <AssociationConnector Association="EntitiesForTechnical.FK_TechnicalReply_TechnicalCommnet" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>

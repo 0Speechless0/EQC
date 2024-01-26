@@ -1,0 +1,47 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_MainLayout.cshtml";
+}
+<div id="app">
+    <div class="card whiteBG mb-4">
+        <div class="card-body pb-0">
+            <ul class="row justify-content-center">
+                <li class="col-12 col-md-6 col-xl-3 mb-2">
+                    <a href="@Url.Action("Index", "TenderPlan/TenderPlanList")" class="btn-block btn-shadow">
+                        <div class="card bg-0 text-white">
+                            <div class="card-body">
+                                <h2 class="card-title m-0 p-0">建立標案<small>(設計階段)</small></h2>
+                            </div>
+                            <div class="card-img-bottom pt-4 pb-5 img02">
+                            </div>
+                        </div>
+                    </a>
+                </li>
+                <li class="col-12 col-md-6 col-xl-3 mb-2">
+                    <a href="@Url.Action("Index", "EPCTender/Index3")" class="btn-block btn-shadow">
+                        <div class="card bg-1 text-white">
+                            <div class="card-body">
+                                <h2 class="card-title m-0 p-0">工程履約<small>(施工階段)</small></h2>
+                            </div>
+                            <div class="card-img-bottom pt-4 pb-5 img05">
+                            </div>
+                        </div>
+                    </a>
+                </li>
+                <li class="col-12 col-md-6 col-xl-3 mb-2">
+                    <a href="@Url.Action("Index", "EngForum")" class="btn-block btn-shadow">
+                        <div class="card bg-2 text-white">
+                            <div class="card-body">
+                                <h2 class="card-title m-0 p-0">工程資訊交流平台</h2>
+                            </div>
+                            <div class="card-img-bottom pt-4 pb-5 img03">
+                            </div>
+                        </div>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <pd-dashboard></pd-dashboard>
+</div>

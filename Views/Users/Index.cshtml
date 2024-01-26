@@ -1,0 +1,22 @@
+﻿
+@{
+    ViewBag.Title = "使用者管理";
+    ViewBag.BarTitle = ViewBag.Title;
+    //Layout = "~/Views/Shared/_BackendLayout.cshtml"; 
+    Layout = "~/Views/Shared/_MainLayout.cshtml";
+}
+@*<div>
+        <input type="button" id="btnNew" value="新增使用者" onclick="location.href='@Url.Action("Create", "Users" , new { id=1 })'" />
+
+    </div>*@
+<div id="app">
+    <user-list></user-list>
+</div>
+
+
+@*<div id="app">
+
+    </div>
+    @section scripts {
+        <script src="@Url.Content("~/Content/js/controllers/tender/basicInformation.js")"></script>
+    }*@

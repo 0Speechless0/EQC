@@ -1,0 +1,129 @@
+﻿@charset "utf-8";
+/* 拖曳 */
+
+.dropZone {
+    /*
+
+        min-width:480px;*/
+    border: 1px dashed #666;
+    height: 62px;
+    width: 100%;
+    position: relative;
+}
+
+.dropZone:hover {
+    border: 1px dashed #fff;
+}
+
+.dropZone:hover .dropZone-title {
+    color: #fff;
+}
+
+.dropZone-info {
+    color: #a8a8a8;
+    position: absolute;
+    top: 50%;
+    width: 100%;
+    transform: translate(0, -50%);
+    text-align: center;
+}
+
+.dropZone-title {
+    color: #787878;
+    margin: 0 5px;
+}
+
+.dropZone input {
+    position: absolute;
+    cursor: pointer;
+    top: 0px;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+}
+
+.dropZone-upload-limit-info {
+    display: flex;
+    justify-content: flex-start;
+    flex-direction: column;
+}
+
+.dropZone-over {
+    background: #5c5c5c !important;
+    opacity: 0.8;
+    //border: 2px solid #2e94c4;
+}
+
+.dropZone-uploaded {
+    border: 1px dashed #666;
+    //height: 62px;
+    width: 100%;
+    height: 100px;
+    //width: 60%;
+    //min-width: 480px;
+    position: relative;
+}
+
+.dropZone-uploaded-info {
+    color: #a8a8a8;
+    position: absolute;
+    top: 50%;
+    width: 100%;
+    transform: translate(0, -50%);
+    text-align: center;
+}
+
+.ui-widget-content a {
+    color: #fff;
+}
+
+footer.b-calendar-grid-help {
+    display: none;
+}
+
+.mydatewidth {
+    width: 150px !important;
+}
+
+/* 調整 b-datepicker 樣式走位*/
+.b-calendar, .b-calendar-grid {
+	width: 450px !important;
+}
+
+.b-calendar-nav.d-flex
+{
+	width: 450px !important;
+}
+
+.icontopright {
+        z-index: 500;
+        position: absolute;
+        right: 0px;
+        color: red;
+    }
+.textbottomleft {
+    background-color: #eeeeee;
+    z-index: 500;
+    position: absolute;
+    left: 22px;
+    bottom: 0px;
+    color: red;
+    font-size: 14px;
+}
+
+.photogroup {
+    font-size: 1.5rem !important;
+    font-weight: bold !important;
+    clear: both !important;
+    padding: 8px 15px !important;
+    background: -webkit-linear-gradient(right, #5d9d9f, #58a274) !important;
+    background: -o-linear-gradient(left, #065759, #58a274) !important;
+    background: -moz-linear-gradient(left, #065759, #58a274) !important;
+    background: linear-gradient(to left, #065759, #58a274) !important;
+    color: #fff !important;
+    border-radius: 5px !important;
+    text-align:center;
+}

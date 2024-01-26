@@ -1,0 +1,16 @@
+﻿
+@{
+    Layout = "~/Views/Shared/_MainLayout.cshtml";
+}
+
+@{ 
+        switch(ViewBag.route)
+        {
+            case "new" :  <tree-new></tree-new>; break;
+            case "list": <tree-list></tree-list>; break;
+
+            default: break;
+        }
+    }
+
+

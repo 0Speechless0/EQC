@@ -1,0 +1,157 @@
+﻿@{
+    ViewBag.Title = "跳轉中，請稍後。";
+    Layout = "~/Views/Shared/_LayoutMobile.cshtml";
+}
+
+@{
+  
+   
+   
+    if (IsPost)
+    {
+        string UserNo = Request.Form["UserNo"];
+        string Mobile = Request.Form["Mobile"];
+        string EngName = Request.Form["EngName"];
+        string EngItemName = Request.Form["EngItemName"];
+        string XYPosLati = Request.Form["XYPosLati"];
+        string XYPosLong = Request.Form["XYPosLong"];
+        string PosDesc = Request.Form["PosDesc"];
+        string CheckDate = Request.Form["CheckDate"];
+        string CheckItem = Request.Form["CheckItem"];
+        string RealCheckCond = Request.Form["RealCheckCond"];
+        string CheckResult = Request.Form["CheckResult"];
+        string Route = Request.Form["Route"];
+
+        string CheckImage1 = String.Format(@"data:image/jpeg;base64,{0}", Request.Form["CheckImage1"]);
+        string CheckImage2 = String.Format(@"data:image/jpeg;base64,{0}", Request.Form["CheckImage2"]);
+        string CheckImage3 = String.Format(@"data:image/jpeg;base64,{0}", Request.Form["CheckImage3"]);
+        //string CheckImage3 = "";
+        string CheckUser = Request.Form["CheckUser"];
+
+        @Scripts.Render("~/bundles/jquery")
+        <script>
+            try { // statements to try
+                 var Json = {
+                    userNo: "@UserNo",
+                    Mobile: "@Mobile",
+                    EngName: "@EngName",
+                    EngItemName: "@EngItemName",
+                    XYPosLati: "@XYPosLati",
+                    XYPosLong: "@XYPosLong",
+                    PosDesc: "@PosDesc",
+                    CheckDate: "@CheckDate",
+                    CheckItem: "@CheckItem",
+                    RealCheckCond: "@RealCheckCond",
+                    CheckResult: "@CheckResult",
+                    CheckImage1: "@CheckImage1",
+                    CheckImage2: "@CheckImage2",
+                    CheckImage3: "@CheckImage3",
+                    CheckUser: "@CheckUser",
+                    route : "@Route"
+                 };
+            }
+            catch (e) {
+                logMyErrors(e); // 將例外傳至例外處理機制
+                alert(e);
+            }
+    $.ajax({
+        url: "/Login/GetPost",
+        type: "post",
+        dataType: "html",
+        data: Json,
+        success: function (config) {
+            var jsonData = JSON.parse(config);
+            console.log(jsonData);
+            if (jsonData.isLogin == true) {
+                home1Url = jsonData.homeUrl;
+                window.location.replace(home1Url);
+            } else {
+                if (jsonData.errorMessage.length == 0) {
+
+                    alert('帳號 或 密碼 輸入錯誤 登入失敗!!');
+                } else {
+                    alert(config.data.errorMessage);
+                }
+            }
+        },
+        error: function (err) {
+            alert('帳號 或 密碼 輸入錯誤 登入失敗!!');
+        }
+    });
+    $.ajax({
+        url: "/Login/MobileEntryPoint",
+        type: "post",
+        dataType: "html",
+        data: Json,
+        success: function (config) {
+            var jsonData = JSON.parse(config);
+            console.log(jsonData);
+            if (jsonData.isLogin == true) {
+                home1Url = jsonData.homeUrl;
+                window.location.replace(home1Url);
+            } else {
+                if (jsonData.errorMessage.length == 0) {
+
+                    alert('帳號 或 密碼 輸入錯誤 登入失敗!!');
+                } else {
+                    alert(config.data.errorMessage);
+                }
+            }
+        },
+        error: function (err) {
+            alert('帳號 或 密碼 輸入錯誤 登入失敗!!');
+        }
+    });
+        </script>
+
+    }
+    else if (this.Request.HttpMethod == "GET")
+    {
+        string code = Request.QueryString["code"];
+        string grant_type = "authorization_code";
+        string client_id = "EQC";
+        string client_secret = "a83442586b";
+        string redirect_uri = "https://EQC.wra.gov.tw/API";
+
+
+        @Scripts.Render("~/bundles/jquery")
+        <script>
+                   var Json = {
+                       grant_type: "@grant_type",
+                       client_id: "@client_id",
+                       client_secret: "@client_secret",
+                       redirect_uri: "@redirect_uri",
+                       code: "@code"
+                   };
+
+            $.ajax({
+                url: "/Login/OauthVerify",
+                type: "post",
+                dataType: "html",
+                data: Json,
+                success: function (config) {
+                    var jsonData = JSON.parse(config);
+                    console.log(jsonData);
+                    if (jsonData.isLogin == true) {
+                        home1Url = jsonData.homeUrl;
+                        window.location.replace(home1Url);
+                    } else {
+                        if (jsonData.errorMessage.length == 0) {
+
+                            alert('帳號 或 密碼 輸入錯誤 登入失敗!!');
+                        } else {
+                            alert(config.data.errorMessage);
+                        }
+                    }
+                },
+                error: function (err) {
+                    console.log(err.responseText)
+                    alert('驗證錯誤，請重新登入');
+                }
+            });
+        </script>
+    }
+   
+}
+
+   

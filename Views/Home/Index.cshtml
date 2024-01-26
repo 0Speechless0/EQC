@@ -1,0 +1,111 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<section class="introduction">
+    <div class="container">
+        <div class="row flex-lg-row-reverse">
+            <div class="col-lg-6">
+                <div class="image mx-auto">
+                    <img src="@Url.Content("~/Content/images/img-callcenter.png")" alt="我有話要說" class="img-fluid">
+                </div>
+            </div>
+            <div class="col-lg-6 col-xl-5 offset-xl-1">
+                <h1>我有話要說</h1>
+                <div class="p-group">
+                    <p>歡迎大家為嘉義縣的發展共同努力，把您所看到的問題，上傳給我們！</p>
+                    <p>您可以經由網路留言的方式來表達您的寶貴建議，也可以經由電洽或傳真方式傳達至本府。</p>
+                </div>
+                <div class="btn-group">
+                    <a href="@Url.Action("Index","Petition")" title="我要陳情" class="btn btn-primary shadow">我要陳情</a>
+                    <a href="@Url.Action("Inquire","Petition")" title="案件查詢" class="btn btn-secondary shadow">案件查詢</a>
+                </div>
+            </div>
+        </div>
+        <div class="contact">
+            <ul>
+                <li>
+                    <p>電話：05-111111</p>
+                </li>
+                <li>
+                    <p>傳真：05-111111</p>
+                </li>
+            </ul>
+        </div>
+    </div>
+</section>
+<section class="information">
+    <div class="container">
+        <h2 class="line">
+            <span>陳情須知</span>
+        </h2>
+        <p>人民陳情案件，有下列情形之一者，承辦單位得依行政程序法第一百七十三條及本府分層負責權限規定，簽准「<span>不予處理</span>」：</p>
+        <div class="item-list row">
+            <div class="col-sm-6 col-lg-3">
+                <div class="item">
+                    <div class="num">01</div>
+                    <p>無具體內容、未具姓名、住址、電子郵件地址者。</p>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="item">
+                    <div class="num">02</div>
+                    <p>同一事由經予適當處理並已明確答覆兩次後，而仍一再陳情者。</p>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="item">
+                    <div class="num">03</div>
+                    <p>非主管陳情內容之機關，接獲陳情人以同一事由分向各機關陳情者。</p>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="item">
+                    <div class="num">04</div>
+                    <p>提醒大家，請勿為私人恩怨報案、或報假案。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<section class="emergency">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 col-lg-3">
+                <h2>緊急事件</h2>
+            </div>
+            <div class="col-12 col-lg-9 d-md-flex">
+                <div class="col-12 col-md-6 p-0">
+                    <ul>
+                        <li>
+                            <p>犯罪事件請撥打 <span>110</span></p>
+                        </li>
+                        <li>
+                            <p>火警及救難事件 <span>119</span></p>
+                        </li>
+                        <li>
+                            <p>全國婦幼保護專線 <span>113</span></p>
+                        </li>
+                        <li>
+                            <p>反詐騙諮詢專線 <span>165</span></p>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-12 col-md-6 p-0">
+                    <ul>
+                        <li>
+                            <p>停電搶修暨客服專線 <span>1911</span></p>
+                        </li>
+                        <li>
+                            <p>全國消費者服務專線 <span>1950</span></p>
+                        </li>
+                        <li>
+                            <p>生命線 <span>1995</span></p>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
