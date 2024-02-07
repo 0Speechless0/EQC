@@ -1,0 +1,12 @@
+FROM scriptdev/mssql:2019
+ENV ACCEPT_EULA=Y
+ENV sa_password=Ss12345
+EXPOSE 1432:1433
+
+workDir C:/backup
+
+
+
+COPY ./bakBuilder.bat C:/backup/bakBuilder.bat
+# CMD bakBuilder.bat && cmd
+

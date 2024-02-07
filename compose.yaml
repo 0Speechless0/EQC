@@ -17,19 +17,22 @@ services:
       - 80:80
     networks : 
       - eqc_new_default
+    image: kbb37038106/eqc2:latest
 
   mssql-server:
     image: scriptdev/mssql:2019
     container_name: my-mssql-container
     environment:
       ACCEPT_EULA: Y
+      sa_password : Ss12345
     volumes:
       - ./bak:C:/backup
     networks : 
       - eqc_new_default
     ports:    
-      - 1433:1433
-   # command :  "start C:/backup/bakBuilder.bat "
+      - 1432:1433
+ #
+    # command :  "C:/backup/bakBuilder.bat"
 networks :
   eqc_new_default :
     external : true
