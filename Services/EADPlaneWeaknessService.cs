@@ -16,7 +16,9 @@ namespace EQC.Services
                 left outer join PrjXMLExt b on(b.PrjXMLSeq=a.Seq )
                 CROSS APPLY dbo.fPrjXMLProgress(a.Seq) d--20230505
                 where a.TenderYear > 106 and ISNULL(b.ActualCompletionDate,'')= ''
-                and ISNULL(d.PDAccuActualProgress,0)< 100 and d.PDExecState <> '已結案' and d.PDExecState <> '驗收完成'";
+                and ISNULL(d.PDAccuActualProgress,0)< 100 and d.PDExecState <> '已結案' and d.PDExecState <> '驗收完成'
+                order by EngYear desc
+                ";
             SqlCommand cmd = db.GetCommand(sql);
             return db.GetDataTableWithClass<EngYearVModel>(cmd);
         }
@@ -74,15 +76,16 @@ namespace EQC.Services
                         + CASE b.W8 when 1 then '8,' else '' end
                         + CASE b.W9 when 1 then '9,' else '' end
                         + CASE b.W10 when 1 then '10,' else '' end
-                        + CASE b.W11 when 1 then '11,' else '' end
+                        + CASE ISNULL(s.ExecType - 1, b.W11) when 1 then '11,' else '' end
                         + CASE b.W12 when 1 then '12,' else '' end
                         + CASE b.W13 when 1 then '13,' else '' end
                         + CASE b.W14 when 1 then '14,' else '' end 
 	                ) as PlaneWeakness
                 from PrjXML a
+                left join EngMain s on a.Seq  = s.PrjXMLSeq 
                 inner join viewPrjXMLPlaneWeakness b on(
                     b.PrjXMLSeq=a.Seq"
-                    + String.Format(" and b.{0} >0", pw) +
+                    + (pw != null ? String.Format(" and b.{0} >0", pw) : "" ) +
                 @")
                 left outer join PrjXMLExt zb on(zb.PrjXMLSeq=a.Seq )
                 CROSS APPLY dbo.fPrjXMLProgress(a.Seq) d --20230505

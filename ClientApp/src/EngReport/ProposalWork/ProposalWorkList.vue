@@ -12,6 +12,9 @@
                 </div>
                 <div class="col-12 col-sm-3 mt-3">
                     <select v-model="selectUnit" @change="onUnitChange(selectUnit)" class="form-control">
+                        <option :value="-1">
+                            全部
+                        </option>
                         <option v-for="option in selectUnitOptions" v-bind:value="option.Value"
                                 v-bind:key="option.Value">
                             {{ option.Text }}
@@ -34,11 +37,18 @@
                         </option>
                     </select>
                 </div>
+                <div class="col-1 col-sm-2 mt-3 d-flex">
+                    <input class="form-control" v-model="keyWord" placeholder="可輸入關鍵字查詢工程名稱"/> 
+                    <button class="btn btn-color11-3 btn-xs sharp mx-1 mt-2" @click.prevent="getList">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
                 <div class="ml-auto bd-highlight align-self-center" style="padding-right: 15px;">
                     <button @click.prevent="onDownloadNeedAssessment" class="btn btn-color11-1 btn-block">
                         <i class="fas fa-download"></i>提案需求評估表
                     </button>
                 </div>
+
                 <p style="color: red; padding-top: 15px;">狀態分為：需求評估、需求提案核可、需求重新評估、提案審查填報、提案審查核可、提案審查暫緩、經費核可、已核定案件</p>
             </div>
         </form>
@@ -84,7 +94,7 @@
             </table>
         </div>
         <!-- 小視窗  -->
-        <div class="modal fade" id="prepare_edit01" ref="divEditDialog" style="display:none;">
+        <div class="modal fade" id="prepare_edit01" ref="divEditDialog"  >
             <div class="modal-dialog modal-xl modal-dialog-centered " style="max-width: fit-content;">
                 <div class="modal-content">
                     <div class="card whiteBG mb-4 pattern-F colorset_1">
@@ -146,6 +156,7 @@
     export default {
         data: function () {
             return {
+                keyWord : "",
                 //使用者單位資訊
                 userUnit: null,
                 userUnitSub: '',
@@ -228,6 +239,7 @@
 
                 sessionStorage.removeItem('selectERYear');
                 window.sessionStorage.setItem("selectERYear", this.selectYear);
+                this.onUnitChange(this.selectUnit)
             },
             async onUnitChange(unitSeq) {
                 if (this.selectUnitOptions.length == 0) return;
@@ -313,7 +325,8 @@
                         subUnit: this.selectSubUnit,
                         rptType: this.selectRptType,
                         pageRecordCount: this.pageRecordCount,
-                        pageIndex: this.pageIndex
+                        pageIndex: this.pageIndex,
+                        keyWord : this.keyWord
                     })
                     .then(resp => {
                         this.items = resp.data.items;

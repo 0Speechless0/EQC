@@ -1,5 +1,8 @@
 ﻿<template>
     <div>
+        <div>
+            識別碼: ({{ engReport.Seq }})
+        </div>
         <div class="table-responsive">
             <table border="0" class="table table1 min910">
                 <tbody>
@@ -49,7 +52,7 @@
                     <tr>
                         <th class="insearch" style="width: 200px; text-align:left;"><span class="small-red">*</span>提案範圍用地概述</th>
                         <td colspan="5">
-                            <textarea v-model.trim="engReport.ProposalScopeLand" rows="7" class="form-control" v-bind:disabled="disabledD == 1" placeholder="1.是否涉及都市計畫變更□否：□是：預計何時完成都變2.是否已將計畫範圍內公私有地情形，提供工務課□否：原因□是：3.其他："></textarea>
+                            <textarea v-model.trim="engReport.ProposalScopeLand" rows="7" class="form-control" v-bind:disabled="disabledD == 1" placeholder="1.是否涉及都市計畫變更□否：□是：預計何時完成都變2.是否已將計畫範圍內公私有地情形，工務科□否：原因□是：3.其他："></textarea>
                         </td>
                         <td style="width: 150px;">
                             {{engReport.ProposalScopeLandUserName}}<br>{{engReport.ProposalScopeLandTWDT}}<br>
@@ -69,7 +72,7 @@
         </div>
         <h5>附件上傳</h5>
         <a href="#" title="說明" target="_blank" data-toggle="modal" data-target="#prepare_edit01">說明&nbsp;</a>
-        <p style="color: red; padding-top: 20px;">*請上傳 jpg、png、pdf格式</p>
+        <p style="color: red; padding-top: 20px;">*請上傳 jpg、png 格式</p>
         <!-- 小視窗 編輯人員 -->
         <div class="modal fade" id="prepare_edit01">
             <div class="modal-dialog modal-xl modal-dialog-centered " style="max-width: fit-content;">

@@ -26,6 +26,12 @@ namespace EQC.Controllers
             return View("Index");
         }
 
+        public JsonResult UpdatePayItemSuggestion(CarbonEmissionPayItemModel m)
+        {
+            iService.Update(m);
+            return Json(true);
+        }
+
         //碳交易工程調整 a20230508
         //工程清單
         public JsonResult GetCarbonTradeEngList(int year, int unit, int subUnit)
@@ -454,37 +460,58 @@ namespace EQC.Controllers
                 items = list
             });
         }
-        //資料檢查
+
+        //資料鎖定
         public JsonResult CheckData(int id)
         {
             bool c10NotMatch = false, notMatch = false, notLongEnough = false, c10NotMatchUnit = false;
             iService.CheckData(id, ref c10NotMatch, ref notMatch, ref notLongEnough, ref c10NotMatchUnit);
             string msg = "資料檢查完成\n無須修改PCCES或填寫理由";
-            if (c10NotMatch || notMatch || notLongEnough || c10NotMatchUnit)
-            {
-                msg = "";
-                string sp = "";
-                if (c10NotMatch || c10NotMatchUnit)
-                {
-                    msg += sp + "單位錯誤(第10碼)";
-                    sp = ", ";
-                }
-                if (notMatch)
-                {
-                    msg += sp + "查無編碼";
-                    sp = ", ";
-                }
-                if (notLongEnough)
-                {
-                    msg += sp + "編碼不足10碼";
-                }
-                msg += " 項目\n請填寫理由 或 修改PCCES重新上傳";
-            }
             return Json(new
             {
                 result = 0,
                 msg = msg
             });
+        }
+
+        public JsonResult unLockData(int id)
+        {
+
+            if (iService.unLockData(id))
+            {
+                return Json(new
+                {
+                    result = 0,
+                    msg = "成功"
+                });
+            }
+            return Json(new
+            {
+                result = -1,
+                msg = "失敗"
+            });
+
+
+        }
+        //資料檢查
+        public JsonResult LockData(int id)
+        {
+       
+            if(iService.LockData(id) )
+            {
+                return Json(new
+                {
+                    result = 0,
+                    msg = "成功"
+                });
+            }
+            return Json(new
+            {
+                result = -1,
+                msg = "失敗"
+            });
+
+
         }
         //計算碳排量
         public JsonResult CalCarbonEmissions(int id)
@@ -584,16 +611,17 @@ namespace EQC.Controllers
             }
             decimal? co2Total = null;
             decimal? co2ItemTotal = null;
-            decimal? dismantlingRate = null;
+            decimal dismantlingRate = 0 ;
             decimal? greenFunding = null; //s20230418
-            decimal? greenFundingRate = null;
+            decimal greenFundingRate = 0;
             if (total > 0)
             {//s20230525 改為 包發預算 SubContractingBudget
                 iService.CalCarbonTotal(id, ref co2Total, ref co2ItemTotal, ref greenFunding);
+                Utils.GetEngDismantlingRate(id, (e) => e.CarbonEmissionHeader.FirstOrDefault()?.CarbonEmissionPayItem ,ref dismantlingRate, ref greenFundingRate);
                 if (eng.SubContractingBudget.HasValue && eng.SubContractingBudget.Value > 0)
                 {
-                    dismantlingRate = Math.Round(co2ItemTotal.Value * 100 / eng.SubContractingBudget.Value);
                     greenFundingRate = Math.Round(greenFunding.Value * 100 / eng.SubContractingBudget.Value);
+
                 }
             }
             UserInfo userInfo = Utils.getUserInfo();
@@ -606,7 +634,7 @@ namespace EQC.Controllers
                 dismantlingRate = dismantlingRate,
                 admin = userInfo.IsAdmin || userInfo.IsDepartmentAdmin,
                 greenFunding = greenFunding,
-                greenFundingRate = greenFundingRate,
+                greenFundingRate = Math.Round(greenFunding.Value * 100 / eng.SubContractingBudget.Value),
             });
         }
 
@@ -634,12 +662,14 @@ namespace EQC.Controllers
         public virtual JsonResult GetEngMain(int id)
         {
             List<EngMainEditVModel> items = new EngMainService().GetItemBySeq<EngMainEditVModel>(id);
+            var userInfo = new SessionManager().GetUser();
             if (items.Count == 1)
             {
                 return Json(new
                 {
                     result = 0,
-                    item = items[0]
+                    item = items[0],
+                    Role = userInfo.RoleSeq
                 });
             }
             else if (items.Count > 1)
@@ -670,7 +700,7 @@ namespace EQC.Controllers
         //    return File(outputPoccessor.exportUpdatedPayItemPCCESFile(payItems), "application/blob", String.Format("{0}-Pcces匯出.xml", engId)); 
 
         //}
-        public ActionResult Download(int id)
+        public ActionResult Download(int id, DownloadArgExtension downloadArg = null)
         {
             try
             {
@@ -715,7 +745,7 @@ namespace EQC.Controllers
                 string folder = Path.Combine(Path.GetTempPath(), uuid);
                 if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
 
-                if (!CreateExcel(eng, ceList, folder))
+                if (!CreateExcel(eng, ceList, folder, downloadArg))
                 {
                     return Json(new
                     {
@@ -728,7 +758,7 @@ namespace EQC.Controllers
                 {
                     CECheckTableModel model = list[0];
                     list[0].TreeJsonToList();
-                    if (!CreateCheckTableDoc(eng, list[0], folder))
+                    if (!CreateCheckTableDoc(eng, list[0], folder, downloadArg))
                     {
                         return Json(new
                         {
@@ -737,7 +767,7 @@ namespace EQC.Controllers
                         }, JsonRequestBehavior.AllowGet);
                     }
                 }
-                if (!CreateCheckTableExcel(eng, ceList, folder, ceHaeder))
+                if (!CreateCheckTableExcel(eng, ceList, folder, ceHaeder, downloadArg))
                 {
                     return Json(new
                     {
@@ -745,11 +775,17 @@ namespace EQC.Controllers
                         message = "工程碳排放量檢核表 Excel 製表失敗"
                     }, JsonRequestBehavior.AllowGet);
                 }
-
-                string zipFile = Path.Combine(Path.GetTempPath(), uuid + "-碳排係數計算.zip");
-                ZipFile.CreateFromDirectory(folder, zipFile);// AddFiles(files, "ProjectX");
-                Stream iStream = new FileStream(zipFile, FileMode.Open, FileAccess.Read, FileShare.Read);
-                return File(iStream, "application/blob", String.Format("{0} 碳排係數計算.zip", eng.EngNo));
+                if(downloadArg?.DistFilePath == null)
+                {
+                    string zipFile = Path.Combine(Path.GetTempPath(), uuid + "-碳排係數計算.zip");
+                    ZipFile.CreateFromDirectory(folder, zipFile);// AddFiles(files, "ProjectX");
+                    Stream iStream = new FileStream(zipFile, FileMode.Open, FileAccess.Read, FileShare.Read);
+                    return File(iStream, "application/blob", String.Format("{0} 碳排係數計算.zip", eng.EngNo));
+                }
+                else
+                {
+                    return null;
+                }
             }
             catch (Exception e)
             {
@@ -763,7 +799,7 @@ namespace EQC.Controllers
                 message = "請求錯誤"
             }, JsonRequestBehavior.AllowGet);
         }
-        private bool CreateExcel(EQMEngVModel eng, List<CarbonEmissionPayItemVModel> ceList, string folder)
+        private bool CreateExcel(EQMEngVModel eng, List<CarbonEmissionPayItemVModel> ceList, string folder, DownloadArgExtension downloadArg= null)
         {
             //string filename = CopyTemplateFile("碳排放量估算表.xlsx", ".xlsx");
 
@@ -786,7 +822,7 @@ namespace EQC.Controllers
                 }
                 fillSheet(dict["碳排放量估算表"], eng, ceList);
 
-
+                downloadArg?.targetPathSetting(filename);
                 workbook.Save();
                 workbook.Close();
                 appExcel.Quit();
@@ -1085,7 +1121,7 @@ namespace EQC.Controllers
         }
         
         //節能減碳簡易檢核表
-        public ActionResult DnCheckTable(int id)
+        public ActionResult DnCheckTable(int id, DownloadArgExtension downloadArg = null)
         {
             try
             {
@@ -1128,6 +1164,7 @@ namespace EQC.Controllers
                 }
 
                 Stream iStream = new FileStream(Path.Combine(folder, "節能減碳簡易檢核表.docx"), FileMode.Open, FileAccess.Read, FileShare.Read);
+                downloadArg?.targetPathSetting(Path.Combine(folder, "節能減碳簡易檢核表.docx"));
                 return File(iStream, "application/blob", String.Format("{0}-節能減碳簡易檢核表.docx", eng.EngNo));
             }
             catch (Exception e)
@@ -1142,7 +1179,7 @@ namespace EQC.Controllers
                 message = "請求錯誤"
             }, JsonRequestBehavior.AllowGet);
         }
-        private bool CreateCheckTableDoc(EQMEngVModel eng, CECheckTableModel ctItem, string folder)
+        private bool CreateCheckTableDoc(EQMEngVModel eng, CECheckTableModel ctItem, string folder, DownloadArgExtension downloadArg =null)
         {
             string filename = Path.Combine(folder, "節能減碳簡易檢核表.docx");
             string srcFile = Path.Combine(Utils.GetTemplateFilePath(), "碳排量計算-附件1-節能減碳簡易檢核表1111019修正.docx");
@@ -1186,8 +1223,33 @@ namespace EQC.Controllers
                 }
                 sheet.Cell(row, 4).Range.Text = Split + String.Format("是否盡量利用在地物種或碳儲存效果佳之樹種\n(如：高固碳樹種{0})",buff);
                 setCheckItem(ctItem.F1107, ++row, sheet);
-                sheet.Cell(row, 4).Range.Text = String.Format("其他：{0}", ctItem.F1107Desc);
-
+                //sheet.Cell(row, 4).Range.Text = String.Format("其他：{0}", ctItem.F1107Desc);
+                buff = "";
+                foreach (CECheckTableTreeModel m in ctItem.ShrubList)
+                {
+                    if (m.Seq == 9999)
+                    {
+                        if (m.Checked)
+                            buff += Split + String.Format("■其他 {0} 樹種 {1} 株", m.TreeName, m.Amount);
+                        else
+                            buff += Split + "□其他________樹種___株";
+                    }
+                    else
+                    {
+                        if (m.Checked)
+                            buff += Split + String.Format("■{0} {1} 株", m.TreeName, m.Amount);
+                        else
+                            buff += Split + String.Format("□{0}___株", m.TreeName);
+                    }
+                    Split = ",";
+                }
+                sheet.Cell(row, 4).Range.Text = Split + String.Format("灌木樹種\n{0}", buff);
+                setCheckItem(ctItem.F1108, ++row, sheet);
+                sheet.Cell(row, 4).Range.Text = "綠化面積(m2):" + ctItem.F1108Area.ToString();
+                setCheckItem(ctItem.F1109, ++row, sheet);
+                sheet.Cell(row, 4).Range.Text = "綠化長度(m):" + ctItem.F1109Length.ToString();
+                setCheckItem(ctItem.F1110, ++row, sheet);
+                sheet.Cell(row, 4).Range.Text = "工程設計減碳策略 / 長度(m)、範圍(m2)、數量(m3)：" + ctItem.F1110Desc.ToString();
                 setCheckItem(ctItem.F1201, ++row, sheet);
                 buff = "□20%，□30%，□50%，□其他____%";
                 if (ctItem.F1201Mix.HasValue) {
@@ -1331,6 +1393,7 @@ namespace EQC.Controllers
                 }
 
                 doc.Save();
+                downloadArg?.targetPathSetting(filename);
                 if (doc != null) doc.Close();
                 if (wordApp != null) wordApp.Quit();
 
@@ -1356,7 +1419,7 @@ namespace EQC.Controllers
             }
         }
         //工程碳排放量檢核表
-        private bool CreateCheckTableExcel(EQMEngVModel eng, List<CarbonEmissionPayItemVModel> ceList, string folder, EQMCarbonEmissionHeaderTradeVModel ceHaeder)
+        private bool CreateCheckTableExcel(EQMEngVModel eng, List<CarbonEmissionPayItemVModel> ceList, string folder, EQMCarbonEmissionHeaderTradeVModel ceHaeder, DownloadArgExtension downloadArg = null)
         {
             string filename = Path.Combine(folder, "工程碳排放量檢核表.xlsx");
             string srcFile = Path.Combine(Utils.GetTemplateFilePath(), "碳排量計算-工程碳排放量檢核表.xlsx");
@@ -1380,7 +1443,7 @@ namespace EQC.Controllers
                 workbook.Save();
                 workbook.Close();
                 appExcel.Quit();
-
+                downloadArg?.targetPathSetting(filename);
                 return true;
             }
             catch (Exception e)
@@ -1400,6 +1463,7 @@ namespace EQC.Controllers
             sheet.Cells[7, 2] = eng.EngPlace;// "@施工地點";
             sheet.Cells[7, 6] = eng.EngNo;// "@標案編號";
             sheet.Cells[10, 2] = eng.Co2Total;
+            sheet.Cells[10, 5] = eng.ApprovedCarbonQuantity;
             //s20230619 包發預算 SubContractingBudget
             if (eng.Co2ItemTotal.HasValue && eng.SubContractingBudget.HasValue && eng.SubContractingBudget.Value > 0)
                 sheet.Cells[11, 2] = String.Format("{0}%",Math.Round(eng.Co2ItemTotal.Value * 100 / eng.SubContractingBudget.Value));

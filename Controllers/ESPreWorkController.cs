@@ -1,4 +1,5 @@
 ﻿using EQC.Common;
+using EQC.EDMXModel;
 using EQC.Models;
 using EQC.Services;
 using EQC.ViewModel;
@@ -21,12 +22,14 @@ namespace EQC.Controllers
         public JsonResult SearchPhase(string keyWord)
         {
             List<SupervisePhaseModel> list = iServce.GetPhaseCode(keyWord);
-            if(list.Count==1)
+            var phaseOption = iServce.GetPhaseOptions(keyWord.Substring(0, 3));
+            if (list.Count > 0)
             {
                 return Json(new
                 {
                     result = 0,
-                    item = list[0]
+                    item = list[0],
+                    phaseOption =phaseOption
                 });
             }
             return Json(new
@@ -34,6 +37,19 @@ namespace EQC.Controllers
                 result = -1,
                 msg = "查無此期別"
             });
+        }
+
+        public JsonResult SyncWeakness(int prjSeq, int pharseSeq)
+        {
+            string description =  iServce.GetWeaknessDescription(prjSeq);
+            if(iServce.SyncSuperviseEngWeakness(prjSeq, pharseSeq) > 0)
+            {
+                return Json(description);
+            }
+            else
+            {
+                return Json(null);
+            }
         }
         //期間工程清單
         public JsonResult GetPhaseEngList(int id, int pageRecordCount, int pageIndex)
@@ -44,6 +60,43 @@ namespace EQC.Controllers
             if (total > 0)
             {
                 engList = iServce.GetPhaseEngList1<SuperviseEng1VModel>(id, pageRecordCount, pageIndex);
+                /* s20240913 取消
+                using(var context = new EQC_NEW_Entities())
+                {
+                    engList =  context.SuperviseEng.Where(r => r.SupervisePhaseSeq == id).ToList().Join(
+                        context.viewPrjXMLPlaneWeakness,
+                        r1 => r1.PrjXMLSeq,
+                        r2 => r2.PrjXMLSeq,
+                        (r1, r2) =>
+                        {
+                            r1.Updated =
+                                !(r1.W1 == r2.W1 &&
+                                r1.W2 == r2.W2 &&
+                                r1.W3 == r2.W3 &&
+                                r1.W4 == r2.W4 &&
+                                r1.W5 == r2.W5 &&
+                                r1.W6 == r2.W6 &&
+                                r1.W7 == r2.W7 &&
+                                r1.W8 == r2.W8 &&
+                                r1.W9 == r2.W9 &&
+                                r1.W10 == r2.W10 &&
+                                r1.W11 == r2.W11 &&
+                                r1.W12 == r2.W12 &&
+                                r1.W13 == r2.W13 &&
+                                r1.W14 == r2.W14);
+                            return r1;
+
+                        })
+                        .Join(engList,
+                            r1 => r1.PrjXMLSeq,
+                            r2 => r2.PrjXMLSeq,
+                            (r1, r2) =>
+                            {
+                                r2.Updated = r1.Updated;
+                                return r2;
+                            }).ToList();
+                        
+                }*/
             }
             return Json(new
             {
@@ -86,6 +139,28 @@ namespace EQC.Controllers
         {
             int state = iServce.SaveEngForPrework(m);
             if (state >0)
+            {
+                return Json(new
+                {
+                    result = 0,
+                    msg = "儲存成功"
+                });
+            }
+            else
+            {
+                return Json(new
+                {
+                    result = -1,
+                    msg = "儲存失敗"
+                });
+            }
+
+        }
+        //移動期別儲存
+        public JsonResult SaveChangeEng(SuperviseEngPreWordVModel m ,int PhaseSeq)
+        {
+            int state = iServce.SaveChangePhaseForPrework(m, PhaseSeq);
+            if (state > 0)
             {
                 return Json(new
                 {

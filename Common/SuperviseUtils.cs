@@ -138,13 +138,14 @@ namespace EQC.Common
                 if (eng.SuperviseEndDate.HasValue)
                 {
                     sd = String.Format("{0}~{1}",
-                        eng.SuperviseDate.HasValue ? Utils.Chs1Date(eng.SuperviseDate.Value) : "",
-                        eng.SuperviseEndDate.HasValue ? Utils.Chs1Date(eng.SuperviseEndDate.Value) : "");
-                } else
-                {
-                    sd = eng.SuperviseDate.HasValue? Utils.Chs1Date(eng.SuperviseDate.Value) : "";
+                    eng.SuperviseDate.HasValue? Utils.Chs1Date(eng.SuperviseDate.Value) + $"({Utils.GetDayOfWeek(eng.SuperviseDate.Value)})" : "",
+                        eng.SuperviseEndDate.HasValue? Utils.Chs1Date(eng.SuperviseEndDate.Value) + $"({Utils.GetDayOfWeek(eng.SuperviseEndDate.Value)})" : "");
                 }
-                sheet.Cell(4, 2).Range.Text = sd;
+                else
+                {
+                    sd = eng.SuperviseDate.HasValue ? Utils.Chs1Date(eng.SuperviseDate.Value) + $"({Utils.GetDayOfWeek(eng.SuperviseDate.Value)})" : "";
+                }
+                sheet.Cell(4, 2).Range.Text = sd  ;
                 
                 if (eng.SuperviseStartTime.HasValue && scheduleForm.Count>0)
                 {
@@ -244,14 +245,14 @@ namespace EQC.Common
                 string engTHSR = "";
                 foreach (SuperviseEngTHSRVModel m in lists)
                 {
-                    engTHSR += sp + m.CarNo + " " + m.Memo;
+                    engTHSR += sp + m.CarNo + " " ;
                     sp = "\n";
                 }
-                sheet.Cell(15, 3).Range.Text = String.IsNullOrEmpty(engTHSR) ? "" : "※搭乘高鐵建議-\n" + engTHSR;
+                sheet.Cell(17, 2).Range.Text = String.IsNullOrEmpty(engTHSR) ? "" : "※搭乘高鐵建議-\n" + engTHSR;
 
                 //s20230421
-                sheet.Cell(20, 3).Range.Text = String.Format("{0} {1} ({2})", eng.AdminContact, eng.AdminTel, eng.AdminMobile);
-                sheet.Cell(21, 3).Range.Text = String.Format("{0} {1} ({2})", eng.RiverBureauContact, eng.RiverBureauTel, eng.RiverBureauMobile);
+                sheet.Cell(23, 3).Range.Text = String.Format("{0} {1} ({2})", eng.AdminContact, eng.AdminTel, eng.AdminMobile);
+                sheet.Cell(24, 3).Range.Text = String.Format("{0} {1} ({2})", eng.RiverBureauContact, eng.RiverBureauTel, eng.RiverBureauMobile);
 
                 doc.Save();
 
@@ -294,12 +295,12 @@ namespace EQC.Common
                 if (eng.SuperviseEndDate.HasValue)
                 {
                     sd = String.Format("督導日期：\n{0}~{1}",
-                        eng.SuperviseDate.HasValue ? eng.SuperviseDate.Value.ToString("yyyy年MM月dd日") : "",
-                        eng.SuperviseEndDate.HasValue ? eng.SuperviseEndDate.Value.ToString("yyyy年MM月dd日") : "");
+                        eng.SuperviseDate.HasValue ? Utils.Chs1Date( eng.SuperviseDate.Value): "",
+                        eng.SuperviseEndDate.HasValue ? Utils.Chs1Date(eng.SuperviseEndDate.Value) : "");
                 }
                 else
                 {
-                    sd = eng.SuperviseDate.HasValue ? eng.SuperviseDate.Value.ToString("督導日期：\nyyyy年MM月dd日") : "";
+                    sd = eng.SuperviseDate.HasValue ? Utils.Chs1Date(eng.SuperviseDate.Value) : "";
                 }
                 sheet.Cell(1, 2).Range.Text = sd;// "@督導日期";
                 int fee = 0, inx = 0, row = 0;
@@ -309,16 +310,16 @@ namespace EQC.Common
                     sheet.Cell(row + 5, 1).Range.Text = (inx + 1).ToString();//"@編號";
                     sheet.Cell(row + 5, 2).Range.Text = m.ECName;//"@姓名";
                     sheet.Cell(row + 5, 3).Range.Text = "2,500";//"@出席費";
-                    sheet.Cell(row + 5, 9).Range.Text = m.ECAddr1;//"@戶籍地址";
-                    sheet.Cell(row + 5, 10).Range.Text = m.ECMemo;// "@備註";
-                    sheet.Cell(row + 6, 9).Range.Text = m.ECId;// "@身分證號碼";
-                    sheet.Cell(row + 7, 9).Range.Text = m.ECBankNo;// "@匯款帳號";
+                    sheet.Cell(row + 5, 8).Range.Text = m.ECAddr2;//"@戶籍地址";
+                    sheet.Cell(row + 5, 9).Range.Text = eng.BelongPrjNoNum;// "@備註";
+                    sheet.Cell(row + 6, 8).Range.Text = m.ECId;// "@身分證號碼";
+                    sheet.Cell(row + 7, 8).Range.Text = m.ECBankNo;// "@匯款帳號";
                     fee += 2500;
                     inx++;
                     row = inx * 3;
                     if (row > 6) break;
                 }
-                sheet.Cell(14, 2).Range.Text = fee.ToString("{,#}");// "@小計"; 自動加總
+                sheet.Cell(14, 2).Range.Text = fee.ToString("N0");// "@小計"; 自動加總
 
                 doc.Save();
                 if (mode == 2)
@@ -371,12 +372,12 @@ namespace EQC.Common
                 if (eng.SuperviseEndDate.HasValue)
                 {
                     sd = String.Format("{0}~{1}",
-                        eng.SuperviseDate.HasValue ? eng.SuperviseDate.Value.ToString("yyyy/M/d") : "",
-                        eng.SuperviseEndDate.HasValue ? eng.SuperviseEndDate.Value.ToString("yyyy/M/d") : "");
+                        eng.SuperviseDate.HasValue ? Utils.Chs1Date(eng.SuperviseDate.Value) + $"({Utils.GetDayOfWeek(eng.SuperviseDate.Value)})" : "",
+                        eng.SuperviseEndDate.HasValue ? Utils.Chs1Date(eng.SuperviseEndDate.Value) + $"({Utils.GetDayOfWeek(eng.SuperviseEndDate.Value)})" : "");
                 }
                 else
                 {
-                    sd = eng.SuperviseDate.HasValue ? eng.SuperviseDate.Value.ToString("yyyy/M/d") : "";
+                    sd = eng.SuperviseDate.HasValue ? Utils.Chs1Date(eng.SuperviseDate.Value) + $"({Utils.GetDayOfWeek(eng.SuperviseDate.Value)})" : "";
                 }
                 sheet.Cell(3, 2).Range.Text = sd;// "@日期";
                 sheet.Cell(4, 2).Range.Text = eng.EngPlace;// "@地點";
@@ -526,12 +527,12 @@ namespace EQC.Common
                 if (eng.SuperviseEndDate.HasValue)
                 {
                     sd = String.Format("{0}~{1}",
-                        eng.SuperviseDate.HasValue ? eng.SuperviseDate.Value.ToString("yyyy年M月d日") : "",
-                        eng.SuperviseEndDate.HasValue ? eng.SuperviseEndDate.Value.ToString("yyyy年M月d日") : "");
+                        eng.SuperviseDate.HasValue ? Utils.Chs1Date(eng.SuperviseDate.Value) + $"({Utils.GetDayOfWeek(eng.SuperviseDate.Value)})" : "",
+                        eng.SuperviseEndDate.HasValue ? Utils.Chs1Date(eng.SuperviseEndDate.Value) + $"({Utils.GetDayOfWeek(eng.SuperviseEndDate.Value)})" : "");
                 }
                 else
                 {
-                    sd = eng.SuperviseDate.HasValue ? eng.SuperviseDate.Value.ToString("yyyy年M月d日") : "";
+                    sd = eng.SuperviseDate.HasValue ? Utils.Chs1Date(eng.SuperviseDate.Value) + $"({Utils.GetDayOfWeek(eng.SuperviseDate.Value)})" : "";
                 }
                 sheet.Cell(3, 2).Range.Text = sd;// "@督導日期";
 

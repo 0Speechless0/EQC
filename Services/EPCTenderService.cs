@@ -14,17 +14,16 @@ namespace EQC.Services
         public List<EngYearVModel> GetTenderYearList()
         {
             int userSeq = new SessionManager().GetUser().Seq;
-            bool isSupervisor = UserRoleCheckService.checkSupervisor(userSeq);
             string sql = @"
                 SELECT DISTINCT
                     cast( substring(p.ActualBidAwardDate, 1, 3) as integer) EngYear
                 FROM EngMain a
                 inner join SupervisionProjectList d on(d.EngMainSeq=a.Seq)
                 inner join PrjXML p on a.PrjXMLSeq = p.Seq 
-                " + (isSupervisor ? "inner join EngSupervisor es on es.EngMainSeq = a.Seq" : "")+ @"
+                "+ @"
                 where a.PrjXMLSeq is not null
                 "
-                +(isSupervisor ? "and es.UserMainSeq="+userSeq : Utils.getAuthoritySql("a.")) 
+                + Utils.getAuthoritySql("a.")
                 + @" order by EngYear DESC";
             SqlCommand cmd = db.GetCommand(sql);
             cmd.Parameters.AddWithValue("@CreateUserSeq", getUserSeq());
@@ -34,20 +33,21 @@ namespace EQC.Services
         public List<EngExecUnitsVModel> GetTenderExecUnitList(string engYear)
         {
             int userSeq = new SessionManager().GetUser().Seq;
-            bool isSupervisor = UserRoleCheckService.checkSupervisor(userSeq);
             string sql = @"
                 SELECT DISTINCT
                     b.OrderNo,
                     a.ExecUnitSeq UnitSeq,
                     b.Name UnitName
                 FROM EngMain a
-                inner join PrjXML p on a.PrjXMLSeq = p.Seq
+                -- inner join PrjXML p on a.PrjXMLSeq = p.Seq
                 inner join SupervisionProjectList d on(d.EngMainSeq=a.Seq)            
                 inner join Unit b on(b.Seq=a.ExecUnitSeq and b.parentSeq is null)
-                " + (isSupervisor ? "inner join EngSupervisor es on es.EngMainSeq = a.Seq" : "") + @"
-                where substring(p.ActualBidAwardDate, 1, 3) = @EngYear
+                " +  @"
+                where 
+                -- substring(p.ActualBidAwardDate, 1, 3) = @EngYear
+                1=1 
                 "
-                + (isSupervisor ? "and es.UserMainSeq=" + userSeq : Utils.getAuthoritySql("a."))
+                +  Utils.getAuthoritySql("a.")
             + @" order by b.OrderNo";
             SqlCommand cmd = db.GetCommand(sql);
             cmd.Parameters.Clear();
@@ -1477,7 +1477,6 @@ namespace EQC.Services
         {
             string sql = @"";
             int userSeq = new SessionManager().GetUser().Seq;
-            bool isSupervisor = UserRoleCheckService.checkSupervisor(userSeq);
             if (subUnitSeq == -1)
             {
                 sql = @"
@@ -1488,16 +1487,19 @@ namespace EQC.Services
                 inner join SupervisionProjectList d on(
                     d.Seq=(select max(Seq) from SupervisionProjectList where EngMainSeq=a.Seq)
                 )
-                inner join PrjXML p on p.Seq = a.PrjXMLSeq
-                "+ (isSupervisor ? "inner join EngSupervisor es on es.EngMainSeq = a.Seq" : "") + @"
+                left join PrjXML p on p.Seq = a.PrjXMLSeq
+                left join PrjXMLTmp p2 on p2.Seq = -a.PrjXMLSeq
+                " + @"
                 where ( (@Seq=-1) or (a.Seq=@Seq) )
                 "
-                + (isSupervisor ? " and es.UserMainSeq=" + userSeq : Utils.getAuthoritySql("a.")) + @"
+                + @"
                 and a.ExecUnitSeq=@ExecUnitSeq
                 and a.PrjXMLSeq is not null ---shioulo 20220618
-                and p.ActualBidAwardDate Like @year
+                and  (p.ActualBidAwardDate Like @year  or a.PrjXMLSeq < 0)
                 and a.EngName Like @keyWord
-                ";  //and a.CreateUserSeq=@CreateUserSeq";
+                  and (p2.Seq is not null or  p.Seq is not null)
+                "
+                + Utils.getAuthoritySql("a.");  //and a.CreateUserSeq=@CreateUserSeq";
             }
             else
             {
@@ -1510,15 +1512,16 @@ namespace EQC.Services
                     d.Seq=(select max(Seq) from SupervisionProjectList where EngMainSeq=a.Seq)
                 )
                 inner join PrjXML p on p.Seq = a.PrjXMLSeq
-                " + (isSupervisor ? "inner join EngSupervisor es on es.EngMainSeq = a.Seq" : "")+@"
+                " + @"
                 where ( (@Seq=-1) or (a.Seq=@Seq) )
                 "
-                + (isSupervisor ? " and es.UserMainSeq=" + userSeq : Utils.getAuthoritySql("a.")) + @"
+                +  @"
                 and a.ExecSubUnitSeq=@ExecSubUnitSeq
                 and a.PrjXMLSeq is not null ---shioulo 20220618
                 and p.ActualBidAwardDate Like @year
                 and a.EngName Like @keyWord
-                ";//and a.CreateUserSeq=@CreateUserSeq";
+                "
+                + Utils.getAuthoritySql("a.");//and a.CreateUserSeq=@CreateUserSeq";
             }
             string sql2 = @" SELECT count(*) as total from (" + sql + ") b ";
             
@@ -1538,7 +1541,6 @@ namespace EQC.Services
         {
             UserInfo user = new SessionManager().GetUser();
             int userSeq = user.Seq;
-            bool isSupervisor = UserRoleCheckService.checkSupervisor(userSeq)  ;
             string sql = @"";
             if (subUnitSeq == -1)
             {
@@ -1546,15 +1548,17 @@ namespace EQC.Services
                     SELECT distinct
                         a.Seq
                     FROM EngMain a 
-                    " + (isSupervisor ? "inner join EngSupervisor es on es.EngMainSeq = a.Seq" : "") + @"
-                    inner join PrjXML p on p.Seq = a.PrjXMLSeq
+                    left join PrjXML p on p.Seq = a.PrjXMLSeq
+                    left join PrjXMLTmp p2 on p2.Seq = -a.PrjXMLSeq
                     where ( (@Seq=-1) or (a.Seq=@Seq) )
                     "
-                    + (isSupervisor ? " and es.UserMainSeq=" + userSeq : Utils.getAuthoritySql("a.")) + @"
+                    + @"
                     and a.ExecUnitSeq=@ExecUnitSeq
                     and a.PrjXMLSeq is not null ---shioulo 20220618
-                    and p.ActualBidAwardDate Like @year
-                    ";
+                    and  (p.ActualBidAwardDate Like @year  or a.PrjXMLSeq < 0)
+                    and (p2.Seq is not null or  p.Seq is not null)
+                    "
+                    + Utils.getAuthoritySql("a.");
             }
             else
             {
@@ -1563,14 +1567,15 @@ namespace EQC.Services
                         a.Seq
                     FROM EngMain a
                     inner join PrjXML p on p.Seq = a.PrjXMLSeq
-                    " + (isSupervisor ? "inner join EngSupervisor es on es.EngMainSeq = a.Seq" : "") + @"
+                    " + @"
                     where ( (@Seq=-1) or (a.Seq=@Seq) )
                     "
-                    + (isSupervisor ? " and es.UserMainSeq=" + userSeq : Utils.getAuthoritySql("a.")) + @"
+                    + @"
                     and a.ExecSubUnitSeq=@ExecSubUnitSeq
                     and a.PrjXMLSeq is not null ---shioulo 20220618
                     and p.ActualBidAwardDate Like @year
-                    ";
+                    "
+                    + Utils.getAuthoritySql("a.");
    
             }
             string sql2 = @"
@@ -1582,16 +1587,16 @@ namespace EQC.Services
                         aa.DesignUnitName,
                         aa.PrjXMLSeq,
                         b.Name ExecUnit,
-                        d.DocState,
+                          d.DocState,
                         NULLIF(
                             (select top 1 b.PDExecState from ProgressData b
                             where PrjXMLSeq=aa.PrjXMLSeq
                             order by b.PDYear DESC, b.PDMonth DESC), '') ExecState -- 執行進度
                     FROM EngMain aa 
                         inner join Unit b on(b.Seq=aa.ExecUnitSeq and aa.ExecUnitSeq=@ExecUnitSeq)
-                        inner join SupervisionProjectList d on(
-                            d.Seq=(select max(Seq) from SupervisionProjectList where EngMainSeq=aa.Seq)
-                        )
+                         inner join SupervisionProjectList d on(
+                             d.Seq=(select max(Seq) from SupervisionProjectList where EngMainSeq=aa.Seq)
+                          )
                         left outer join Unit c on(c.Seq=aa.ExecSubUnitSeq)
                       where aa.Seq in (" + sql+ @")
                        and aa.EngName Like @keyWord

@@ -44,4 +44,5 @@
         cursor: not-allowed;
         pointer-events: all !important;
     }
+    
 </style>

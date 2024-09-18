@@ -1,7 +1,7 @@
 <template>
     <div>
         <table>
-            <tr><td colspan="7">避免網路速度影響，僅提供下載、上傳30天日誌(報表)</td></tr>
+            <tr><td colspan="7">避免網路速度影響，僅提供下載、上傳31天日誌(報表)</td></tr>
             <tr>
                 <td style="width: 80px; background: #f2f2f2; text-align:center;">日期範圍</td>
                 <td class="pl-2">
@@ -12,7 +12,7 @@
                     <input v-model.trim="filterEndDate" type="date" class="form-control">
                 </td>
                 <td>
-                    <button @click="downloadMultiDate" type="button" class="btn btn-outline-secondary btn-sm" title="Excel範本下載">下載多日Excel範本&nbsp;<i class="fas fa-download"></i></button>
+                    <button :disabled="downloadTaskStore.isDownloading" @click="downloadMultiDate" type="button" class="btn btn-outline-secondary btn-sm" title="Excel範本下載">下載多日Excel範本&nbsp;<i class="fas fa-download"></i></button>
                 </td>
                 <td>
                     <label class="btn btn-block btn-outline-secondary btn-sm" style="margin-top: 6px">
@@ -22,10 +22,13 @@
                 </td>
                 <td>
                     <!-- button @click="downloadMultiDateReport" type="button" class="btn btn-outline-secondary btn-sm" title="施工日報下載">下載多日施工日報<i class="fas fa-download"></i></button -->
-                    <button @click="dnClickEvent = 1" data-target="#refExportModal" title="下載多日施工日報" class="btn btn-outline-secondary btn-sm"
+                    <button :disabled="downloadTaskStore.isDownloading" @click="dnClickEvent = 1" data-target="#refExportModal" title="下載多日施工日報" class="btn btn-outline-secondary btn-sm"
                             role="button" data-toggle="modal">
                         下載多日施工日報<i class="fas fa-download"></i>
                     </button>
+                </td>
+                <td style="color:red" v-if="downloadTaskStore.isDownloading" class="pl-2">
+                    因資源超負荷使用，請等候....
                 </td>
             </tr>
         </table>
@@ -37,16 +40,16 @@
         <div>
             <ul v-show="supDailyItem != null" class="nav nav-tabs" role="tablist">
                 <li class="nav-item">
-                    <a v-on:click="selectTab=''" id="tabMenu01" class="nav-link active" data-toggle="tab" href="#menu01">一、依施工計畫執行按圖施工概況</a>
+                    <a @click="selectTab=''" :class="`nav-link ${selectTab == '' ? 'active' : ''}`" id="tabMenu01" data-toggle="tab" href="#menu01">一、依施工計畫執行按圖施工概況</a>
                 </li>
-                <li v-show="supDailyItem != null && supDailyItem.Seq != -1" class="nav-item">
-                    <a v-on:click="selectTab='menu02'" id="tabMenu02" class="nav-link" data-toggle="tab" href="#menu02">二、其它</a>
+                <li class="nav-item">
+                    <a @click="selectTab='menu02'" :class="`nav-link ${selectTab == 'menu02' ? 'active' : ''}`" id="tabMenu02" data-toggle="tab" href="#menu02">二、其它</a>
                 </li>
             </ul>
             <!-- Tab panes -->
             <div class="tab-content">
                 <!-- 一 -->
-                <div id="menu01" class="tab-pane">
+                <div id="menu01" v-if="selectTab == ''">
                     <h5>一、依施工計畫執行按圖施工概況(含約定之重要施工項目及完成數量等)</h5>
                     <div class="form-row" role="toolbar">
                         <div class="col-12 col-sm-6 col-md-auto mb-3 mb-sm-0 mt-sm-2 mt-md-0">
@@ -85,7 +88,7 @@
                         </div>
                     </div>
                     <comm-pagination ref="pagination" :recordTotal="planItems.length" v-on:onPaginationChange="onPaginationChange"></comm-pagination>
-                    <div class="table-responsive">
+                    <div class="table-responsive tableFixHead">
                         <table class="table table-responsive-md table-hover">
                             <thead class="insearch">
                                 <tr>
@@ -124,7 +127,7 @@
                         </table>
                     </div>
                 </div>
-                <div v-if="supDailyItem != null && supDailyItem.Seq != -1" id="menu02" class="tab-pane">
+                <div v-if="supDailyItem != null && supDailyItem.Seq != -1 && selectTab == 'menu02'" id="menu02" >
                     <div v-show="!isDisabledAndCompleted" class="col-12 col-sm-6 col-md-auto mb-3 mb-sm-0 mt-sm-2 mt-md-0">
                         <button @click="copyMiscData" v-bind:disabled="isDisabled" type="button" class="btn btn-outline-secondary btn-sm" title="複製前日材料,人員,機具資料">複製前日材料,人員,機具資料&nbsp;<i class="fas fa-copy"></i></button>
                     </div>
@@ -136,11 +139,11 @@
                     <h5>四、本日施工項目是否有須依「營造業專業工程特定施工項目應置之技術士總類、比率或人數標準表」規定應置之技術士之專業工程</h5>
                     <div class="form-group my-2">
                         <div class="custom-control custom-radio">
-                            <input v-model="miscItem.IsFollowSkill" type="radio" value="true" id="customRadio1" name="customRadioA" class="custom-control-input">
+                            <input v-model="miscItem.IsFollowSkill" @click="e => Com.setRadioBoxToNullIfSetted(miscItem, 'IsFollowSkill' ,e.target.value)" type="radio" value="true" id="customRadio1" name="customRadioA" class="custom-control-input">
                             <label class="custom-control-label" for="customRadio1">是(此項如勾選，則應另外填寫「公共工程施工日誌之技術士簽章表」)</label>
                         </div>
                         <div class="custom-control custom-radio">
-                            <input v-model="miscItem.IsFollowSkill" type="radio" value="false" id="customRadio2" name="customRadioA" class="custom-control-input">
+                            <input v-model="miscItem.IsFollowSkill" @click="e => Com.setRadioBoxToNullIfSetted(miscItem, 'IsFollowSkill' ,e.target.value)" type="radio" value="false" id="customRadio2" name="customRadioA" class="custom-control-input">
                             <label class="custom-control-label" for="customRadio2">否</label>
                         </div>
                     </div>
@@ -153,13 +156,13 @@
                             </tr>
                             <tr>
                                 <td class="pl-4">
-                                    <div class="row pl-4">
-                                        <div class="custom-control custom-radio">
-                                            <input v-model="miscItem.SafetyHygieneMatters01" type="radio" value="true" id="customRadio1SafetyHygieneMatters01" name="customRadioSafetyHygieneMatters01" class="custom-control-input">
+                                    <div class="row pl-4" >
+                                        <div class="custom-control custom-radio" >
+                                            <input v-model="miscItem.SafetyHygieneMatters01" type="radio" value="true" @click="e => Com.setRadioBoxToNullIfSetted(miscItem, 'SafetyHygieneMatters01' ,e.target.value)" id="customRadio1SafetyHygieneMatters01" name="customRadioSafetyHygieneMatters01" class="custom-control-input">
                                             <label class="custom-control-label" for="customRadio1SafetyHygieneMatters01">有</label>
                                         </div>
                                         <div class="custom-control custom-radio" style="padding-left: 2.5rem;">
-                                            <input v-model="miscItem.SafetyHygieneMatters01" type="radio" value="false" id="customRadio2SafetyHygieneMatters01" name="customRadioSafetyHygieneMatters01" class="custom-control-input">
+                                            <input v-model="miscItem.SafetyHygieneMatters01" type="radio" value="false" @click="e => Com.setRadioBoxToNullIfSetted(miscItem, 'SafetyHygieneMatters01' ,e.target.value)" id="customRadio2SafetyHygieneMatters01" name="customRadioSafetyHygieneMatters01" class="custom-control-input">
                                             <label class="custom-control-label" for="customRadio2SafetyHygieneMatters01">無</label>
                                         </div>
                                     </div>
@@ -172,15 +175,15 @@
                                 <td class="pl-4">
                                     <div class="row pl-4">
                                         <div class="custom-control custom-radio">
-                                            <input v-model="miscItem.SafetyHygieneMatters02" type="radio" value="1" id="customRadio1SafetyHygieneMatters02" name="customRadioSafetyHygieneMatters02" class="custom-control-input">
+                                            <input v-model="miscItem.SafetyHygieneMatters02" type="radio" value="1" @click="e => Com.setRadioBoxToNullIfSetted(miscItem, 'SafetyHygieneMatters02' ,e.target.value)" id="customRadio1SafetyHygieneMatters02" name="customRadioSafetyHygieneMatters02" class="custom-control-input">
                                             <label class="custom-control-label" for="customRadio1SafetyHygieneMatters02">有</label>
                                         </div>
                                         <div class="custom-control custom-radio" style="padding-left: 2.5rem;">
-                                            <input v-model="miscItem.SafetyHygieneMatters02" type="radio" value="0" id="customRadio2SafetyHygieneMatters02" name="customRadioSafetyHygieneMatters02" class="custom-control-input">
+                                            <input v-model="miscItem.SafetyHygieneMatters02" type="radio" value="0" @click="e => Com.setRadioBoxToNullIfSetted(miscItem, 'SafetyHygieneMatters02' ,e.target.value)" id="customRadio2SafetyHygieneMatters02" name="customRadioSafetyHygieneMatters02" class="custom-control-input">
                                             <label class="custom-control-label" for="customRadio2SafetyHygieneMatters02">無</label>
                                         </div>
                                         <div class="custom-control custom-radio" style="padding-left: 2.5rem;">
-                                            <input v-model="miscItem.SafetyHygieneMatters02" type="radio" value="2" id="customRadio3SafetyHygieneMatters02" name="customRadioSafetyHygieneMatters02" class="custom-control-input">
+                                            <input v-model="miscItem.SafetyHygieneMatters02" type="radio" value="2" @click="e => Com.setRadioBoxToNullIfSetted(miscItem, 'SafetyHygieneMatters02' ,e.target.value)" id="customRadio3SafetyHygieneMatters02" name="customRadioSafetyHygieneMatters02" class="custom-control-input">
                                             <label class="custom-control-label" for="customRadio3SafetyHygieneMatters02">無新進勞工</label>
                                         </div>
                                     </div>
@@ -193,11 +196,11 @@
                                 <td class="pl-4">
                                     <div class="row pl-4">
                                         <div class="custom-control custom-radio">
-                                            <input v-model="miscItem.SafetyHygieneMatters03" type="radio" value="true" id="customRadio1SafetyHygieneMatters03" name="customRadioSafetyHygieneMatters03" class="custom-control-input">
+                                            <input v-model="miscItem.SafetyHygieneMatters03" type="radio" value="true" @click="e => Com.setRadioBoxToNullIfSetted(miscItem, 'SafetyHygieneMatters03' ,e.target.value)" id="customRadio1SafetyHygieneMatters03" name="customRadioSafetyHygieneMatters03" class="custom-control-input">
                                             <label class="custom-control-label" for="customRadio1SafetyHygieneMatters03">有</label>
                                         </div>
                                         <div class="custom-control custom-radio" style="padding-left: 2.5rem;">
-                                            <input v-model="miscItem.SafetyHygieneMatters03" type="radio" value="false" id="customRadio2SafetyHygieneMatters03" name="customRadioSafetyHygieneMatters03" class="custom-control-input">
+                                            <input v-model="miscItem.SafetyHygieneMatters03" type="radio" value="false" @click="e => Com.setRadioBoxToNullIfSetted(miscItem, 'SafetyHygieneMatters03' ,e.target.value)" id="customRadio2SafetyHygieneMatters03" name="customRadioSafetyHygieneMatters03" class="custom-control-input">
                                             <label class="custom-control-label" for="customRadio2SafetyHygieneMatters03">無</label>
                                         </div>
                                     </div>
@@ -274,8 +277,17 @@
     </div>
 </template>
 <script>
+    import downloadTaskStore  from '../../store/downloadTaskStore';
+    import Com from "../../Common/Common2.js";
     export default {
         props: ['tenderItem', 'canEditUser'],
+        setup()
+        {   
+            downloadTaskStore.getDonloadTaskTag();
+            return {
+                downloadTaskStore 
+            }
+        },
         data: function () {
             return {
                 supDailyItem: null,
@@ -294,6 +306,7 @@
                 //s20230831
                 dnDailyMode: "0",
                 dnClickEvent: -1,
+                Com: Com
             };
         },
         components: {
@@ -326,20 +339,31 @@
                 } else if (this.dnClickEvent == 0) {
                     this.downloadDaily();
                 }
+                window.closeModal("#refExportModal");
             },
             //下載(多日期) 日報 s20230831
-            downloadMultiDateReport() {
+            async downloadMultiDateReport() {
                 if (this.filterEndDate == '' || this.filterStartDate == '') {
                     alert('請輸入日期範圍');
                     return;
                 }
-                if (window.comm.calDays(this.filterStartDate, this.filterEndDate) > 29) {
-                    alert('日期範圍不可以超過30天');
+                if (window.comm.calDays(this.filterStartDate, this.filterEndDate) > 30) {
+                    alert('日期範圍不可以超過31天');
                     return;
                 }
 
-                let action = '/ECProgressManage/DownloadCDailyMulti?sd=' + this.filterStartDate + '&ed=' + this.filterEndDate + '&eId=' + this.tenderItem.Seq + '&eEM=' + this.dnDailyMode;
-                window.comm.dnFile(action, this.dnCallBack);
+                // let action = '/ECProgressManage/DownloadCDailyMulti?sd=' + this.filterStartDate + '&ed=' + this.filterEndDate + '&eId=' + this.tenderItem.Seq + '&eEM=' + this.dnDailyMode;
+                // window.comm.dnFile(action, this.dnCallBack);
+                let {data :res } = await window.myAjax.post("/ECProgressManage/DownloadCDailyMulti", {
+                    sd : this.filterStartDate,
+                    ed : this.filterEndDate,
+                    eId : this.tenderItem.Seq,
+                    eEM : this.dnDailyMode
+
+                });
+                downloadTaskStore.isDownloading = res.downloadTaskTag;
+                alert(res.message);
+                
             },
             //下載 施工日報 s20230831
             downloadDaily() {
@@ -348,9 +372,13 @@
             },
             //s20230831
             dnCallBack(result) {
+                console.log("dffff", result);
                 if (result) {
                     document.getElementById('closeExportModal').click();
                     this.dnDailyMode = "0";
+     
+                    downloadTaskStore.isDownloading = result.downloadTaskTag;
+                    
                 }
             },
             //雨天 s20230831
@@ -381,18 +409,23 @@
                 }
             },
             //下載(多日期) Excel範本
-            downloadMultiDate() {
+            async downloadMultiDate() {
                 if (this.filterEndDate == '' || this.filterStartDate == '') {
                     alert('請輸入日期範圍');
                     return;
                 }
-                if (window.comm.calDays(this.filterStartDate, this.filterEndDate) > 29) {
-                    alert('日期範圍不可以超過30天');
+                if (window.comm.calDays(this.filterStartDate, this.filterEndDate) > 30) {
+                    alert('日期範圍不可以超過31天');
                     return;
                 }
 
                 let action = '/ECProgressManage/DnMultiDate?sd=' + this.filterStartDate + '&ed=' + this.filterEndDate + '&eId=' + this.tenderItem.Seq;
-                window.comm.dnFile(action);
+                let {data :res} =  await window.myAjax.get(action);
+                if(res)
+                {
+                    downloadTaskStore.isDownloading = res.downloadTaskTag;
+                    alert(res.message);
+                }
             },
             //匯入(多日期)日誌(excel)
             uploadMultiDailyLog(event) {
@@ -475,30 +508,33 @@
                 this.supDailyItem.Weather1 = this.$refs.calendar.supDailyDateNote.Weather1;
                 this.supDailyItem.Weather2 = this.$refs.calendar.supDailyDateNote.Weather2;
                 this.supDailyItem.FillinDate = this.$refs.calendar.supDailyDateNote.FillinDate;
+                
                 window.myAjax.post('/ECProgressManage/ConstructionSave', {
                     supDailyItem: this.supDailyItem,
-                    miscItem: this.miscItem,
-                    planItems: this.planItems
+                    miscItem:  this.miscItem,
+                    planItems: this.planItems 
                 })
                     .then(resp => {
                         if (resp.data.result == 0) {
                             if (this.supDailyItem.Seq == -1) {
                                 this.getConstructionItem(this.selectDay);
-                                this.getConstructionCalInfo();
+
                             }
                             if (this.selectTab == '') {
                                 alert('請繼續填寫工地材料、工地人員、機具使用狀況');
                                 //s20230908
                                 this.selectTab = 'menu02';
-                                document.getElementById('tabMenu01').classList.remove("active");
-                                document.getElementById('menu01').classList.remove("active");
-                                document.getElementById('tabMenu02').classList.add("active");
-                                if (document.getElementById('menu02') != null) {
-                                    document.getElementById('menu02').classList.add("active");
-                                }
+                                window.scrollTo(0, 0);
+                                // document.getElementById('tabMenu01').classList.remove("active");
+                                // document.getElementById('menu01').classList.remove("active");
+                                // document.getElementById('tabMenu02').classList.add("active");
+                                // if (document.getElementById('menu02') != null) {
+                                //     document.getElementById('menu02').classList.add("active");
+                                // }
                             } else {
                                 alert(resp.data.msg);
                             }
+                            this.getConstructionCalInfo();
                         } else {
                             alert(resp.data.msg);
                         }
@@ -521,17 +557,17 @@
                             this.miscItem = resp.data.miscItem;
                             this.planItems = resp.data.planItems;
                             this.selectDay = sDay;
-                            document.getElementById('menu01').classList.add("active");
-                            document.getElementById('tabMenu01').classList.add("active");
-                            document.getElementById('tabMenu02').classList.remove("active");
+                            // document.getElementById('menu01').classList.add("active");
+                            // document.getElementById('tabMenu01').classList.add("active");
+                            // document.getElementById('tabMenu02').classList.remove("active");
                             var that = this;
                             this.$refs.calendar.setSupDailyDateNote(this.supDailyItem);
                             this.$nextTick(function () {//s20230908
                                 that.$refs.pagination.setPagination();
 
-                                if (document.getElementById('menu02') != null) {
-                                    document.getElementById('menu02').classList.remove("active");
-                                }
+                                // if (document.getElementById('menu02') != null) {
+                                //     document.getElementById('menu02').classList.remove("active");
+                                // }
                             });
                         } else
                             alert(resp.data.msg);
@@ -575,6 +611,12 @@
                     },
                     dates: [],
                 }
+                var fillin2 = {
+                    highlight: {
+                        class: 'bg-lightgreen',
+                    },
+                    dates: [],
+                }
                 //未填寫
                 var stopfillin = {
                     highlight: {
@@ -597,11 +639,18 @@
                     else if (item.Mode == 1)
                         stopfillin.dates.push(Date.parse(item.DateStr));
                     else if (item.Mode == 2)
-                        fillin.dates.push(Date.parse(item.DateStr));
+                    {
+                        if(item.MachineLoading )
+                            fillin.dates.push(Date.parse(item.DateStr));
+                        else
+                            fillin2.dates.push(Date.parse(item.DateStr));
+                    }
+                        
                 }
                 this.attrs.push(notfillin);
                 this.attrs.push(stopfillin);
                 this.attrs.push(fillin);
+                this.attrs.push(fillin2);
             },
             onCalFromPage(item) {
                 this.fromDate = item.year + '-' + item.month + '-01';
@@ -643,8 +692,27 @@
         }
     }
 </script>
-<style>
+<style scoped>
     .vc-highlight {
         width: 95% !important;
     }
+    .tableFixHead          { overflow: auto; max-height: 500px;   }
+table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+.table {
+    margin : 0;
+}
+.tableFixHead thead  { position: sticky !important ; top: 0 !important ; z-index: 1 !important;     }
+th {
+    border : 0;
+    border-bottom: #ddd solid 1px !important; 
+    border-left : 0 !important;
+    border-right:0 !important;
+}
+td {
+    z-index: 0;
+    position: relative;
+}
 </style>

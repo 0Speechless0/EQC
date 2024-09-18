@@ -11,7 +11,7 @@
             </div>
         </div>
         <comm-pagination :recordTotal="totalRows" v-on:onPaginationChange="onPaginationChange"></comm-pagination>
-        <div class="table-responsive">
+        <div class="table-responsive tableFixHead  ">
             <table class="table table1 min910" border="0">
                 <thead>
                     <tr>
@@ -320,7 +320,11 @@
                             const resultItem = resp.data.item.Data;
                             item.modifyDate = resultItem.modifyDate;
                         } else
+                        {
+                            item.DataKeep = resp.data.DataKeep;
                             alert(resp.data.message);
+                        }
+                     
                     })
                     .catch(err => {
                         console.log(err);
@@ -479,3 +483,24 @@
         }
     }
 </script>
+<style scoped>
+.tableFixHead          { overflow: auto; max-height: 500px;   }
+table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+.table {
+    margin : 0;
+}
+.tableFixHead thead  { position: sticky !important ; top: 0 !important ; z-index: 1 !important;     }
+th {
+    border : 0;
+    border-bottom: #ddd solid 1px !important; 
+    border-left : 0 !important;
+    border-right:0 !important;
+}
+td {
+    z-index: 0;
+    position: relative;
+}
+</style>

@@ -17,5 +17,6 @@ namespace EQC.EDMXModel
         public int UserMainSeq { get; set; }
         public string AppCode { get; set; }
         public int Seq { get; set; }
+        public System.DateTime CreateTime { get; set; }
     }
 }

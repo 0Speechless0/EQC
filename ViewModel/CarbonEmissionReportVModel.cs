@@ -10,8 +10,12 @@ namespace EQC.ViewModel
     public class CarbonEmissionReportVModel : UnitTreeJsonConvertor
     {
         //碳報表
+
+
+        public decimal Co2TotalItemAll { get; set; }
         public string execUnitName { get; set; }
         public string EngName { get; set; }
+        public int OrderNo { get; set; }
 
         public Nullable<short> ExecUnitSeq { get; set; }
 

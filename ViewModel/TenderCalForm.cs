@@ -5,13 +5,8 @@ using System.Web;
 
 namespace EQC.ViewModel
 {
-    public class TenderCalForm
+    public class TenderCalForm : CarbonEmissionCTVModel
     {
-        public string TenderNo { get; set; }
-        public string TenderName { get; set; }
-
-
-        public string EngName { get; set; }
 
         public int isBuild { get; set; }
 
@@ -38,8 +33,9 @@ namespace EQC.ViewModel
         public int constCheckShouldNum { get; set; }
 
         public int neededConstCheckNum { get; set; }
-        public string EngNo { get;  set; }
         public string ExecUnitName { get;  set; }
         public int DismantlingRate { get; set; }
+        public int energySavingCheckShouldNum { get; set; }
+        public int energySavingCheckMustNum { get; set; }
     }
 }

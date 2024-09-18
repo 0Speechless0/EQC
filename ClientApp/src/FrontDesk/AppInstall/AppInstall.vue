@@ -14,10 +14,15 @@
                     <a v-bind:href="downloadlink" download="水利工程抽驗APP.apk" class="my-1 mr-2" v-if="android">Android版app下載</a>
                     <label id="InspectionDate" class="my-1 mr-2" v-if="ios">IOS下載連結:{{downloadlink}}</label>
 
+
+
                 </div>
 
             </div>
         </form>
+        <br>
+                    <p style="color:red">android 版本: 8-13、IOS版本:12-16</p>
+
         <div class="d-flex justify-content-center m-5">
             <div id="qrcode">   </div>
         </div>

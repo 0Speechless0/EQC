@@ -1,6 +1,7 @@
 ﻿using EQC.ViewModel;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 
 namespace EQC.Services
@@ -21,13 +22,16 @@ namespace EQC.Services
                     a.ApprovedCarbonQuantity,
                     a.StartDate,
                     ISNULL(a.EngChangeSchCompDate, a.SchCompDate) SchCompDate, --s20220902
+                    dbo.ChtDate2Date(e.ScheCompletionDate) prjSchCompDate,
+                    dbo.ChtDate2Date(e.ScheStartDate) prjSchStartDate,
                     a.PrjXMLSeq,
                     d.DocState,
                     e.TenderNo,
                     e.ExecUnitName,
                     e.TenderName,
                     e.DurationCategory,
-                    e.ActualStartDate
+                    e.ActualStartDate,
+                    a.ProgressDoneEarly
                 FROM EngMain a
                 left join PrjXML e on(e.Seq=a.PrjXMLSeq)
                 left outer join SupervisionProjectList d on(
@@ -105,6 +109,29 @@ namespace EQC.Services
             cmd.Parameters.AddWithValue("@mode", mode);
             cmd.Parameters.AddWithValue("@tarDate", tarDate);
             return db.GetDataTableWithClass<T>(cmd);
+        }
+
+        public int GetProgressManageTag(string TagName)
+        {
+            string sql = @"SELECT Type From EPCProgressManageTag WHERE Name = @TagName AND DeleteTag = 0";
+            SqlCommand cmd = db.GetCommand(sql);
+            cmd.Parameters.Clear();
+            cmd.Parameters.AddWithValue("@TagName", TagName);
+            DataTable dt = db.GetDataTable(cmd);
+            int tagType = Convert.ToInt32(dt.Rows[0]["Type"].ToString());
+
+            return tagType;
+        }
+
+        public int UpdateProgressManageTag(string TagName,int Type)
+        {
+            string sql = @"UPDATE EPCProgressManageTag SET Type=@Type WHERE Name = @TagName";
+            SqlCommand cmd = db.GetCommand(sql);
+            cmd.Parameters.Clear();
+            cmd.Parameters.AddWithValue("@Type", Type);
+            cmd.Parameters.AddWithValue("@TagName", TagName);
+
+            return db.ExecuteNonQuery(cmd);
         }
     }
 }

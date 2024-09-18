@@ -24,7 +24,9 @@ namespace EQC.Models
         public int? ImproveUserSeq { get; set; }
         public int? ApproveUserSeq { get; set; }
         public DateTime? ApproveDate { get; set; }
+        public string CCRPosDesc { get; set; }
 
+        public DateTime? CCRCheckDate { get; set; } //檢查日期
         public byte? IncompKind { get; set; }//from 抽驗缺失改善
     }
 }

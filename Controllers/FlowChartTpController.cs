@@ -4,20 +4,78 @@ using EQC.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 
 namespace EQC.Controllers
 {
   
-    public class FlowChartTpController : Controller
+    [SessionFilter]
+    public class FlowChartTpController : MyController
     {
         public ActionResult Index()
         {
             //ViewBag.Title = "清單及流程圖維護";
             return View("FlowChart");
         }
+        public void DownloadExcel()
+        {
+            EngMaterialDeviceListTpService C5service = new EngMaterialDeviceListTpService();
+            EquOperTestListTpService C6service = new EquOperTestListTpService();
+            ConstCheckListTpService C701service = new ConstCheckListTpService();
+            EnvirConsListTpService C702service = new EnvirConsListTpService();
+            OccuSafeHealthListTpService C703service = new OccuSafeHealthListTpService();
 
+
+
+            var p = new ExcelProcesser(0, (wookBook) => {
+                for(int i = 0; i <5; i++)
+                {
+                    if( wookBook.NumberOfSheets  <  i+1 )
+                    {
+                        wookBook.CreateSheet();
+                    }   
+                    var a = wookBook.GetSheetAt(i);
+                    var row = a.CreateRow(0);
+                    new string[] {
+                        "excel編號",
+                        "流程圖名稱",
+                    }.ToList()
+                    .ForEach(colName =>
+                    {
+                        row.CreateCell(row.Cells.Count).SetCellValue(colName);
+                    });
+
+                }
+
+            });
+
+
+            var listC5 = C5service.GetList<EMDListTpEditModel>();
+            p.setSheet(0).setSheetName("材料與設備抽驗程序送審", 0);
+            p.insertOneCol(listC5.Select(r => r.ExcelNo), 0);
+            p.insertOneCol(listC5.Select(r => r.MDName), 1);
+            var listC6 = C6service.GetList<EOTListTpEditModel>();
+            p.setSheet(1).setSheetName("設備功能運轉測試抽驗程序及標準", 1);
+            p.insertOneCol(listC6.Select(r => r.ExcelNo), 0);
+            p.insertOneCol(listC6.Select(r => r.ItemName), 1);
+
+            var listC701 = C701service.GetList<CCListTpEditModel>();
+            p.setSheet(2).setSheetName("施工抽查程序及標準", 2);
+            p.insertOneCol(listC701.Select(r => r.ExcelNo), 0);
+            p.insertOneCol(listC701.Select(r => r.ItemName), 1);
+            var listC702 = C702service.GetList<ECListTpEditModel>();
+            p.setSheet(3).setSheetName("施工抽查程序及標準(環境保育)", 3);
+            p.insertOneCol(listC702.Select(r => r.ExcelNo), 0);
+            p.insertOneCol(listC702.Select(r => r.ItemName), 1);
+            var listC703 = C703service.GetList<OSHListTpEditModel>();
+            p.setSheet(4).setSheetName("施工抽查程序及標準(職業安全衛生)", 4);
+            p.insertOneCol(listC703.Select(r => r.ExcelNo), 0);
+            p.insertOneCol(listC703.Select(r => r.ItemName), 1);
+
+            DownloadFile(p.getTemplateStream(), "清單及流程圖維護.xlsx");
+        }
         private string GetFlowChartPath()
         {
             return Utils.GetTemplateFolder();

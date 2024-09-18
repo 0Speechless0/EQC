@@ -16,6 +16,7 @@ namespace EQC.Controllers
         public ActionResult Index()
         {
             Utils.setUserClass(this);
+            new SessionManager().currentSystemSeq = "9";
             return View("Index");
         }
         public ActionResult UnitEngList(string id)

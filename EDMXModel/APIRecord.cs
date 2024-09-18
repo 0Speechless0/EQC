@@ -24,6 +24,7 @@ namespace EQC.EDMXModel
         public string ChangeText { get; set; }
         public Nullable<System.DateTime> EndingTime { get; set; }
         public string ActionTable { get; set; }
+        public string OriginText { get; set; }
     
         public virtual UserMain UserMain { get; set; }
     }

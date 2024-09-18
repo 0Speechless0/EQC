@@ -20,6 +20,8 @@ namespace EQC.Models
         public int? CreateUer { get; set; } //(int, null)
         public DateTime? ModifyTime { get; set; } //(datetime, null)
         public int? ModifyUser { get; set; } //(int, null)
+
+        public List<byte> RoleSeqs { get; set; }
     }
 
 }

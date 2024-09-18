@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using EQC.EDMXModel;
+using EQC.Models;
+using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Linq;
 
 namespace EQC.Services
 {
@@ -30,15 +33,12 @@ namespace EQC.Services
                 inner join ConstCheckRecResult b ON(b.ConstCheckRecSeq=a.Seq)
                 inner join ConstCheckControlSt c on(c.Seq=b.ControllStSeq)
                 where a.Seq=(
-                    SELECT top 1 a.Seq
-                    FROM ConstCheckRec a
-                    inner join ConstCheckRec a1 on(a1.Seq=@Seq and a1.EngConstructionSeq=a.EngConstructionSeq
-    	                and a1.CCRCheckType1=a.CCRCheckType1 and a1.ItemSeq=a.ItemSeq and a1.CCRCheckFlow=a.CCRCheckFlow)
-                    where a.Seq <> @Seq
-                    order by a.CCRCheckDate desc
-                )
-                and a.CCRCheckDate <=(
-	                SELECT CCRCheckDate FROM ConstCheckRec where Seq = @Seq
+                    SELECT top 1 b.Seq
+                    FROM ConstCheckRec b
+                    inner join ConstCheckRec a1 on(a1.Seq=@Seq and a1.EngConstructionSeq=b.EngConstructionSeq
+    	                and a1.CCRCheckType1=b.CCRCheckType1 and a1.ItemSeq=b.ItemSeq and a1.CCRCheckFlow=b.CCRCheckFlow)
+                    where b.Seq <> @Seq and  b.CCRCheckDate <= a1.CCRCheckDate 
+                    order by b.CCRCheckDate desc, b.CreateTime desc
                 )
                 order by c.OrderNo
                 ";
@@ -51,6 +51,7 @@ namespace EQC.Services
         public List<T> GetConstCheckRecResult<T>(int constCheckRecSeq)
         {
             string sql = @"
+
                 SELECT
                     a.Seq constCheckRecSeq,
                     a.FormConfirm, 
@@ -71,6 +72,7 @@ namespace EQC.Services
                     b.CCRIsNCR,
                     b.RecResultRemark,
                     b.ResultItem
+                    
                 FROM ConstCheckRec a
                 inner join ConstCheckRecResult b ON(b.ConstCheckRecSeq=a.Seq)
                 inner join ConstCheckControlSt c on(c.Seq=b.ControllStSeq)
@@ -109,15 +111,12 @@ namespace EQC.Services
                 inner join ConstCheckRecResult b ON(b.ConstCheckRecSeq=a.Seq)
                 inner join EquOperControlSt c on(c.Seq=b.ControllStSeq)
                 where a.Seq=(
-                    SELECT top 1 a.Seq
-                    FROM ConstCheckRec a
-                    inner join ConstCheckRec a1 on(a1.Seq=@Seq and a1.EngConstructionSeq=a.EngConstructionSeq
-    	                and a1.CCRCheckType1=a.CCRCheckType1 and a1.ItemSeq=a.ItemSeq and a1.CCRCheckFlow=a.CCRCheckFlow)
-                    where a.Seq <> @Seq
-                    order by a.CCRCheckDate desc
-                )
-                and a.CCRCheckDate <=(
-	                SELECT CCRCheckDate FROM ConstCheckRec where Seq = @Seq
+                    SELECT top 1 b.Seq
+                    FROM ConstCheckRec b
+                    inner join ConstCheckRec a1 on(a1.Seq=@Seq and a1.EngConstructionSeq=b.EngConstructionSeq
+    	                and a1.CCRCheckType1=b.CCRCheckType1 and a1.ItemSeq=b.ItemSeq and a1.CCRCheckFlow=b.CCRCheckFlow)
+                    where b.Seq <> @Seq and  b.CCRCheckDate <= a1.CCRCheckDate 
+                    order by b.CCRCheckDate desc, b.CreateTime desc
                 )
                 order by c.OrderNo
                 ";
@@ -188,15 +187,12 @@ namespace EQC.Services
                 inner join ConstCheckRecResult b ON(b.ConstCheckRecSeq=a.Seq)
                 inner join OccuSafeHealthControlSt c on(c.Seq=b.ControllStSeq)
                 where a.Seq=(
-                    SELECT top 1 a.Seq
-                    FROM ConstCheckRec a
-                    inner join ConstCheckRec a1 on(a1.Seq=@Seq and a1.EngConstructionSeq=a.EngConstructionSeq
-    	                and a1.CCRCheckType1=a.CCRCheckType1 and a1.ItemSeq=a.ItemSeq and a1.CCRCheckFlow=a.CCRCheckFlow)
-                    where a.Seq <> @Seq
-                    order by a.CCRCheckDate desc
-                )
-                and a.CCRCheckDate <=(
-	                SELECT CCRCheckDate FROM ConstCheckRec where Seq = @Seq
+                    SELECT top 1 b.Seq
+                    FROM ConstCheckRec b
+                    inner join ConstCheckRec a1 on(a1.Seq=@Seq and a1.EngConstructionSeq=b.EngConstructionSeq
+    	                and a1.CCRCheckType1=b.CCRCheckType1 and a1.ItemSeq=b.ItemSeq and a1.CCRCheckFlow=b.CCRCheckFlow)
+                    where b.Seq <> @Seq and  b.CCRCheckDate <= a1.CCRCheckDate 
+                    order by b.CCRCheckDate desc, b.CreateTime desc
                 )
                 order by c.OrderNo
                 ";
@@ -266,15 +262,12 @@ namespace EQC.Services
                 inner join ConstCheckRecResult b ON(b.ConstCheckRecSeq=a.Seq)
                 inner join EnvirConsControlSt c on(c.Seq=b.ControllStSeq)
                 where a.Seq=(
-                    SELECT top 1 a.Seq
-                    FROM ConstCheckRec a
-                    inner join ConstCheckRec a1 on(a1.Seq=@Seq and a1.EngConstructionSeq=a.EngConstructionSeq
-    	                and a1.CCRCheckType1=a.CCRCheckType1 and a1.ItemSeq=a.ItemSeq and a1.CCRCheckFlow=a.CCRCheckFlow)
-                    where a.Seq <> @Seq
-                    order by a.CCRCheckDate desc
-                )
-                and a.CCRCheckDate <=(
-	                SELECT CCRCheckDate FROM ConstCheckRec where Seq = @Seq
+                    SELECT top 1 b.Seq
+                    FROM ConstCheckRec b
+                    inner join ConstCheckRec a1 on(a1.Seq=@Seq and a1.EngConstructionSeq=b.EngConstructionSeq
+    	                and a1.CCRCheckType1=b.CCRCheckType1 and a1.ItemSeq=b.ItemSeq and a1.CCRCheckFlow=b.CCRCheckFlow)
+                    where b.Seq <> @Seq and  b.CCRCheckDate <= a1.CCRCheckDate 
+                    order by b.CCRCheckDate desc, b.CreateTime desc
                 )
                 order by c.OrderNo
                 ";
@@ -317,6 +310,24 @@ namespace EQC.Services
             cmd.Parameters.AddWithValue("@Seq", constCheckRecSeq);
 
             return db.GetDataTableWithClass<T>(cmd);
+        }
+
+        public void GetRecResultStandard(List<ControlStVModel> items)
+        {
+            using(var context = new EQC_NEW_Entities())
+            {
+                items.ForEach(item =>
+                {
+                    var v  = context
+                    .ConstCheckRecResultStandard.Where(r => r.ConstCheckRecResultSeq == item.Seq)
+                    .Select(r => r.Value)
+                    .ToList()
+                    .Aggregate("", (a, c) => a + "," + c);
+
+                    item.StandardValuesStr = v.Length > 0 ? v.Substring(1) : "";
+                });
+            }
+         
         }
     }
 }

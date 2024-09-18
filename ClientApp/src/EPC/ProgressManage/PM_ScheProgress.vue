@@ -8,26 +8,31 @@
                 <label class="my-2 mx-2 float-right">開工日期</label>
             </div>
             <div class="col-12 col-sm-4 col-md-3 mb-1">
-                <b-input-group>
-                    <input v-bind:value="engMain.chsStartDate" ref="chsStartDate" @change="onDateChange(engMain.chsStartDate, $event, 'StartDate')"
-                           v-bind:disabled="engMain.srcStartDate!=null" type="text" class="form-control mydatewidth" placeholder="yyy/mm/dd">
-                    <b-form-datepicker v-if="engMain.srcStartDate==null" v-model="chsStartDate" :hide-header="true"
+                <b-input-group v-if="engMain.srcStartDate==null" >
+                    <input  :value="engMain.chsStartDate" ref="chsStartDate"
+                            type="text" class="form-control mydatewidth" placeholder="yyy/mm/dd">
+                    <b-form-datepicker v-model="chsStartDate" :hide-header="true"
                                        button-only right size="sm" @context="onDatePicketChange($event, 'StartDate')">
                     </b-form-datepicker>
                 </b-input-group>
+                <input  :value="schOrgStartDate ?? engMain.chsStartDate" :disabled="true" v-else 
+                           type="text" class="form-control mydatewidth" placeholder="yyy/mm/dd">
             </div>
             <div class="col-12 col-sm-4 col-md-2 mb-1">
                 <label class="my-2 mx-2 float-right">預定完工日期</label>
             </div>
             <div class="col-12 col-sm-4 col-md-3 mb-1">
-                <b-input-group>
+                <b-input-group  v-if="engMain.srcSchCompDate==null">
                     <input v-bind:value="engMain.chsSchCompDate" ref="chsSchCompDate" @change="onDateChange(engMain.chsSchCompDate, $event, 'SchCompDate')"
                            v-bind:disabled="engMain.srcSchCompDate!=null" type="text" class="form-control mydatewidth" placeholder="yyy/mm/dd">
-                    <b-form-datepicker v-if="engMain.srcSchCompDate==null" v-model="chsSchCompDate" :hide-header="true"
+                    <b-form-datepicker v-model="chsSchCompDate" :hide-header="true"
                                        button-only right size="sm" @context="onDatePicketChange($event, 'SchCompDate')">
                     </b-form-datepicker>
                 </b-input-group>
-            </div>
+                <input  :value="schOrgEndDate ?? engMain.chsSchCompDate" :disabled="true" v-else 
+                           type="text" class="form-control mydatewidth" placeholder="yyy/mm/dd">
+            </div> 
+
             <div v-if="engMain.srcStartDate==null || engMain.srcSchCompDate==null" class="col-12 col-sm-4 col-md-2 mb-1">
                 <button v-on:click.stop="updateEngDates()" role="button" class="btn btn-color11-4 btn-xs m-1">
                     <i class="fas fa-save"> 儲存</i>
@@ -71,7 +76,7 @@
             </div>
         </div>
 
-        <div v-if="!changeCompDate" class="form-row" role="toolbar">
+        <div v-if="!changeCompDate" class="form-inline" role="toolbar">
             <div v-if="spHeader.EngChangeCount==0" class="bcol-12 col-sm-6 col-md-auto mb-3 mb-sm-0 mt-sm-2 mt-md-0">
                 <button v-if="engChangeItems.length == 0" @click="onDelProgressClick" v-bind:disabled="isDisabled" type="button" class="btn btn-outline-secondary btn-sm">刪除進度&nbsp;<i class="fas fa-times"></i></button>
             </div>
@@ -81,19 +86,22 @@
                     更新決標後PCCES&nbsp;<i class="fas fa-upload"></i>
                 </label>
             </div -->
-            <div class="col-12 col-sm-6 col-md-auto mb-3 mb-sm-0 mt-sm-2 mt-md-0">
+            <div class="p-1">
                 <button @click="download" type="button" class="btn btn-outline-secondary btn-sm" title="檔案下載">下載工程範本(excel) &nbsp;<i class="fas fa-download"></i></button>
             </div>
-            <div class="col-12 col-sm-6 col-md-auto mb-3 mb-sm-0 mt-sm-2 mt-md-0">
+            <div class="p-1">
                 <label class="btn btn-block btn-outline-secondary btn-sm" v-bind:class="{ 'disabled' : (isDisabled || engChanging)}">
                     <input v-on:change="uploadSchProgress($event)" v-bind:disabled="isDisabled  || engChanging" type="file" name="file" multiple="" style="display:none;">
                     匯入(excel)各工項預定完成量&nbsp;<i class="fas fa-upload"></i>
                 </label>
                 <!-- button type="button" class="btn btn-outline-secondary btn-sm" title="檔案匯入">匯入(excel)各工項預定完成量 &nbsp;<i class="fas fa-upload"></i></button -->
             </div>
-            <div class="col-12 col-sm-6 col-md-auto mb-3 mb-sm-0 mt-sm-2 mt-md-0">
+            <div class="p-1">
                 <button @click.stop="fillCompleted" v-bind:disabled="isDisabled || engChanging" type="button" class="btn btn-outline-secondary btn-sm" title="填報完成">填報完成 &nbsp;<i class="fas fa-check"></i></button>
             </div>
+            <slot name="ProgressDiagram" >
+                    <a title="上傳" :href="`./EQC_Extension/Diagram/${tenderItem.ProgressDiagramAceessCode}`" target="_blank" class="m-1 btn  btn-color11-3 btn-sm mx-1 col-1"><i class="fas fa-share-alt-square"></i>&nbsp;&nbsp;製作進度網狀圖</a>
+                </slot>
             <!-- s20230428 取消功能
             <div class="bcol-12 col-sm-6 col-md-auto mb-3 mb-sm-0 mt-sm-2 mt-md-0">
                 <button v-if="engChangeItems.length == 0" @click="changeCompDate=true" type="button" class="btn btn-outline-secondary btn-sm">工程變更&nbsp;<i class="fas fa-pen"></i></button>
@@ -110,7 +118,7 @@
         <!-- Tab panes -->
         <div class="tab-content">
             <div id="menu01" class="tab-pane active">
-                <div class="table-responsive">
+                <div class="table-responsive tableFixHead ">
                     <table class="table table-responsive-md table-hover">
                         <thead class="insearch">
                             <tr>
@@ -158,7 +166,9 @@
     </div>
 </template>
 <script>
+    import Com from "../../Common/Common2";
     export default {
+        expose: ['SchDateIsChange'],
         props: ['tenderItem', 'spHeader'],
         data: function () {
             return {
@@ -170,6 +180,8 @@
                 engMain: {Seq:-1},
                 chsStartDate: '',
                 chsSchCompDate: '',
+                schOrgStartDate : "",
+                schOrgEndDate : "",
                 chsEngChangeStartDate: '',
                 changeCompDate: false,
                 //s20230406
@@ -182,6 +194,7 @@
                 progressEdit: false,
             };
         },
+
         /*components: {
             CalendarSetting: require('./CalendarSetting.vue').default,
         },*/
@@ -232,7 +245,6 @@
                 }
             },
             onDatePicketChange(ctx, mode) {
-                //console.log(ctx);
                 if (ctx.selectedDate != null) {
                     var d = ctx.selectedDate;
                     var dd = (d.getFullYear() - 1911) + '/' + (d.getMonth() + 1) + '/' + d.getDate();
@@ -411,6 +423,8 @@
                     .then(resp => {
                         if (resp.data.result == 0) {
                             this.dateList = resp.data.items;
+                            this.schOrgStartDate = resp.data.schOrgStartDate;
+                            this.schOrgEndDate  = resp.data.schOrgEndDate;
                             console.log("empty 0");
                             if (this.dateList.length > 0 && JSON.stringify(this.spHeader) === '{}') {
                                 console.log("empty");
@@ -490,6 +504,14 @@
             },
         },
         computed: {
+            SchStartDate()
+            {
+                console.log("ffds", this.engMain.chsStartDate)
+                if(this.schOrgStartDate != null)
+                    return this.schOrgStartDate;
+
+                return this.engMain.chsStartDate;
+            },
             isDisabled: function () {
                 if (this.dateList.length == 0) return true;
                 if (this.spHeader.SPState > 0) return true;
@@ -498,6 +520,18 @@
             isUploadPcces: function () {
                 return !window.comm.stringEmpty(this.spHeader.PccesXMLDateStr)
             },
+            SchDateIsChange()
+            {
+              
+                var schOrgStartDate = Com.ToROCDate(this.tenderItem.schOrgStartDate);
+                var schOrgEndDate =Com.ToROCDate(this.tenderItem.schOrgEndDate) ;
+
+                console.log("SchDateIsChange", (schOrgStartDate && schOrgStartDate != this.tenderItem.prjSchCompDateStr));
+                if( !this.tenderItem.prjSchStartDateStr || !this.tenderItem.prjSchCompDateStr ) 
+                    return false;
+                return  ( ( schOrgEndDate && schOrgEndDate != this.tenderItem.prjSchCompDateStr) 
+                || (schOrgStartDate && schOrgStartDate != this.tenderItem.prjSchStartDateStr) ) 
+            }
         },
         mounted() {
             console.log('mounted() 預定進度');
@@ -506,8 +540,27 @@
         }
     }
 </script>
-<style>
+<style scoped>
     .labelDisabled {
         opacity: .65;
     }
+.tableFixHead          { overflow: auto; max-height: 500px;   }
+table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+.table {
+    margin : 0;
+}
+.tableFixHead thead  { position: sticky !important ; top: 0 !important ; z-index: 1 !important;     }
+th {
+    border : 0;
+    border-bottom: #ddd solid 1px !important; 
+    border-left : 0 !important;
+    border-right:0 !important;
+}
+td {
+    z-index: 0;
+    position: relative;
+}
 </style>

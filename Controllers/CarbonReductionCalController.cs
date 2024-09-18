@@ -9,6 +9,7 @@ using EQC.Common;
 
 namespace EQC.Controllers
 {
+    [SessionFilter]
     public class CarbonReductionCalController : MyController
     {
 

@@ -1,6 +1,15 @@
+<!-- const columnInfo = [
+{ 
+    colViewName : "操作者:帳號",
+    colName : "UserName"
+},
+ ...
+] -->
+
 <script setup>
     import {defineProps, defineEmits, ref,reactive } from "vue";
     const {items, columnInfo, minWidth, hasUpdate, hasDelete, hasInsert} = defineProps(["items", "columnInfo", 'minWidth', 'hasUpdate', 'hasDelete', 'hasInsert']);
+    console.log("ADSDS", items);
     const  emit = defineEmits("onUpdateItem, onDeleteItem", "onInsertItem");
     function getTdStyle(value)
     {

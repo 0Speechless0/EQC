@@ -1,4 +1,6 @@
 ﻿using EQC.Common;
+using EQC.Detection;
+using EQC.EDMXModel;
 using EQC.Models;
 using EQC.Services;
 using EQC.ViewModel;
@@ -8,13 +10,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Web;
 using System.Web.Mvc;
-
 namespace EQC.Controllers
 {
     [SessionFilter]
-    public class EPCProgressManageController : Controller
+    public class EPCProgressManageController : MyController
     {//工程管理 - 進度管理
         EPCCalendarService iService = new EPCCalendarService();
         SupDailyReportService supDailyReportService = new SupDailyReportService();
@@ -24,13 +26,42 @@ namespace EQC.Controllers
             return View("Index");
         }
 
+        public JsonResult ConstructionDoneEarly(int id, DateTime tarDate)
+        {
+            using(var context = new EQC_NEW_Entities())
+            {
+                var targetEng = context.EngMain.Find(id);
+                if ( tarDate ==  Utils.ChsDateStrToDate(targetEng.PrjXML?.PrjXMLExt?.ActualCompletionDate)  )
+                {
+                    targetEng.SchCompDate = tarDate;
+                    targetEng.ProgressDoneEarly = tarDate;
+                    context.SaveChanges();
+                }
+                else
+                {
+                    return Json("與公共工程雲端服務網之實際完工日期不一致");
+                }
+
+            }
+            return Json(true); 
+        }
+
         //檢查日誌日期 是否屬於工程變更範圍 s20230412
         public JsonResult CheckActiveDate(int id, DateTime tarDate)
         {
             List<EPCProgressEngChangeListVModel> engChanges = new SchEngChangeService().GetEngChangeList<EPCProgressEngChangeListVModel>(id);
+            //if (tarDate.AddDays(1) > DateTime.Now)
+            //{
+            //    return Json(new
+            //    {
+            //        result = -1,
+            //        msg = String.Format("請填寫日期{0}(不含)之前的日誌", DateTime.Now.ToString("yyyy-M-d"))
+            //    });
+            //}
             if (engChanges.Count > 0)
             {
                 EPCProgressEngChangeListVModel engChange = engChanges[0];
+
                 if (tarDate.Subtract(engChange.StartDate.Value).Days >= 0)
                 {
                     return Json(new
@@ -41,9 +72,48 @@ namespace EQC.Controllers
                 }
             }
 
+            int i = 0;
+            int[] OverviewCalculator = new int[2];
+
+            using (var context = new EQC_NEW_Entities())
+            {
+                var target = context.EngMain.Find(id);
+
+                
+                context.SupDailyDate.Where(r => r.EngMainSeq == id && r.ItemDate == tarDate)
+                    .OrderBy(r => r.DataType)
+                    .GroupBy(r => r.DataType)
+                    .Select(r  => r.FirstOrDefault() )
+                    .ToList()
+                    .ForEach(e =>
+                    {
+                        var overview = supDailyReportService.GetPlanOverview<EPCSupPlanOverviewVModel>(e.Seq);
+                        OverviewCalculator[i++] =  (int)overview.Sum(r => r.TodayConfirm);
+                });
+ 
+                var schCompDate = target
+                    .EngChangeSchCompDate ??
+                    context.EngMain.Find(id)
+                    .SchCompDate;
+
+
+                if (
+                     target
+                    .StartDate?.Date > tarDate)
+                {
+                    return Json(new
+                    {
+                        result = -1,
+                        msg = "日期不在預定進度範圍內，請執行工程變更"
+                    });
+                }
+            }    
+
             return Json(new
             {
                 result = 0,
+                ConstructionDateConfirmed = OverviewCalculator[1],
+                MiscDateConfirmed = OverviewCalculator[0],
                 msg = ""
             });
         }
@@ -54,6 +124,50 @@ namespace EQC.Controllers
         public JsonResult GetConstructionInfo(int id, DateTime fromDate)
         {
             return new CalUtils().GetCalDayInfo(id, fromDate, SupDailyReportService._Construction); //
+        }
+
+        private List<EPCSupPlanOverviewVModel> GetPlanItem(int id, 
+            DateTime tarDate, List<EPCSupDailyDateVModel> dateList)
+        {
+            EPCSupDailyDateVModel supDailyItem;
+            List<EPCSupPlanOverviewVModel> planItems = null;
+            if (dateList.Count == 0)
+            {//該日未有紀錄
+
+                supDailyItem = new EPCSupDailyDateVModel()
+                {
+                    Seq = -1,
+                    DataType = SupDailyReportService._Construction,
+                    EngMainSeq = id,
+                    ItemDate = tarDate,
+                    ItemState = 0,
+                    FillinDate = DateTime.Now
+                };
+                using(var context = new EQC_NEW_Entities() )
+                {
+
+                    var targetEng = context.EngMain.Find(id);
+                    planItems = supDailyReportService.GetPayitemList<EPCSupPlanOverviewVModel>(id, tarDate);
+                    if (targetEng.SchCompDate.Value.Subtract(tarDate).Days < 0)
+                    {//超出工程預定完工日期
+                        foreach (SupPlanOverviewModel m in planItems)
+                        {
+                            m.DayProgress = 0;
+                        }
+                    }
+
+                }
+
+
+
+            }
+            else
+            {
+                supDailyItem = dateList[0];
+
+                planItems = supDailyReportService.GetPlanOverviewAndTotal<EPCSupPlanOverviewVModel>(supDailyItem.Seq);
+            }
+            return planItems;
         }
         //施工日誌
         public JsonResult GetConstructionItem(int id, DateTime tarDate)
@@ -234,9 +348,9 @@ namespace EQC.Controllers
         /// <param name="ed">結束日期</param>
         /// <param name="eId">EengMain.Seq</param>
         /// <returns></returns>
-        public ActionResult DnMultiDate(string sd, string ed, int eId)
+        public ActionResult DnMultiDate(DateTime sd, DateTime ed, int eId, DownloadArgExtension downloadArg = null)
         {
-            if(String.IsNullOrEmpty(sd) || String.IsNullOrEmpty(ed))
+            if(sd == null || ed == null)
             {
                 return Json(new
                 {
@@ -266,8 +380,8 @@ namespace EQC.Controllers
             EPCTendeVModel eng = tenders[0];
             try
             {
-                DateTime startDate = DateTime.Parse(sd);
-                DateTime endDate = DateTime.Parse(ed);
+                DateTime startDate = sd;
+                DateTime endDate = ed;
 
                 //s20230412
                 List<EPCProgressEngChangeListVModel> engChanges = new SchEngChangeService().GetEngChangeList<EPCProgressEngChangeListVModel>(eng.Seq);
@@ -306,10 +420,26 @@ namespace EQC.Controllers
                     }
                     tarDate = tarDate.AddDays(1);
                 }
+                var userSeq = downloadArg?.GetCreateUser() ?? Utils.getUserInfo().Seq;
+                Utils.WebRootPath = Utils.WebRootPath ?? HttpContext.Server.MapPath("~");
+                string tarDir = Path.Combine( Utils.GetTempFolderForUser() , Guid.NewGuid().ToString("B").ToUpper());
+                Directory.CreateDirectory(tarDir);
 
-                return CreateExcelMultiDate(eng, startDate, endDate);
+                DownloadTaskDetection.AddTaskQueneToRun(() => {
+                    var result =  CreateExcelMultiDate(eng, startDate, endDate, tarDir, downloadArg);
+
+                } 
+                , userSeq);
+
+
+                return Json(new
+                {
+                    downloadTaskTag = true,
+                    message = "已開始產製，請稍後重新整理網頁"
+                }, JsonRequestBehavior.AllowGet);
             }
-            catch {
+            catch (Exception e){
+             
                 return Json(new
                 {
                     result = -1,
@@ -317,11 +447,17 @@ namespace EQC.Controllers
                 }, JsonRequestBehavior.AllowGet);
             }
         }
-        private ActionResult CreateExcelMultiDate(EPCTendeVModel eng, DateTime startDate, DateTime endDate)
+        private ActionResult CreateExcelMultiDate(EPCTendeVModel eng, DateTime startDate, DateTime endDate, string tarDir = null, DownloadArgExtension downloadArg = null)
         {
             List<EPCSupDailyDateVModel> supDailyDateList = supDailyReportService.GetSupDailyDate<EPCSupDailyDateVModel>(SupDailyReportService._Construction, eng.Seq, startDate, endDate);
 
             string filename = Utils.CopyTemplateFile("進度管理-施工日誌.xlsx", ".xlsx");
+            string altFileName = Path.Combine(tarDir, String.Format("{0} 施工日誌[{1}].xlsx", eng.EngNo, startDate.ToString("yyyy-M-d")));
+            if (tarDir != null)
+            {
+                
+                System.IO.File.Move(filename, altFileName);
+            }
             Dictionary<string, Worksheet> dict = new Dictionary<string, Worksheet>();
             Microsoft.Office.Interop.Excel.Application appExcel = null;
             Workbook workbook = null;
@@ -329,8 +465,15 @@ namespace EQC.Controllers
             try
             {
                 appExcel = new Microsoft.Office.Interop.Excel.Application();
-                workbook = appExcel.Workbooks.Open(filename);
 
+                if (tarDir == null)
+                {
+                    workbook = appExcel.Workbooks.Open(filename);
+                }
+                else
+                {
+                    workbook = appExcel.Workbooks.Open(altFileName);
+                }
                 foreach (Worksheet worksheet in workbook.Worksheets)
                 {
                     dict.Add(worksheet.Name, worksheet);
@@ -346,11 +489,14 @@ namespace EQC.Controllers
                 workbook.Close();
                 appExcel.Quit();
 
-                Stream iStream = new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.Read);
+                FileStream iStream = new FileStream(
+                    tarDir != null? altFileName : filename, FileMode.Open, FileAccess.Read, FileShare.Read);
+                downloadArg?.targetPathSetting(iStream.Name);
                 return File(iStream, "application/blob", String.Format("{0} 施工日誌[{1}].xlsx", eng.EngNo, startDate.ToString("yyyy-M-d")));
             }
             catch (Exception e)
             {
+
                 if (workbook != null) workbook.Close(false);
                 if (appExcel != null) appExcel.Quit();
                 return Json(new
@@ -601,7 +747,7 @@ namespace EQC.Controllers
                 List<SupDailyReportConstructionPersonModel> persons = new SupDailyReportConstructionPersonService().GetDefaultItems<SupDailyReportConstructionPersonModel>(supDailyItem.EngMainSeq, dayBefore);
                 List<SupDailyReportConstructionMaterialModel> materials = new SupDailyReportConstructionMaterialService().GetDefaultItems<SupDailyReportConstructionMaterialModel>(supDailyItem.EngMainSeq, dayBefore);
 
-                return supDailyReportService.ConstructionAdd(supDailyItem, miscItem, planItems, equipments, persons, materials);
+                return supDailyReportService.ConstructionAdd(supDailyItem, miscItem, planItems, equipments, persons, materials, true);
             }
 
             return true;
@@ -868,9 +1014,11 @@ namespace EQC.Controllers
         }
         //施工日誌下載
         //多日期
-        public ActionResult DownloadCDailyMulti(string sd, string ed, int eId, string eEM)
+        public ActionResult DownloadCDailyMulti(DateTime sd, DateTime ed, int eId, int eEM, DownloadArgExtension downloadArg = null)
         {
-            if (String.IsNullOrEmpty(sd) || String.IsNullOrEmpty(ed))
+            var userSeq = downloadArg?.GetCreateUser() ?? Utils.getUserInfo().Seq;
+            
+            if (sd == null || ed == null )
             {
                 return Json(new
                 {
@@ -901,8 +1049,8 @@ namespace EQC.Controllers
 
             try
             {
-                DateTime startDate = DateTime.Parse(sd);
-                DateTime endDate = DateTime.Parse(ed);
+                DateTime startDate = sd;
+                DateTime endDate = ed;
                 if (endDate.Subtract(startDate).Days > 30)
                 {
                     return Json(new
@@ -923,22 +1071,27 @@ namespace EQC.Controllers
                 }
 
                 string uuid = Guid.NewGuid().ToString("B").ToUpper();
-                string folder = Path.Combine(Path.GetTempPath(), uuid);
-                if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
+                string folder = "";
+                if (downloadArg?.DistFilePath == null)
+                {
+
+                    folder = Path.Combine(Utils.GetTempFolderForUser(), uuid);
+                    if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
+                }
+
 
                 string srcFile = Path.Combine(Utils.GetTemplateFilePath(), "附錄四_公共工程施工日誌V2.docx");
+                List<EPCSupDailyDate1VModel> supDailyDateQueue = new List<EPCSupDailyDate1VModel>();
                 foreach (EPCSupDailyDate1VModel supDailyDate in supDailyDateList)
                 {
-                    EPCDailyVModel daily = new EPCDailyVModel();
-                    daily.miscList = supDailyReportService.GetMiscConstruction<SupDailyReportMiscConstructionModel>(supDailyDate.Seq);
-                    if (daily.miscList.Count == 1)
+                    supDailyDate.daily = new EPCDailyVModel();
+                    supDailyDate.daily.miscList = supDailyReportService.GetMiscConstruction<SupDailyReportMiscConstructionModel>(supDailyDate.Seq);
+                    if (supDailyDate.daily.miscList.Count == 1)
                     {
-                        string tarfile = Path.Combine(folder, String.Format("{0} 公共工程施工日誌[{1}].docx", eng.EngNo, supDailyDate.ItemDateStr));
-                        System.IO.File.Copy(srcFile, tarfile);
 
-                        daily.planOverviewList = supDailyReportService.GetPlanOverviewAndTotalFilter<EPCSupPlanOverviewVModel>(supDailyDate.Seq, eEM);
+                        supDailyDate.daily.planOverviewList = supDailyReportService.GetPlanOverviewAndTotalFilter<EPCSupPlanOverviewVModel>(supDailyDate.Seq, eEM.ToString());
                         //數量檢查 s20230830
-                        foreach (EPCSupPlanOverviewVModel m in daily.planOverviewList)
+                        foreach (EPCSupPlanOverviewVModel m in supDailyDate.daily.planOverviewList)
                         {
                             if (m.TotalAccConfirm > (m.Quantity * 100))
                             {
@@ -949,19 +1102,46 @@ namespace EQC.Controllers
                                 }, JsonRequestBehavior.AllowGet);
                             }
                         }
-                        daily.materialList = new SupDailyReportConstructionMaterialService().GetList<SupDailyReportConstructionMaterialModel>(supDailyDate.Seq);
-                        daily.personList = new SupDailyReportConstructionPersonService().GetList<SupDailyReportConstructionPersonModel>(supDailyDate.Seq);
-                        daily.equipmentList = new SupDailyReportConstructionEquipmentService().GetList<SupDailyReportConstructionEquipmentModel>(supDailyDate.Seq);
+                        supDailyDate.daily.materialList = new SupDailyReportConstructionMaterialService().GetList<SupDailyReportConstructionMaterialModel>(supDailyDate.Seq);
+                        supDailyDate.daily.personList = new SupDailyReportConstructionPersonService().GetList<SupDailyReportConstructionPersonModel>(supDailyDate.Seq);
+                        supDailyDate.daily.equipmentList = new SupDailyReportConstructionEquipmentService().GetList<SupDailyReportConstructionEquipmentModel>(supDailyDate.Seq);
+                        supDailyDateQueue.Add(supDailyDate);
 
-                        CreateConstructionDoc(tarfile, eng, supDailyDate, daily, tender, 1);
                     }
                 }
+                DownloadTaskDetection.AddTaskQueneToRun(() =>
+                {
+                    var fileTempFolder = Utils.GetTempFolder();
+                    //int downloadTag = new EPCProgressManageService().UpdateProgressManageTag("ConstructionDownload", 1);
+                    foreach (EPCSupDailyDate1VModel supDailyDate in supDailyDateQueue)
+                    {
+                        if (supDailyDate.daily.miscList.Count == 1)
+                        {
+                            string tarfile = Path.Combine(fileTempFolder, String.Format("{0} 公共工程施工日誌[{1}].docx", eng.EngNo, supDailyDate.ItemDateStr));
+                            System.IO.File.Copy(srcFile, tarfile, true);                         
+                            CreateConstructionDoc(tarfile, eng, supDailyDate, supDailyDate.daily, tender, 1);
+                            downloadArg?.targetPathSetting(tarfile, String.Format("{0} 公共工程施工日誌[{1}].docx", eng.EngNo, supDailyDate.ItemDateStr));
+                        }
+                    }
+                    //downloadTag = new EPCProgressManageService().UpdateProgressManageTag("ConstructionDownload", 0);
+                    if (downloadArg?.DistFilePath == null)
+                    {
+                        string zipFile = Path.Combine(folder, uuid + "-施工日誌.zip");
+                        ZipFile.CreateFromDirectory(fileTempFolder, zipFile);// AddFiles(files, "ProjectX");
+      
+                    }
+                    Directory.Delete(fileTempFolder, true);
 
-                string zipFile = Path.Combine(Path.GetTempPath(), uuid + "-施工日誌.zip");
 
-                ZipFile.CreateFromDirectory(folder, zipFile);// AddFiles(files, "ProjectX");
-                Stream iStream = new FileStream(zipFile, FileMode.Open, FileAccess.Read, FileShare.Read);
-                return File(iStream, "application/blob", String.Format("{0} 公共工程施工日誌[{1}]-施工日誌.zip", eng.EngNo, supDailyDateList[0].ItemDateStr));
+                }, userSeq);
+
+                return Json(new {           
+                    result = -1,
+                    downloadTaskTag = true,
+                    message = "已開始產製日報，請稍後重新整理網頁"
+                });
+                //Stream iStream = new FileStream(zipFile, FileMode.Open, FileAccess.Read, FileShare.Read);
+                //return File(iStream, "application/blob", String.Format("{0} 公共工程施工日誌[{1}]-施工日誌.zip", eng.EngNo, supDailyDateList[0].ItemDateStr));
             }
             catch
             {
@@ -984,7 +1164,7 @@ namespace EQC.Controllers
         //s20230830
         public ActionResult DownloadCDailyDoc(int id, int docMode, string eEM)
         {
-            List<EPCSupDailyDate1VModel> supDailyDateList = supDailyReportService.GetSupDailyDateAndCount<EPCSupDailyDate1VModel>(id);
+            List<EPCSupDailyDate1VModel> supDailyDateList = supDailyReportService.GetSupDailyDateAndCount<EPCSupDailyDate1VModel>(id, 2);
             if (supDailyDateList.Count != 1)
             {
                 return Json(new
@@ -1045,7 +1225,7 @@ namespace EQC.Controllers
 
             string filename = String.Format("{0} 公共工程施工日誌[{1}].docx", eng.EngNo, supDailyDate.ItemDateStr);
             string tarfile = Utils.CopyTemplateFile("附錄四_公共工程施工日誌V2.docx", ".docx");
-            if (CreateConstructionDoc(tarfile, eng, supDailyDate, daily, tender, docMode))
+            if (CreateConstructionDoc(tarfile, eng, supDailyDate, daily, tender, docMode) )
             {
                 Stream iStream = new FileStream(tarfile, FileMode.Open, FileAccess.Read, FileShare.Read);
                 return File(iStream, "application/blob", filename);
@@ -1070,7 +1250,12 @@ namespace EQC.Controllers
                 wordApp = new Microsoft.Office.Interop.Word.Application();
                 doc = wordApp.Documents.Open(tarfile);
                 Table table = doc.Tables[1];
+                table.Cell(1, 1).Range.Text = String.Format("報表編號: {0}", supDailyDate.OrderNo.ToString());
                 table.Cell(2, 2).Range.Text = String.Format("上午：{0} 下午：{1}", supDailyDate.Weather1, supDailyDate.Weather2);
+                int extensionDayCount =
+                    new EPCCalendarService()
+                    .GetExtensionByPrjSeq<EPCReportExtensionVModel>(supDailyDate.EngMainSeq)
+                    .Sum(r => r.ExtendDays);
                 if (supDailyDate.FillinDate.HasValue)
                 {
                     var dtInfo = new System.Globalization.DateTimeFormatInfo();
@@ -1082,8 +1267,9 @@ namespace EQC.Controllers
                 table.Cell(3, 2).Range.Text = eng.EngName;
                 table.Cell(3, 4).Range.Text = tender.ContractorName1;
                 table.Cell(4, 2).Range.Text = String.Format("{0}天", tender.TotalDays);
-                table.Cell(4, 4).Range.Text = String.Format("{0}天", supDailyDate.dailyCount);
-                table.Cell(4, 6).Range.Text = String.Format("{0}天", tender.TotalDays - supDailyDate.dailyCount);
+                table.Cell(4, 4).Range.Text = String.Format("{0}天", supDailyDate.OrderNo);
+                table.Cell(4, 6).Range.Text = String.Format("{0}天", tender.TotalDays - supDailyDate.OrderNo);
+                table.Cell(4, 8).Range.Text = String.Format("{0}天", extensionDayCount);
                 table.Cell(5, 2).Range.Text = tender.ActualStartDate;
                 table.Cell(5, 4).Range.Text = tender.ScheCompletionDate;
                 //進度 s20230227
@@ -1275,6 +1461,8 @@ namespace EQC.Controllers
             EPCSupDailyDateVModel supDailyItem;
             List<EPCSupPlanOverviewVModel> planItems = null;
             List<EPCSupDailyDateVModel> dateList = supDailyReportService.GetSupDailyDate<EPCSupDailyDateVModel>(SupDailyReportService._Supervise, id, tarDate);
+            List<EPCSupDailyDateVModel> dateList_construction = supDailyReportService.GetSupDailyDate<EPCSupDailyDateVModel>(SupDailyReportService._Construction, id, tarDate);
+            var constructionsPlanItem = GetPlanItem(id, tarDate, dateList_construction);
             if (dateList.Count == 0)
             {//該日未有紀錄
 
@@ -1328,7 +1516,12 @@ namespace EQC.Controllers
                 miscItem = miscList[0];
                 planItems = supDailyReportService.GetPlanOverviewAndTotal<EPCSupPlanOverviewVModel>(supDailyItem.Seq);
             }
-
+            planItems = planItems.Join(constructionsPlanItem, r1 => r1.PayItem + r1.Description, r2 => r2.PayItem +r2.Description, (r1, r2) =>
+            {
+                r1.ConstructionConfirm = r2.TodayConfirm;
+                return r1;
+            }).
+            ToList();
             return Json(new
             {
                 result = 0,
@@ -1368,9 +1561,9 @@ namespace EQC.Controllers
         }
         //監造日誌下載
         //多日期
-        public ActionResult DownloadSDailyMulti(string sd, string ed, int eId, string eEM)
+        public ActionResult DownloadSDailyMulti(DateTime sd, DateTime ed, int eId, int eEM, DownloadArgExtension downloadArg = null)
         {
-            if (String.IsNullOrEmpty(sd) || String.IsNullOrEmpty(ed))
+            if ( sd == null || ed == null)
             {
                 return Json(new
                 {
@@ -1401,8 +1594,8 @@ namespace EQC.Controllers
 
             try
             {
-                DateTime startDate = DateTime.Parse(sd);
-                DateTime endDate = DateTime.Parse(ed);
+                DateTime startDate = sd;
+                DateTime endDate = ed;
                 if (endDate.Subtract(startDate).Days > 30)
                 {
                     return Json(new
@@ -1423,31 +1616,67 @@ namespace EQC.Controllers
                 }
 
                 string uuid = Guid.NewGuid().ToString("B").ToUpper();
-                string folder = Path.Combine(Path.GetTempPath(), uuid);
-                if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
 
-                string srcFile = Path.Combine(Utils.GetTemplateFilePath(), "附錄五_公共工程監造報表V2.docx");
-                foreach (EPCSupDailyDate1VModel supDailyDate in supDailyDateList)
+                string folder = "";
+                if (downloadArg?.DistFilePath == null)
                 {
-                    string tarfile = Path.Combine(folder, String.Format("{0} 公共工程監造報表[{1}].docx", eng.EngNo, supDailyDate.ItemDateStr));
-                    System.IO.File.Copy(srcFile, tarfile);
-
-                    EPCDailySVModel daily = new EPCDailySVModel();
-                    daily.miscList = supDailyReportService.GetMisc<SupDailyReportMiscModel>(supDailyDate.Seq);
-                    if (daily.miscList.Count == 1)
-                    {
-                        daily.planOverviewList = supDailyReportService.GetPlanOverviewAndTotalFilter<EPCSupPlanOverviewVModel>(supDailyDate.Seq, eEM);
-                        CreateMiscDoc(tarfile, eng, supDailyDate, daily, tender, 1);
-                    }
+                    folder = Path.Combine(Utils.GetTempFolderForUser(), uuid);
+                    if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
                 }
 
-                string zipFile = Path.Combine(Path.GetTempPath(), uuid + "-監造報表.zip");
 
-                ZipFile.CreateFromDirectory(folder, zipFile);// AddFiles(files, "ProjectX");
-                Stream iStream = new FileStream(zipFile, FileMode.Open, FileAccess.Read, FileShare.Read);
-                return File(iStream, "application/blob", String.Format("{0} 公共工程監造報表[{1}].zip", eng.EngNo, supDailyDateList[0].ItemDateStr));
+                string srcFile = Path.Combine(Utils.GetTemplateFilePath(), "附錄五_公共工程監造報表V2.docx");
+                List<EPCSupDailyDate1VModel> downloadQueue = new List<EPCSupDailyDate1VModel>();
+                foreach (EPCSupDailyDate1VModel supDailyDate in supDailyDateList)
+                {
+
+
+                    supDailyDate.daily2 = new EPCDailySVModel();
+                    supDailyDate.daily2.miscList = supDailyReportService.GetMisc<SupDailyReportMiscModel>(supDailyDate.Seq);
+                    if (supDailyDate.daily2.miscList.Count == 1)
+                    {
+                        supDailyDate.daily2.planOverviewList = supDailyReportService.GetPlanOverviewAndTotalFilter<EPCSupPlanOverviewVModel>(supDailyDate.Seq, eEM.ToString());
+                        downloadQueue.Add(supDailyDate);
+                        //CreateMiscDoc(tarfile, eng, supDailyDate, daily, tender, 1);
+                    }
+                }
+                var userSeq = downloadArg?.GetCreateUser() ?? Utils.getUserInfo().Seq;
+
+                DownloadTaskDetection.AddTaskQueneToRun(() =>
+                {
+                    string fileTempFolder = Utils.GetTempFolder();
+
+                    foreach (var downloadItem in downloadQueue)
+                    {
+                        string tarfile = Path.Combine(fileTempFolder, String.Format("{0} 公共工程監造報表[{1}].docx", eng.EngNo, downloadItem.ItemDateStr));
+                        System.IO.File.Copy(srcFile, tarfile, true);
+                       
+                        CreateMiscDoc(tarfile, eng, downloadItem, downloadItem.daily2, tender, 1);
+                        downloadArg?.targetPathSetting(tarfile, String.Format("{0} 公共工程施工日誌[{1}].docx", eng.EngNo, downloadItem.ItemDateStr));
+                    }
+                    //string zipFile = Path.Combine(folder, uuid, uuid + "-監造報表.zip");
+                    //Directory.CreateDirectory(Path.GetDirectoryName(zipFile) );
+                    //ZipFile.CreateFromDirectory(folder, zipFile);
+                    if(downloadArg?.DistFilePath == null)
+                    {
+                        string zipFile = Path.Combine(folder, uuid + "-監造報表.zip");
+                        ZipFile.CreateFromDirectory(fileTempFolder, zipFile);// AddFiles(files, "ProjectX");
+                    }
+                    Directory.Delete(fileTempFolder, true);
+
+
+                }, userSeq);
+
+                return Json(new
+                {
+                    downloadTaskTag = true,
+                    message = "已開始產製日報，請稍後重新整理網頁"
+                }, JsonRequestBehavior.AllowGet);
+                //ZipFile.CreateFromDirectory(folder, zipFile);// AddFiles(files, "ProjectX");
+                //Stream iStream = new FileStream(zipFile, FileMode.Open, FileAccess.Read, FileShare.Read);
+                //return File(iStream, "application/blob", String.Format("{0} 公共工程監造報表[{1}].zip", eng.EngNo, supDailyDateList[0].ItemDateStr));
             }
-            catch
+            catch(Exception e)
             {
                 return Json(new
                 {
@@ -1467,7 +1696,7 @@ namespace EQC.Controllers
         }
         public ActionResult DownloadSDailyDoc(int id, int docMode, string eEM)
         {
-            List<EPCSupDailyDate1VModel> supDailyDateList = supDailyReportService.GetSupDailyDateAndCount<EPCSupDailyDate1VModel>(id);
+            List<EPCSupDailyDate1VModel> supDailyDateList = supDailyReportService.GetSupDailyDateAndCount<EPCSupDailyDate1VModel>(id, 1);
             if (supDailyDateList.Count != 1)
             {
                 return Json(new
@@ -1540,6 +1769,13 @@ namespace EQC.Controllers
                 wordApp = new Microsoft.Office.Interop.Word.Application();
                 doc = wordApp.Documents.Open(tarfile);
                 Table table = doc.Tables[1];
+
+                int contractChangeCount =  new SchEngChangeService().GetEngChangeList<EPCProgressEngChangeListVModel>(supDailyDate.EngMainSeq).Count;
+                int extensionDayCount = 
+                    new EPCCalendarService()
+                    .GetExtensionByPrjSeq<EPCReportExtensionVModel>(supDailyDate.EngMainSeq)
+                    .Sum(r => r.ExtendDays);
+                table.Cell(1, 1).Range.Text = String.Format("報表編號: {0}",supDailyDate.OrderNo.ToString());
                 table.Cell(2, 2).Range.Text = String.Format("上午：{0} 下午：{1}", supDailyDate.Weather1, supDailyDate.Weather2);
                 if (supDailyDate.FillinDate.HasValue)
                 {
@@ -1554,6 +1790,9 @@ namespace EQC.Controllers
                 table.Cell(4, 4).Range.Text = tender.ActualStartDate;
                 table.Cell(4, 6).Range.Text = tender.ScheCompletionDate;
                 table.Cell(4, 8).Range.Text = tender.PrjXMLExt.ActualCompletionDate;
+
+                table.Cell(5, 2).Range.Text = String.Format("{0}次", contractChangeCount);
+                table.Cell(5, 4).Range.Text = String.Format("{0}天", extensionDayCount);
                 //進度 s20230227
                 List<EngProgressVModel> engProgress = new EPCProgressManageService().GetEngProgress<EngProgressVModel>(eng.Seq, SupDailyReportService._Construction, supDailyDate.ItemDate.ToString("yyyy-M-d"));
                 if (engProgress.Count == 1)
@@ -1561,7 +1800,13 @@ namespace EQC.Controllers
                     table.Cell(6, 2).Range.Text = String.Format("{0}%", engProgress[0].SchProgress);
                     table.Cell(6, 4).Range.Text = String.Format("{0}%", engProgress[0].AcualProgress);
                 }
-                table.Cell(5, 6).Range.Text = String.Format("原契約：{0}", tender.ContractNo);
+
+                using (var context = new EQC_NEW_Entities() )
+                {
+                    table.Cell(5, 6).Range.Text = (context.EngMain.Find(supDailyDate.EngMainSeq).PrjXML.BidAmount ?? 0).ToString() ;
+                    table.Cell(6, 6).Range.Text = (context.EngMain.Find(supDailyDate.EngMainSeq).PrjXML.PrjXMLExt.DesignChangeContractAmount ?? 0).ToString() ;
+                }
+                    //table.Cell(5, 6).Range.Text = String.Format("原契約：{0}", tender.ContractNo);
                 table.Cell(11, 1).Range.Text = daily.miscList[0].DesignDrawingConst;
                 table.Cell(13, 1).Range.Text = daily.miscList[0].SpecAndQuality;
 
@@ -2228,7 +2473,11 @@ namespace EQC.Controllers
             EPCProgressManageService srv = new EPCProgressManageService();
             //List<EPCTendeVMode> tender = new EPCTenderService().GetTrender<EPCTendeVMode>(id);
             List<EPCTendeVModel> tender = srv.GetEngLinkTenderBySeq<EPCTendeVModel>(id);//20220602
-            //
+                                                                                        //
+            var dList =  new SchProgressPayItemService().GetDateListVer<EPCSchProgressVModel>(id);
+            var e = new Encryption();
+            var s = e.encryptCode($"{Request.UserHostAddress},{id},{DateTime.Now.ToOADate()}");
+            s = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(s));
             if (tender.Count == 0)
             {
                 return Json(new
@@ -2260,8 +2509,14 @@ namespace EQC.Controllers
                 //暫不檢查 20230216
                 canEditConstruction = true;
                 canEditSupervision = true;
-
+                bool isContractBreaked = false;
                 List<EngProgressVModel> engProgress = srv.GetEngProgressAndEngChange<EngProgressVModel>(id, SupDailyReportService._Supervise, DateTime.Now.ToString("yyyy-M-d"));//20230227
+                var calUtils = new CalUtils();
+                using(var context = new EQC_NEW_Entities() )
+                {
+                    isContractBreaked = context.SupDailyDate.Where(r => r.EngMainSeq == id)
+                        .OrderByDescending(r => r.ItemDate).FirstOrDefault()?.ItemDate > dList.LastOrDefault()?.SPDate;
+                }
                 if(engProgress.Count>0)
                 {
                     tender[0].SchProgress = engProgress[0].SchProgress;
@@ -2272,9 +2527,24 @@ namespace EQC.Controllers
                     result = 0,
                     editConstruction = canEditConstruction,
                     editSupervision = canEditSupervision,
-                    item = tender[0]
+                    item = tender[0],
+                    schOrgStartDate = dList.FirstOrDefault()?.ItemDate,
+                    schOrgEndDate = dList.LastOrDefault()?.ItemDate,
+                    isContractBreaked = isContractBreaked,
+                    ProgressDiagramAceessCode = s,
+                    IsSupervision = Utils.getUserInfo().RoleSeq == 5
                 });
             }
+        }
+
+        public JsonResult GetDownloadTag() {
+
+            int downloadTag = new EPCProgressManageService().GetProgressManageTag("ConstructionDownload");
+            return Json(new
+            {
+                result = 0,
+                downloadTag = downloadTag
+            });
         }
     }
 }

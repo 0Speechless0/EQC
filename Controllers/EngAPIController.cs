@@ -34,7 +34,26 @@ namespace EQC.Controllers
                 });     
             }
         }
-
+        public JsonResult GetEngReportEC(DateTime? startDate, DateTime? endDate)
+        {
+            try
+            {
+                var list = service.GetEngReportEC(startDate, endDate);
+                return Json(new
+                {
+                    data = list,
+                    status_code = 0
+                });
+            }
+            catch (Exception e)
+            {
+                return Json(new
+                {
+                    status_code = 1,
+                    message = "failed"
+                });
+            }
+        }
         public void GetGISData()
         {
             try

@@ -8,6 +8,8 @@ namespace EQC.ViewModel
     /// <summary> 人員管理VM </summary>
     public class VUserMain
     {
+
+
         /// <summary> 序號 </summary>
         public int Seq { get; set; }
 
@@ -42,16 +44,19 @@ namespace EQC.ViewModel
         public bool IsDelete { get; set; }
 
         /// <summary> 建立時間 </summary>
-        public DateTime CreateTime { get; set; }
+        public DateTime? CreateTime { get; set; }
 
         /// <summary> 建立人員序號 </summary>
         public int CreateUserSeq { get; set; }
 
         /// <summary> 異動時間 </summary>
-        public DateTime ModifyTime { get; set; }
+        public DateTime? ModifyTime { get; set; }
 
         /// <summary> 異動人員序號 </summary>
         public int ModifyUserSeq { get; set; }
+
+        /// <summary> 上次登入時間 </summary>
+        public DateTime? LastLoginTime { get; set; }
 
         /// <summary> 所屬單位_第一層(Name) </summary>
         public string UnitName1 { get; set; }
@@ -74,9 +79,15 @@ namespace EQC.ViewModel
         /// <summary> 角色(Name) </summary>
         public string RoleName { get; set; }
 
+
+        /// <summary> 非系統預設角色(Name) </summary>
+        public string RoleName2 { get; set; }
+
         /// <summary> 角色(Seq) </summary>
         public int RoleSeq { get; set; }
 
+        /// <summary> 非系統預設角色(Seq) </summary>
+        public int RoleSeq2 { get; set; }
         /// <summary> 職稱(Seq) </summary>
         public Int16? PositionSeq { get; set; }
 
@@ -90,5 +101,26 @@ namespace EQC.ViewModel
         //APP鎖狀態
         public int ConstCheckAppLock { get; set; }
 
+        //APP建立時間
+        public DateTime? ConstCheckAppCreateTime {get;set;}
+        public string PositionName
+        {
+            get
+            {
+                if (
+                    PositionSeq != null && 
+                    positionNameDic != null &&
+                    positionNameDic.ContainsKey((short)PositionSeq))
+                {
+                    return positionNameDic[(short)PositionSeq];
+                }
+                return "";
+            }
+        }
+        static Dictionary<short, string> positionNameDic;
+        public static void SetPositonDic(IEnumerable<EDMXModel.Position> position)
+        {
+            positionNameDic = position.ToDictionary(r => r.Seq, r => r.Name);
+        }
     }
 }

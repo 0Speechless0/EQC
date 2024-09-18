@@ -5,6 +5,7 @@ using EQC.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Web.Mvc;
 
 namespace EQC.Controllers
@@ -15,7 +16,7 @@ namespace EQC.Controllers
         SchEngProgressService iService = new SchEngProgressService();
 
         //下載 PccesXML s20230417
-        public ActionResult DownloadPccesXML(int id)
+        public ActionResult DownloadPccesXML(int id, DownloadArgExtension downloadArg = null)
         {
             List<EPCSchEngProgressHeaderVModel> items = iService.GetHeaderList<EPCSchEngProgressHeaderVModel>(id);
             if (items.Count != 1)
@@ -38,6 +39,7 @@ namespace EQC.Controllers
             }
 
             Stream iStream = new FileStream(fName, FileMode.Open, FileAccess.Read, FileShare.Read);
+            downloadArg?.targetPathSetting(fName);
             return File(iStream, "application/blob", m.PccesXMLFile);
         }
         //上傳 PCCESS xml s20230417
@@ -284,26 +286,27 @@ namespace EQC.Controllers
             }
             decimal? co2Total = null;
             decimal? co2ItemTotal = null;
-            decimal? dismantlingRate = null;
+            decimal dismantlingRate ;
             //s20230528
             decimal? co2TotalDesign = null;
             decimal? greenFunding = null;
-            decimal? greenFundingRate = null;
+            decimal greenFundingRate ;
             new CarbonEmissionPayItemService().CalCarbonTotal(id, ref co2TotalDesign, ref co2ItemTotal, ref greenFunding); //s20230528 碳排量計算
 
             co2Total = null;
             co2ItemTotal = null;
-            dismantlingRate = null;
+            dismantlingRate =0;
             greenFunding = null;
-            greenFundingRate = null;
+            greenFundingRate = 0;
             if (total > 0)
             {
+                Utils.GetEngDismantlingRate(id, (e) => e.SchEngProgressHeader.FirstOrDefault()?.SchEngProgressPayItem, ref dismantlingRate, ref greenFundingRate);
                 iService.CalCarbonTotal(id, ref co2Total, ref co2ItemTotal, ref greenFunding);
                 if (eng.SubContractingBudget.HasValue && eng.SubContractingBudget.Value > 0)
                 {
-                    dismantlingRate = Math.Round(co2ItemTotal.Value * 100 / eng.SubContractingBudget.Value);
                     greenFundingRate = Math.Round(greenFunding.Value * 100 / eng.SubContractingBudget.Value);
                 }
+
             }
             return Json(new
             {

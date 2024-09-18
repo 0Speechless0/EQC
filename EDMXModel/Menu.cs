@@ -14,6 +14,15 @@ namespace EQC.EDMXModel
     
     public partial class Menu
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
+        public Menu()
+        {
+            this.AlertSetting = new HashSet<AlertSetting>();
+            this.SystemProblem = new HashSet<SystemProblem>();
+            this.MenuRole = new HashSet<MenuRole>();
+            this.PackageDownloadAction = new HashSet<PackageDownloadAction>();
+        }
+    
         public int Seq { get; set; }
         public Nullable<byte> SystemTypeSeq { get; set; }
         public string Name { get; set; }
@@ -25,5 +34,15 @@ namespace EQC.EDMXModel
         public Nullable<int> CreateUserSeq { get; set; }
         public Nullable<System.DateTime> ModifyTime { get; set; }
         public Nullable<int> ModifyUserSeq { get; set; }
+    
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<AlertSetting> AlertSetting { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<SystemProblem> SystemProblem { get; set; }
+        public virtual SystemType SystemType { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<MenuRole> MenuRole { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<PackageDownloadAction> PackageDownloadAction { get; set; }
     }
 }

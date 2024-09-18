@@ -30,5 +30,6 @@ namespace EQC.EDMXModel
         public string KeyCode1 { get; set; }
         public string KeyCode2 { get; set; }
         public string KeyCode3 { get; set; }
+        public bool Green { get; set; }
     }
 }

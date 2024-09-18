@@ -74,7 +74,7 @@ namespace EQC.Services
                             @KgCo2e,
                             GetDate(),
                             @ModifyUserSeq,
-                            GetDate(),
+                            0,
                             @ModifyUserSeq
                         )";
                     foreach (SupDailyReportConstructionEquipmentModel m in equipments)
@@ -83,8 +83,8 @@ namespace EQC.Services
                         cmd = db.GetCommand(sql);
                         cmd.Parameters.Clear();
                         cmd.Parameters.AddWithValue("@SupDailyDateSeq", supDailyItem.Seq);
-                        cmd.Parameters.AddWithValue("EquipmentName", m.EquipmentName);
-                        cmd.Parameters.AddWithValue("EquipmentModel", m.EquipmentModel);
+                        cmd.Parameters.AddWithValue("@EquipmentName", m.EquipmentName);
+                        cmd.Parameters.AddWithValue("@EquipmentModel", m.EquipmentModel);
                         cmd.Parameters.AddWithValue("@TodayQuantity", m.TodayQuantity);
                         cmd.Parameters.AddWithValue("@TodayHours", this.NulltoDBNull(m.TodayHours));
                         cmd.Parameters.AddWithValue("@KgCo2e", this.NulltoDBNull(m.KgCo2e));
@@ -116,7 +116,7 @@ namespace EQC.Services
                             @TodayQuantity,
                             GetDate(),
                             @ModifyUserSeq,
-                            GetDate(),
+                            0,
                             @ModifyUserSeq
                         )";
 
@@ -163,7 +163,7 @@ namespace EQC.Services
                             @Memo,
                             GetDate(),
                             @ModifyUserSeq,
-                            GetDate(),
+                            0,
                             @ModifyUserSeq
                         )";
 
@@ -197,7 +197,8 @@ namespace EQC.Services
         }
         //新增施工日誌 ====================================
         public bool ConstructionAdd(SupDailyDateModel supDailyItem, SupDailyReportMiscConstructionModel miscItem, List<SupPlanOverviewModel> planItems,
-            List<SupDailyReportConstructionEquipmentModel> equipments, List<SupDailyReportConstructionPersonModel> persons, List<SupDailyReportConstructionMaterialModel> materials
+            List<SupDailyReportConstructionEquipmentModel> equipments, List<SupDailyReportConstructionPersonModel> persons, List<SupDailyReportConstructionMaterialModel> materials,
+            bool excelGenerate = false
             )
         {
             Null2Empty(supDailyItem);
@@ -225,11 +226,21 @@ namespace EQC.Services
                         @Weather1,
                         @Weather2,
                         @FillinDate,
-                        GetDate(),
+                        @CreateTime,
                         @ModifyUserSeq,
-                        GetDate(),
+                        @ModifyTime,
                         @ModifyUserSeq
                     )";
+                DateTime createTime = DateTime.Now;
+                object modifyTime;
+                if (!excelGenerate)
+                {
+                    modifyTime = createTime.AddSeconds(1);
+                }
+                else
+                {
+                    modifyTime = DateTime.Now;
+                }
                 cmd = db.GetCommand(sql);
                 cmd.Parameters.Clear();
                 cmd.Parameters.AddWithValue("@EngMainSeq", supDailyItem.EngMainSeq);
@@ -237,6 +248,8 @@ namespace EQC.Services
                 cmd.Parameters.AddWithValue("@DataType", supDailyItem.DataType);
                 cmd.Parameters.AddWithValue("@Weather1", supDailyItem.Weather1);
                 cmd.Parameters.AddWithValue("@Weather2", supDailyItem.Weather2);
+                cmd.Parameters.AddWithValue("@ModifyTime", modifyTime);
+                cmd.Parameters.AddWithValue("@CreateTime", createTime);
                 cmd.Parameters.AddWithValue("@FillinDate", this.NulltoDBNull(supDailyItem.FillinDate));
                 cmd.Parameters.AddWithValue("@ModifyUserSeq", getUserSeq());
                 db.ExecuteNonQuery(cmd);
@@ -289,7 +302,7 @@ namespace EQC.Services
                 cmd.Parameters.AddWithValue("@SafetyHygieneMatters03", this.NulltoDBNull(miscItem.SafetyHygieneMatters03));
                 cmd.Parameters.AddWithValue("@SamplingTest", miscItem.SamplingTest);
                 cmd.Parameters.AddWithValue("@NoticeManufacturers", miscItem.NoticeManufacturers);
-                cmd.Parameters.AddWithValue("ImportantNotes", miscItem.ImportantNotes);
+                cmd.Parameters.AddWithValue("@ImportantNotes", miscItem.ImportantNotes);
                 cmd.Parameters.AddWithValue("@ModifyUserSeq", getUserSeq());
                 db.ExecuteNonQuery(cmd);
 
@@ -358,8 +371,8 @@ namespace EQC.Services
                     cmd = db.GetCommand(sql);
                     cmd.Parameters.Clear();
                     cmd.Parameters.AddWithValue("@SupDailyDateSeq", supDailyDateSeq);
-                    cmd.Parameters.AddWithValue("EquipmentName", m.EquipmentName);
-                    cmd.Parameters.AddWithValue("EquipmentModel", m.EquipmentModel);
+                    cmd.Parameters.AddWithValue("@EquipmentName", m.EquipmentName);
+                    cmd.Parameters.AddWithValue("@EquipmentModel", m.EquipmentModel);
                     cmd.Parameters.AddWithValue("@TodayQuantity", m.TodayQuantity);
                     cmd.Parameters.AddWithValue("@TodayHours", this.NulltoDBNull(m.TodayHours));
                     cmd.Parameters.AddWithValue("@KgCo2e", this.NulltoDBNull(m.KgCo2e));
@@ -506,7 +519,7 @@ namespace EQC.Services
                 cmd.Parameters.AddWithValue("@SafetyHygieneMatters03", this.NulltoDBNull(miscItem.SafetyHygieneMatters03));
                 cmd.Parameters.AddWithValue("@SamplingTest", miscItem.SamplingTest);
                 cmd.Parameters.AddWithValue("@NoticeManufacturers", miscItem.NoticeManufacturers);
-                cmd.Parameters.AddWithValue("ImportantNotes", miscItem.ImportantNotes);
+                cmd.Parameters.AddWithValue("@ImportantNotes", miscItem.ImportantNotes);
                 cmd.Parameters.AddWithValue("@ModifyUserSeq", getUserSeq());
                 db.ExecuteNonQuery(cmd);
 
@@ -628,7 +641,34 @@ namespace EQC.Services
         //含已填寫天數 s20230228
         public List<T> GetSupDailyDateAndCount<T>(int dataType, int engMainSeq, DateTime sDate, DateTime eDate)
         {
+    //        string sql = @"
+				//SELECT
+    //                a.Seq,
+				//	a.EngMainSeq,
+    //                a.ItemDate,
+    //                a.DataType,
+    //                a.ItemState,
+    //                a.Weather1,
+    //                a.Weather2,
+    //                a.FillinDate,
+    //                count(b.Seq) dailyCount
+				//FROM SupDailyDate a
+    //            inner join SupDailyDate b on(b.EngMainSeq=a.EngMainSeq)
+				//WHERE a.engMainSeq=@engMainSeq
+    //            and a.DataType=@DataType
+				//and a.ItemDate>=@sDate
+    //            and a.ItemDate<=@eDate
+    //            group by a.Seq,a.EngMainSeq,a.ItemDate,a.DataType,a.ItemState,a.Weather1,a.Weather2,a.FillinDate
+    //            order by a.ItemDate
+    //            ";
             string sql = @"
+				declare @MinItemDate as datetime = 
+				(
+                    select Min(ItemDate) from SupDailyDate
+				    WHERE engMainSeq=@engMainSeq
+                    and DataType=@DataType and CreateTime != ModifyTime
+                )
+
 				SELECT
                     a.Seq,
 					a.EngMainSeq,
@@ -638,14 +678,12 @@ namespace EQC.Services
                     a.Weather1,
                     a.Weather2,
                     a.FillinDate,
-                    count(b.Seq) dailyCount
+					DATEDIFF(DAY,  @MinItemDate, a.ItemDate) +1  OrderNo
 				FROM SupDailyDate a
-                inner join SupDailyDate b on(b.EngMainSeq=a.EngMainSeq)
 				WHERE a.engMainSeq=@engMainSeq
                 and a.DataType=@DataType
 				and a.ItemDate>=@sDate
                 and a.ItemDate<=@eDate
-                group by a.Seq,a.EngMainSeq,a.ItemDate,a.DataType,a.ItemState,a.Weather1,a.Weather2,a.FillinDate
                 order by a.ItemDate
                 ";
             SqlCommand cmd = db.GetCommand(sql);
@@ -674,7 +712,7 @@ namespace EQC.Services
             return db.GetDataTableWithClass<T>(cmd);
         }
         //含已填寫天數
-        public List<T> GetSupDailyDateAndCount<T>(int seq)
+        public List<T> GetSupDailyDateAndCount<T>(int seq, int dataType)
         {
             string sql = @"
 				SELECT
@@ -686,14 +724,20 @@ namespace EQC.Services
                     a.Weather1,
                     a.Weather2,
                     a.FillinDate,
+					Min(b.ItemDate),
+					Max( DATEDIFF(DAY, b.ItemDate, a.ItemDate) +1)  OrderNo,
                     count(b.Seq) dailyCount
 				FROM SupDailyDate a
-                inner join SupDailyDate b on(b.EngMainSeq=a.EngMainSeq)
-				WHERE a.Seq=@Seq
+                inner join SupDailyDate b on(b.EngMainSeq=a.EngMainSeq )
+				WHERE a.Seq=@Seq 
+                    and b.ItemDate <= a.ItemDate
+                    and b.CreateTime != b.ModifyTime
                 group by a.Seq,a.EngMainSeq,a.ItemDate,a.DataType,a.ItemState,a.Weather1,a.Weather2,a.FillinDate
                 ";
             SqlCommand cmd = db.GetCommand(sql);
             cmd.Parameters.AddWithValue("@Seq", seq);
+
+            cmd.Parameters.AddWithValue("@DataType", dataType);
             return db.GetDataTableWithClass<T>(cmd);
         }
         //施工日誌_雜項
@@ -789,9 +833,9 @@ namespace EQC.Services
                         @SafetyHygieneMattersOther,
                         @SafetyHygieneMatters01,
                         @OtherMatters,
-                        GetDate(),
+                        null,
                         @ModifyUserSeq,
-                        GetDate(),
+                        @ModifyTime,
                         @ModifyUserSeq
                     )";
                 cmd = db.GetCommand(sql);
@@ -803,6 +847,7 @@ namespace EQC.Services
                 cmd.Parameters.AddWithValue("@SafetyHygieneMatters01", this.NulltoDBNull(miscItem.SafetyHygieneMatters01));
                 cmd.Parameters.AddWithValue("@OtherMatters", miscItem.OtherMatters);
                 cmd.Parameters.AddWithValue("@ModifyUserSeq", getUserSeq());
+                cmd.Parameters.AddWithValue("@ModifyTime", DateTime.Now);
                 db.ExecuteNonQuery(cmd);
 
                 //依施工計畫執行按圖施工概況
@@ -1008,20 +1053,100 @@ namespace EQC.Services
         {
             string sql = @"
 				SELECT
-                    ItemDate
-                FROM SupDailyDate
-                WHERE EngMainSeq=@EngMainSeq
-                and DataType=@DataType
-                and ItemDate>=@startDate and ItemDate<=@endDate
+				sp.Seq,
+                sd.CreateTime MiscConstructionCreateTime,
+                sd.ModifyTime MiscConstructionModifyTime,
+                    sp.ItemDate,
+                    sp.CreateTime,
+                    sp.ModifyTime,
 
+                    -- 數字與查詢專區同步
+					cast (case when sp2.Seq is null then 0 else 1 end　　as bit)  　machineNumFormFilled
+                FROM SupDailyDate　sp
+                inner join EngMain a on  a.Seq = sp.EngMainSeq 
+				left join (
+					select sp.Seq from 
+
+						--SupDailyDate 是儲存工程施工日誌及監造報表填寫狀況的資料表
+
+						--以下資料表顯示於 工程履約 > 進度管理 > 施工日誌下方其他頁簽
+						--SupDailyReportConstructionEquipment 機具資料表
+						--SupDailyReportConstructionMaterial 材料資料表
+						--SupDailyReportConstructionPerson 人員資料表
+						SupDailyDate sp
+
+						--這裡left join 出來的資料筆數並不重要， 只看這些資料中有無 不為null且大於0 的欄位，有則代表已填寫過
+						left join SupDailyReportConstructionEquipment sdr on (sp.Seq = sdr.SupDailyDateSeq ) 
+						left join SupDailyReportConstructionMaterial sdm on (sdm.SupDailyDateSeq = sp.Seq  ) 
+						left join SupDailyReportConstructionPerson sdp on (sdp.SupDailyDateSeq = sp.Seq )
+                        left join  SupDailyReportMiscConstruction sdd on sdd.SupDailyDateSeq = sp.Seq
+						--若三者其中之一TodayQuantity大於0代表填寫過
+						where (
+                            sdr.TodayQuantity > 0 or 
+                            sdm.TodayQuantity > 0 or 
+                            sdp.TodayQuantity > 0  or
+                            sdr.CreateTime != sdr.ModifyTime or
+                            sdm.CreateTime != sdm.ModifyTime or
+                            sdp.CreateTime != sdp.ModifyTime or
+                            sdd.CreateTime != sdd.ModifyTime
+                        ) 
+                        and  sp.DataType = @DataType
+						group by sp.Seq
+				)　 sp2 on sp.Seq = sp2.Seq
+                left join  SupDailyReportMiscConstruction sd on sd.SupDailyDateSeq = sp.Seq
+                WHERE EngMainSeq=@EngMainSeq
+                and sp.DataType=@DataType
+                and sp.ItemDate>=@startDate and sp.ItemDate<=@endDate
+                and sp.ItemDate >= a.StartDate
+                and sp.ItemDate <= a.SchCompDate
+                and sp.CreateTime != sp.ModifyTime
                 union all
                 SELECT
-                    ItemDate
-                FROM EC_SupDailyDate
-                WHERE EngMainSeq=@EngMainSeq
-                and DataType=@DataType
-                and ItemDate>=@startDate and ItemDate<=@endDate
-                ";//s20230627
+				sp.Seq,
+                sd.CreateTime MiscConstructionCreateTime,
+                sd.ModifyTime MiscConstructionModifyTime,
+                    sp.ItemDate,
+                    sp.CreateTime,
+                    sp.ModifyTime,
+					cast (case when sp2.Seq is null then 0 else 1 end　　as bit)  　machineNumFormFilled
+                FROM EC_SupDailyDate sp
+                inner join EngMain a on  a.Seq = sp.EngMainSeq 
+				left join (
+					select sp.Seq from 
+
+						--SupDailyDate 是儲存工程施工日誌及監造報表填寫狀況的資料表
+
+						--以下資料表顯示於 工程履約 > 進度管理 > 施工日誌下方其他頁簽
+						--SupDailyReportConstructionEquipment 機具資料表
+						--SupDailyReportConstructionMaterial 材料資料表
+						--SupDailyReportConstructionPerson 人員資料表
+						EC_SupDailyDate sp
+
+						--這裡left join 出來的資料筆數並不重要， 只看這些資料中有無 不為null且大於0 的欄位，有則代表已填寫過
+						left join EC_SupDailyReportConstructionEquipment sdr on (sp.Seq = sdr.EC_SupDailyDateSeq  ) 
+						left join EC_SupDailyReportConstructionMaterial sdm on (sdm.EC_SupDailyDateSeq = sp.Seq ) 
+						left join EC_SupDailyReportConstructionPerson sdp on (sdp.EC_SupDailyDateSeq = sp.Seq )
+                        left join EC_SupDailyReportMiscConstruction sdd on sdd.EC_SupDailyDateSeq = sp.Seq
+						--若三者其中之一TodayQuantity大於0代表填寫過
+						where (
+                            sdr.TodayQuantity > 0 or 
+                            sdm.TodayQuantity > 0 or 
+                            sdp.TodayQuantity > 0  or
+                            sdr.CreateTime != sdr.ModifyTime or
+                            sdm.CreateTime != sdm.ModifyTime or
+                            sdp.CreateTime != sdp.ModifyTime or
+                            sdd.CreateTime != sdd.ModifyTime
+                        ) and  sp.DataType = @DataType　
+						group by sp.Seq
+				)　 sp2 on sp.Seq = sp2.Seq
+                left join  EC_SupDailyReportMiscConstruction sd on sd.EC_SupDailyDateSeq = sp.Seq
+				WHERE EngMainSeq=@EngMainSeq
+                and sp.DataType=@DataType
+                and sp.ItemDate>=@startDate and sp.ItemDate<=  @endDate
+                and sp.ItemDate >= ISNULL(a.EngChangeStartDate, a.StartDate)
+                and sp.ItemDate <= ISNULL(a.EngChangeSchCompDate, a.SchCompDate)
+                and sp.CreateTime != sp.ModifyTime
+                ";
             SqlCommand cmd = db.GetCommand(sql);
             cmd.Parameters.AddWithValue("@EngMainSeq", engMainSeq);
             cmd.Parameters.AddWithValue("@startDate", itemDate);

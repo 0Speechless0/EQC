@@ -16,6 +16,11 @@
                      下載範例
                 </button>
             </a>
+            <a :href="'ExpertCommittee/Download'"  class="bd-highlight" download  style="padding-left: 15px;"> 
+                <button  role="button" class="btn btn-shadow btn-color11-3 btn-block">
+                     匯出
+                </button>
+            </a>
             <div class="d-flex pl-3 pb-2"> 
                 <input v-model="searchStr" />
                 <button type="button" class="btn btn-outline-success" @click="search()" >搜尋</button>
@@ -142,10 +147,11 @@ import Common from "../../Common/Common.js";
                         if (resp.data.result == 0) {
                             this.getList();
                         } else {
-                            alert(resp.data.message);
+                            alert(resp.data.msg);
                         }
                     }).catch(error => {
                         console.log(error);
+
                     });
             },
             onEdit(id) {

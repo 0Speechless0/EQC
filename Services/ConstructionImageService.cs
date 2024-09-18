@@ -44,7 +44,7 @@ namespace EQC.Services
 
         internal List<string> getEngYearList()
         {
-            string sql = @"select EngYear from EngMain group by EngYear";
+            string sql = @"select EngYear from EngMain group by EngYear order by EngYear desc";
             return db.GetDataTable(db.GetCommand(sql)).Rows.Cast<DataRow>().Select(row => row.Field<Int16>("EngYear").ToString() ).ToList<string>();
         }
 

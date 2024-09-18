@@ -22,6 +22,7 @@ namespace EQC.EDMXModel
             this.EngMain1 = new HashSet<EngMain>();
             this.AmmeterRecord = new HashSet<AmmeterRecord>();
             this.ConstCheckUser = new HashSet<ConstCheckUser>();
+            this.EngSupervisor = new HashSet<EngSupervisor>();
         }
     
         public short Seq { get; set; }
@@ -45,5 +46,7 @@ namespace EQC.EDMXModel
         public virtual ICollection<AmmeterRecord> AmmeterRecord { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<ConstCheckUser> ConstCheckUser { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<EngSupervisor> EngSupervisor { get; set; }
     }
 }

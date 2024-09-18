@@ -1,15 +1,36 @@
 ﻿using EQC.Common;
+using EQC.EDMXModel;
 using EQC.Models;
 using EQC.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Linq;
 
 namespace EQC.Services
 {
     public class SuperviseFillService : BaseService
     {//督導填報
+
+        public void SetSuperviseRecordSheetWithSupervisionDirectorSelf(List<ESSuperviseRecordSheetVModel> items)
+        {
+            using(var context = new EQC_NEW_Entities())
+            {
+                var dic =
+                    context
+                    .EngSupervisor.Where(r => r.UserKind == 0)
+                    .GroupBy(r => r.EngMainSeq)
+                    .ToDictionary(r => r.Key, r => r.Select(rr => rr.UserMain.DisplayName).ToArray() );
+                items.ForEach(e =>
+                {
+                    if (dic.TryGetValue(e.EngSeq, out string[] values))
+                        e.SupervisorDirectorSelf = values.Length > 0 ? 
+                        values.Aggregate("", (a, c) => a +"," + c).Substring(1) : "";
+                });
+            }
+        }
+
         //督導紀錄表 20230217
         public List<T> GetSuperviseRecordSheet<T>(int superviseEngSeq)
         {
@@ -20,15 +41,19 @@ namespace EQC.Services
                     a.TenderNo,
                     a.TenderName,
                     a.OrganizerName,
-                    (
-    	                select DisplayName from UserMain where Seq=d.CreateUserSeq
-                    ) ContactName,
+               --(
+    	               --select DisplayName from UserMain where Seq=d.CreateUserSeq
+                    --) ContactName,
+                    a.ContactName, 
                     a1.SuperviseDate,
                     a1.SuperviseEndDate, --s20230316
                     a.Location,
-                    a.SupervisionUnitName,
+                    a.SupervisionUnitName ,
+                    d.Seq EngSeq,
+                    d.SupervisorDirector SupervisorDirectorOutSide,
                     d.SupervisorSelfPerson1,
                     d.SupervisorCommPerson1,
+                    d.SupervisorExecType,
                     a.ActualStartDate,
                     a.ScheCompletionDate,
                     a.ContractorName1,
@@ -70,7 +95,7 @@ namespace EQC.Services
                     g.ImproveDeadline
                 from SuperviseEng a1
                 inner join SupervisePhase b on(b.Seq=a1.SupervisePhaseSeq)
-                inner join PrjXML a on(a.Seq=a1.PrjXMLSeq)
+                inner join PrjXML a on (a.Seq=a1.PrjXMLSeq)
                 left outer join PrjXMLExt c on(c.PrjXMLSeq=a.Seq)
                 left outer join EngMain d on(d.PrjXMLSeq=a.Seq)
                 left outer join wraControlPlanNo e on(e.ProjectName=ISNULL(a.ManualBelongPrj, c.BelongPrj))
@@ -262,7 +287,7 @@ namespace EQC.Services
             try
             {
                 decimal committeeScore = 0;
-                int committeeCnt = 0;
+                decimal committeeCnt = 0;
                 foreach (SuperviseFillCommitteeScoreVModel m in items) {
                     Null2Empty(m);
 
@@ -303,7 +328,7 @@ namespace EQC.Services
                     where Seq=@Seq ";
                 cmd = db.GetCommand(sql);
                 cmd.Parameters.AddWithValue("@Seq", superviseEngSeq);
-                cmd.Parameters.AddWithValue("@CommitteeAverageScore", committeeCnt == 0 ? 0 : committeeScore / committeeCnt);
+                cmd.Parameters.AddWithValue("@CommitteeAverageScore", committeeCnt == 0 ? 0 : Math.Round(committeeScore / committeeCnt) );
                 db.ExecuteNonQuery(cmd);
 
                 db.TransactionCommit();
@@ -368,10 +393,10 @@ namespace EQC.Services
                     0 OrderNo,
                     b.Seq,
 	                b.DisplayName CName
-                from SuperviseFillInsideCommittee a1 
-                inner join UserMain b on(b.Seq= -a1.InsideCommitteeSeq)
+                from SuperviseFillUserMain a1 --s20240913
+                inner join UserMain b on(b.Seq= a1.UserMainSeq)
                 inner join SuperviseFill s on (s.Seq = @SuperviseFillSeq)
-                where s.SuperviseEngSeq = @SuperviseEngSeq
+                where s.SuperviseEngSeq = @SuperviseEngSeq  and a1.SuperviseFillSeq = @SuperviseFillSeq
                 ) z
                 order by z.mode,z.OrderNo
 				";
@@ -562,12 +587,12 @@ namespace EQC.Services
                         ";
                     }
                     else if (kv[0] == "2")
-                    {
-                        kv[1] = "-" + kv[1];
+                    {//領隊 s20240913
+                        //kv[1] = "-" + kv[1];
                         sql = @"
-                        insert into SuperviseFillInsideCommittee(
+                        insert into SuperviseFillUserMain(
                             SuperviseFillSeq,
-                            InsideCommitteeSeq,
+                            UserMainSeq,
                             CreateTime,
                             CreateUserSeq,
                             ModifyTime,
@@ -586,9 +611,9 @@ namespace EQC.Services
                     try
                     {
                         SqlCommand cmd = db.GetCommand(sql);
+                        string a = kv[1];
                         cmd.Parameters.AddWithValue("@SuperviseFillSeq", m.Seq);
                         cmd.Parameters.AddWithValue("@CommitteeSeq", kv[1]);
-
                         cmd.Parameters.AddWithValue("@ModifyUserSeq", getUserSeq());
                         db.ExecuteNonQuery(cmd);
                     }
@@ -615,6 +640,11 @@ namespace EQC.Services
                 db.ExecuteNonQuery(cmd);
 
                 sql = @"delete from SuperviseFillOutCommittee where SuperviseFillSeq=@SuperviseFillSeq";
+                cmd = db.GetCommand(sql);
+                cmd.Parameters.AddWithValue("@SuperviseFillSeq", seq);
+                db.ExecuteNonQuery(cmd);
+                //s20240913
+                sql = @"delete from SuperviseFillUserMain where SuperviseFillSeq=@SuperviseFillSeq";
                 cmd = db.GetCommand(sql);
                 cmd.Parameters.AddWithValue("@SuperviseFillSeq", seq);
                 db.ExecuteNonQuery(cmd);

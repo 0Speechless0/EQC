@@ -498,8 +498,8 @@ namespace EQC.Services
                     ,FN1.ItemType
                     ,FN1.[EngMaterialDeviceListSeq]
                     ,FN1.[OrderNo]
-                    ,FN1.[ItemNo]
-                    ,FN1.[MDName]
+                    ,el.[ItemNo]
+                    ,el.[MDName]
                     ,FN1.[SchTestDate]
                     ,FN1.[RealTestDate]
                     ,FN1.[TestQty]
@@ -517,7 +517,8 @@ namespace EQC.Services
                     ,FN1.[ModifyTime]
                     ,FN1.[ModifyUserSeq]
                 FROM [dbo].[EngMaterialDeviceTestSummary] FN1
-	                LEFT OUTER JOIN EMDListSt FN2 ON FN1.[EngMaterialDeviceListSeq] = FN2.[EngMaterialDeviceListSeq]
+	            LEFT OUTER JOIN EMDListSt FN2 ON FN1.[EngMaterialDeviceListSeq] = FN2.[EngMaterialDeviceListSeq]
+                inner join EngMaterialDeviceList el on el.Seq = FN1.[EngMaterialDeviceListSeq] 
                 WHERE FN1.[EngMaterialDeviceListSeq] in (
 	                SELECT [Seq]
 	                FROM [dbo].[EngMaterialDeviceList]
@@ -781,9 +782,9 @@ namespace EQC.Services
                 where Seq=@Seq";
                 cmd = db.GetCommand(sql);
                 cmd.Parameters.Clear();
-                cmd.Parameters.AddWithValue("@VendorName", m.VendorName);
-                cmd.Parameters.AddWithValue("@VendorTaxId", m.VendorTaxId);
-                cmd.Parameters.AddWithValue("@VendorAddr", m.VendorAddr);//s20230502
+                cmd.Parameters.AddWithValue("@VendorName", m.VendorName.Trim());
+                cmd.Parameters.AddWithValue("@VendorTaxId", m.VendorTaxId.Trim());
+                cmd.Parameters.AddWithValue("@VendorAddr", m.VendorAddr.Trim());//s20230502
                 cmd.Parameters.AddWithValue("@VendorLng", this.NulltoDBNull(m.VendorLng));//s20231106
                 cmd.Parameters.AddWithValue("@VendorLat", this.NulltoDBNull(m.VendorLat));//s20231106
                 cmd.Parameters.AddWithValue("@VendorDistance", m.VendorDistance);//s20231106

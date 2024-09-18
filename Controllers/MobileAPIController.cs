@@ -31,6 +31,7 @@ namespace EQC.Controllers
         {
 
         }
+
         public JsonResult GetArticals(int count = 10)
         {
             try
@@ -59,13 +60,100 @@ namespace EQC.Controllers
                 return Json(new { status = "failed" , status_code = 1});
             }
         }
+        public JsonResult SignSuper(int recSeq, string userNo)
+        {
+            try
+            {
+                if(Utils.CheckDirectorOfSupervision(userNo))
+                {
+                    var moblieService = new MobileAPIService();
+                    moblieService.SignSuper(recSeq, userNo);
 
-        public JsonResult GetEngList(string userNo, int engYear, string str = null)
+                    return Json(new { status = "success", status_code = 0 });
+
+                }
+
+
+                return Json(new {  message="你不是監造主任", status = "success", status_code = 0 });
+            }
+            catch (Exception e)
+            {
+
+                return Json(new { status = "failed", status_code = 1 });
+            }
+        }
+        public JsonResult GetEngRecSuperUnSign(string engNo)
         {
             try
             {
                 var moblieService = new MobileAPIService();
+                var recList = moblieService.GetEngRecSuperUnSigin(engNo);
+
+                return Json(new { data = recList, status = "success", status_code = 0 });
+            }
+            catch (Exception e)
+            {
+
+                return Json(new { status = "failed", status_code = 1 });
+            }
+        }
+        public JsonResult GetEngList(string userNo, int engYear, string str = null, bool? hasPackage = null, bool? withDocument = null)
+        {
+            try
+            {
+                var mService = new MobileAPIService();
+                var moblieService = new MobileAPIService();
                 var engList = moblieService.GetEngListByUser(userNo, engYear, str);
+
+                using (var context = new EQC_NEW_Entities())
+                {
+                    var userSeq = context.UserMain.Where(r => r.UserNo == userNo).FirstOrDefault()?.Seq;
+                    var a = context.ConstCheckRec.Except(
+                        context.ConstCheckRec
+                        .Join(context.constCheckSignatures.Where(r => r.SignatureRole == 3), r1 => r1.Seq, r2 => r2.ConstCheckSeq, (r1, r2) => r1)
+                    ).Join(context.EngConstruction, r1 => r1.EngConstructionSeq, r2 => r2.Seq, (r1, r2) => r2)
+                    .Join(context.EngMain, r1 => r1.EngMainSeq, r2 => r2.Seq, (r1, r2) => r2)
+                    .Where(r =>
+                        (
+                        r.EngSupervisor.Where(rr => rr.UserMainSeq == userSeq && rr.UserKind == 0).Count() > 0
+                        && r.SupervisorExecType == 1)
+                        || ( "S" + r.EngNo == userNo && r.SupervisorExecType == 2)
+                    )
+                    .GroupBy(r => r.Seq)
+                    .Select(r => r.FirstOrDefault())
+                    .ToList()
+                    .Join(engList, r1 => r1.Seq, r2 => r2.Seq, (r1, r2) => r2).ToList();
+
+                    engList = engList.GroupJoin(a,
+                        r1 => r1.Seq,
+                        r2 => r2.Seq,
+                        (r1, r2) =>
+                        {
+                            r1.recSignNeeded = r2.Count() > 0; return r1;
+                        }).ToList();
+
+                    if (hasPackage != null && !hasPackage.Value)
+                    {
+                        engList = engList.Join(context.ToolPackage, r1 => r1.Seq, r2 => r2.EngSeq, (r1, r2) => r1).ToList();
+                    }
+                    if (withDocument != null && withDocument.Value)
+                    {
+                        engList = engList.Where(r => $"MobileConstCheckDocuments1/{r.Seq}"
+                            .GetFiles().Length > 0).ToList();
+                    }
+
+                    engList = engList.GroupJoin(context.ConstCheckUser.Where(r => r.UserSeq == userSeq), r1 => r1.Seq, r2 => r2.EngSeq, (r1, r2) =>
+                    {
+
+                        r1.IsConstCheckOwn = r2.Count() > 0;
+                        return r1;
+                    }).ToList();
+         
+                }
+
+
+
+
 
                 return Json(new { data = engList, status = "success", status_code = 0});
             }
@@ -346,6 +434,8 @@ namespace EQC.Controllers
 
             }
         }
+
+
         public void GetDocument(int engSeq)
         {
             var service = new MobileAPIService();
@@ -625,7 +715,8 @@ namespace EQC.Controllers
                             EngNo = eng.EngNo,
                             Seq = eng.Seq,
                             EngYear = eng.EngYear,
-                            ExecUnitName = eng.execUnitName
+                            ExecUnitName = eng.execUnitName,
+                            ExecType  = eng.SupervisorExecType
                         },
                         EngChapterItems = engChapterItems,
                         EngConstrucitonList = engConstructionList,

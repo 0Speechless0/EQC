@@ -1,4 +1,5 @@
 ﻿using EQC.Common;
+using EQC.EDMXModel;
 using EQC.Models;
 using EQC.ViewModel;
 using EQC.ViewModel.Common;
@@ -134,9 +135,10 @@ namespace EQC.Services
                     b.Name UnitName
                 FROM [EngReportList] a
 
-                inner join Unit b on(b.Seq=a.ExecSubUnitSeq and @ParentSeq=b.parentSeq)
+                left join Unit b on(b.Seq=a.ExecSubUnitSeq and @ParentSeq=b.parentSeq)
                 where 1=1
                 " + ((year == -1) ? "" : " and a.RptYear=@RptYear ")
+                + ((parentSeq == -1) ? "" : " and b.Seq is not null ")
                 + getAuthoritySql("a.") //and a.CreateUserSeq=@CreateUserSeq
                 + @" order by b.OrderNo";
             SqlCommand cmd = db.GetCommand(sql);
@@ -265,21 +267,24 @@ namespace EQC.Services
         #endregion 
 
         //工程清單-總筆數
-        public int GetEngListCount(int year, int unitSeq, int subUnitSeq, int rptTypeSeq,int funcType)
+        public int GetEngListCount(int year, int unitSeq, int subUnitSeq, int rptTypeSeq,int funcType, string keyWord = null)
         {
             string sql = @"";
-            int userSeq = new SessionManager().GetUser().Seq;
+            int user = new SessionManager().GetUser().Seq;
 
             string subSQL = "";
             switch (funcType)
             {
+                case 14:
+                    subSQL += " and isnull(a.ProposalAuditOpinion, 2) != 2 ";
+                    break;
                 //case 2:
                 //    subSQL += " and a.RptTypeSeq in (1,2,3) and a.NeedAssessmenApproval = 2 ";
                 //    break;
                 //case 3:
                 //    subSQL += " and a.RptTypeSeq in (2,4,5)  ";
                 //    break;
-                case 4:  //年度經費檢討會議
+                case 4:
                     subSQL += " and a.RptTypeSeq in (5,7) and a.ProposalAuditOpinion = 1 AND isnull(a.ReviewSort,0)>0 ";
                     break;
                 case 5:
@@ -287,16 +292,16 @@ namespace EQC.Services
                     break;
                 case 11://待覆核或簽核清單
                     subSQL += " and a.RptTypeSeq in (1,3) ";
-                    subSQL += " and erp.ApproveTime is null";
+                    subSQL += "  and _erp.Seq = erp.Seq";
                     subSQL += " and ( (  a.RelatedReportResultsAssignReviewUserSeq = @RelatedReportResultsAssignReviewUserSeq ) ";
-                    subSQL += " or    ( a.FacilityManagementAssignReviewUserSeq = @FacilityManagementAssignReviewUserSeq ) ";
-                    subSQL += " or    ( a.ProposalScopeLandAssignReviewUserSeq = @ProposalScopeLandAssignReviewUserSeq ) ";
+                    subSQL += " or    (  a.FacilityManagementAssignReviewUserSeq = @FacilityManagementAssignReviewUserSeq ) ";
+                    subSQL += " or    (  a.ProposalScopeLandAssignReviewUserSeq = @ProposalScopeLandAssignReviewUserSeq ) ";
                     subSQL += @" or   ( a.Seq in (SELECT T1.EngReportSeq 
 					                                FROM [dbo].[EngReportApprove] T1
 						                                INNER JOIN (SELECT MIN(FN1.Seq) AS Seq FROM [dbo].[EngReportApprove] FN1 WHERE ISNULL(FN1.ApproveUserSeq,0)=0 GROUP BY FN1.EngReportSeq) T2 ON T1.Seq=T2.Seq
 						                                INNER JOIN [dbo].[EngReportApprovePosition] T3 ON T1.EngReportSeq = T3.EngReportSeq AND T1.GroupId=T3.GroupId AND T1.ApprovalModuleListSeq =T3.ApprovalModuleListSeq 
-						                                INNER JOIN [dbo].[UserUnitPosition] T4 ON T3.SubUnitSeq = T4.UnitSeq AND T3.PositionSeq = T4.PositionSeq 
-					                                WHERE T4.UserMainSeq = @UserSeq ) ) ) ";
+						                                INNER JOIN [dbo].[UserUnitPosition] T4 ON (T3.SubUnitSeq = T4.UnitSeq  or T3.SubUnitSeq is null) AND T3.PositionSeq = T4.PositionSeq 
+					                                WHERE T4.UserMainSeq = @UserSeq) ) ) ";
                     break;
                 case 12://提案審查清單
                     subSQL += " and a.RptTypeSeq in (2) ";
@@ -306,11 +311,11 @@ namespace EQC.Services
             }
 
             sql = @"
-                SELECT distinct
-                    a.Seq
-                FROM [dbo].[EngReportList] a
-                    inner join Unit b on(b.Seq=a.ExecUnitSeq)
-                    " + ((funcType == 11) ? @"
+                    SELECT 						
+		            _erp.EngReportSeq Seq
+                    FROM [dbo].[EngReportList] a
+                
+                    " + (@"
 
                     left join EngReportApprove _erp  on (a.Seq = _erp.EngReportSeq)
 
@@ -318,51 +323,62 @@ namespace EQC.Services
                     ( select
 		                    erp.EngReportSeq , 
 		                    Max(erp.GroupId)　maxGroup,
-                            Min(erp.ApproveTime) ApproveTime
-                    from EngReportApprove erp group by erp.EngReportSeq) erp 
+                            Min(erp.Seq) Seq
+                    from EngReportApprove erp 
+                    where erp.ApproveTime is null 
+                    group by erp.EngReportSeq) erp 
                     on (_erp.EngReportSeq = erp.EngReportSeq and _erp.GroupId = erp.maxGroup)
 
-                    " : "") + @"
-                where a.ExecUnitSeq=@ExecUnitSeq
-                "
-            + ((year == -1) ? "" : " and a.RptYear=" + year)
-            + ((subUnitSeq == -1) ? "" : " and a.ExecSubUnitSeq=" + subUnitSeq)
-            + ((rptTypeSeq == 0) ? "" : "  and a.RptTypeSeq=" + rptTypeSeq)
+                    ") + @"
+                    where (a.ExecUnitSeq=@ExecUnitSeq or  @ExecUnitSeq = -1 )
+                    "
+                    + ((year == -1) ? "" : " and a.RptYear=" + year)
+                    + ((subUnitSeq == -1) ? "" : " and a.ExecSubUnitSeq=" + subUnitSeq)
+                    + ((rptTypeSeq == 0) ? "" : "  and a.RptTypeSeq=" + rptTypeSeq)
 
-            ////+ ((funcType == 2) ? "  and a.RptTypeSeq in (1,2) and a.OriginAndScopeState=3 and a.RelatedReportResultsState=3 and a.FacilityManagementState=3 and a.ProposalScopeLandState=3 " : "")
-            ////+ ((funcType == 2) ? "  and a.RptTypeSeq in (1,2,3) and a.NeedAssessmenApproval = 2 " : "")
-            ////+ ((funcType == 3) ? "  and a.RptTypeSeq in (2,4,5) " : "")
-            //+ ((funcType == 4) ? "  and a.RptTypeSeq in (5,7) and a.ProposalAuditOpinion = 1  " : "")
-            //+ ((funcType == 5) ? "  and a.RptTypeSeq in (7,8) and a.ResolutionAuditOpinion = 1  " : "")
-            + subSQL
+                    ////+ ((funcType == 2) ? "  and a.RptTypeSeq in (1,2,3) and a.NeedAssessmenApproval = 2 " : "")
+                    ////+ ((funcType == 3) ? "  and a.RptTypeSeq in (2,4,5) " : "")
+                    //+ ((funcType == 4) ? "  and a.RptTypeSeq in (5,7) and a.ProposalAuditOpinion = 1 " : "")
+                    //+ ((funcType == 5) ? "  and a.RptTypeSeq in (7,8) and a.ResolutionAuditOpinion = 1 " : "")
+                    + subSQL
 
-            + ((funcType == 11 || funcType == 12) ? "" : getAuthoritySql("a."));
+                + ((funcType == 11 || funcType == 12) ? "" : getAuthoritySql("a."))
+                ;
+
             string sql2 = @"
-                SELECT count(*) as total from (" + sql + @") b
-            ";
+                     SELECT Count(*) "
+               
+                  + @" FROM [dbo].[view_EngReportList] aa
+                    inner join EngReportList a on a.Seq = aa.Seq
+                    where aa.Seq in (" + sql + @") and a.RptName Like '%'+@keyWord+'%' ";
+
             SqlCommand cmd = db.GetCommand(sql2);
-            cmd.Parameters.Clear();
             cmd.Parameters.AddWithValue("@ExecUnitSeq", unitSeq);
+            cmd.Parameters.AddWithValue("@keyWord", keyWord ?? "");
             cmd.Parameters.AddWithValue("@ExecSubUnitSeq", subUnitSeq);
             cmd.Parameters.AddWithValue("@CreateUserSeq", getUserSeq());
             cmd.Parameters.AddWithValue("@RelatedReportResultsAssignReviewUserSeq", getUserSeq());
             cmd.Parameters.AddWithValue("@FacilityManagementAssignReviewUserSeq", getUserSeq());
             cmd.Parameters.AddWithValue("@ProposalScopeLandAssignReviewUserSeq", getUserSeq());
             cmd.Parameters.AddWithValue("@UserSeq", getUserSeq());
-
-            DataTable dt = db.GetDataTable(cmd);
-            return Convert.ToInt32(dt.Rows[0]["total"].ToString());
+            return (int)db.ExecuteScalar(cmd);
         }
 
         //工程清單
-        public List<T> GetEngList<T>(int year, int unitSeq, int subUnitSeq, int rptTypeSeq, int pageRecordCount, int pageIndex, int funcType)
+        public List<T> GetEngList<T>(int year, int unitSeq, int subUnitSeq, int rptTypeSeq, int pageRecordCount, int pageIndex, int funcType, string keyWord = null)
         {
             string sql = @"";
-            int userSeq = new SessionManager().GetUser().Seq;
+            int user= new SessionManager().GetUser().Seq;
 
             string subSQL = "";
             switch (funcType)
             {
+                //case 13:
+                //    subSQL += " and isnull(a.ProposalAuditOpinion,0) = 1 ";
+                //    break;
+                case 14:
+                    subSQL += " and isnull(a.ProposalAuditOpinion, 2) != 2 ";
+                    break;
                 //case 2:
                 //    subSQL += " and a.RptTypeSeq in (1,2,3) and a.NeedAssessmenApproval = 2 ";
                 //    break;
@@ -377,7 +393,7 @@ namespace EQC.Services
                     break;
                 case 11://待覆核或簽核清單
                     subSQL +=  " and a.RptTypeSeq in (1,3) ";
-                    subSQL +=  "  and erp.ApproveTime is null";
+                    subSQL += "  and _erp.Seq = erp.Seq";
                     subSQL +=  " and ( (  a.RelatedReportResultsAssignReviewUserSeq = @RelatedReportResultsAssignReviewUserSeq ) ";
                     subSQL +=  " or    (  a.FacilityManagementAssignReviewUserSeq = @FacilityManagementAssignReviewUserSeq ) ";
                     subSQL +=  " or    (  a.ProposalScopeLandAssignReviewUserSeq = @ProposalScopeLandAssignReviewUserSeq ) ";
@@ -385,7 +401,7 @@ namespace EQC.Services
 					                                FROM [dbo].[EngReportApprove] T1
 						                                INNER JOIN (SELECT MIN(FN1.Seq) AS Seq FROM [dbo].[EngReportApprove] FN1 WHERE ISNULL(FN1.ApproveUserSeq,0)=0 GROUP BY FN1.EngReportSeq) T2 ON T1.Seq=T2.Seq
 						                                INNER JOIN [dbo].[EngReportApprovePosition] T3 ON T1.EngReportSeq = T3.EngReportSeq AND T1.GroupId=T3.GroupId AND T1.ApprovalModuleListSeq =T3.ApprovalModuleListSeq 
-						                                INNER JOIN [dbo].[UserUnitPosition] T4 ON T3.SubUnitSeq = T4.UnitSeq AND T3.PositionSeq = T4.PositionSeq 
+						                                INNER JOIN [dbo].[UserUnitPosition] T4 ON (T3.SubUnitSeq = T4.UnitSeq  or T3.SubUnitSeq is null) AND T3.PositionSeq = T4.PositionSeq 
 					                                WHERE T4.UserMainSeq = @UserSeq) ) ) ";
                     break;
                 case 12://提案審查清單
@@ -396,11 +412,11 @@ namespace EQC.Services
             }
 
             sql = @"
-                    SELECT distinct
-                        a.Seq
+                    SELECT 						
+		            _erp.EngReportSeq Seq
                     FROM [dbo].[EngReportList] a
                 
-                    " + ((funcType == 11) ? @"
+                    " + (@"
 
                     left join EngReportApprove _erp  on (a.Seq = _erp.EngReportSeq)
 
@@ -408,12 +424,14 @@ namespace EQC.Services
                     ( select
 		                    erp.EngReportSeq , 
 		                    Max(erp.GroupId)　maxGroup,
-                            Min(erp.ApproveTime) ApproveTime
-                    from EngReportApprove erp group by erp.EngReportSeq) erp 
+                            Min(erp.Seq) Seq
+                    from EngReportApprove erp 
+                    where erp.ApproveTime is null 
+                    group by erp.EngReportSeq) erp 
                     on (_erp.EngReportSeq = erp.EngReportSeq and _erp.GroupId = erp.maxGroup)
 
-                    " : "") + @"
-                    where a.ExecUnitSeq=@ExecUnitSeq
+                    ") + @"
+                    where (a.ExecUnitSeq=@ExecUnitSeq  or  @ExecUnitSeq = -1)
                     "
                     + ((year == -1) ? "" : " and a.RptYear=" + year)
                     + ((subUnitSeq == -1) ? "" : " and a.ExecSubUnitSeq=" + subUnitSeq)
@@ -429,10 +447,11 @@ namespace EQC.Services
                 ;
 
             string sql2 = @"
-                     SELECT aa.* "
+                SELECT aa.*, a.ProposalReviewEngReportSeq "
++                 ((funcType == 4) ? "  ,a.RefCarbonEmission " : "")
                   //+ ((funcType == 4) ? "  ,aa.ApprovedFund ,aa.ApprovedCarbonEmissions ,aa.Expenditure ,aa.Resolution ,aa.ResolutionAuditOpinion ,aa.ResolutionAuditOpinionName " : "")
-                  //+ ((funcType == 4) ? "  ,aa.RefCarbonEmission ,aa.CarbonEmissionRatio ,aa.RegressionCurve ,aa.PriceAdjustmentIndex, aa.DemandCarbonEmissions " : "")
-                  //+ ((funcType == 5) ? "  ,aa.EngNo ,aa.IsTransfer " : "")
+                  + ((funcType == 14) ? "  ,a.EstimatedExpenditureCurrentYear, a.ExpensesSubsequentYears, a.BookingProcess_SY, a.BookingProcess_SM, a.BookingProcess_EY, a.BookingProcess_EM   " : "")
+                  + ((funcType == 5) ? "  ,aa.EngNo ,aa.IsTransfer " : "")
                   //+ ((funcType == 9) ? "  ,aa.[OriginAndScope] ,aa.[RelatedReportResults] ,aa.[FacilityManagement] ,aa.[ProposalScopeLand] " : "")
                   //+ ((funcType == 9) ? "  ,aa.[EvaluationResult] ,aa.[ER1_1] ,aa.[ER1_2] ,aa.[ER2_1] ,aa.[ER2_2] ,aa.[ER3] ,aa.[ER4] ,aa.[ER6] " : "")
                   //+ ((funcType == 9) ? "  ,aa.[OriginAndScopeUpdateReviewUserName] ,aa.[OriginAndScopeReviewTime] " : "")
@@ -442,13 +461,16 @@ namespace EQC.Services
                   //+ ((funcType == 9) ? "  ,aa.[LocationMap] ,aa.[AerialPhotography] ,aa.[ScenePhoto] ,aa.[BaseMap] ,aa.[EngPlaneLayout] ,aa.[LongitudinalSection] ,aa.[StandardSection] " : "")
                   //+ ((funcType == 9) ? "  ,aa.[LocationMapFileName] ,aa.[AerialPhotographyFileName] ,aa.[ScenePhotoFileName] ,aa.[BaseMapFileName] ,aa.[EngPlaneLayoutFileName] ,aa.[LongitudinalSectionFileName] ,aa.[StandardSectionFileName] " : "")
                   + @" FROM [dbo].[view_EngReportList] aa
-                    where aa.Seq in (" + sql + @")
+                    inner join EngReportList a on a.Seq = aa.Seq
+                    where aa.Seq in (" + sql + @") and a.RptName Like '%'+@keyWord+'%' 
+       
                     order by aa.Seq DESC
                     OFFSET @pageIndex ROWS
                     FETCH FIRST @pageRecordCount ROWS ONLY";
 
             SqlCommand cmd = db.GetCommand(sql2);
             cmd.Parameters.AddWithValue("@ExecUnitSeq", unitSeq);
+            cmd.Parameters.AddWithValue("@keyWord", keyWord ?? "");
             cmd.Parameters.AddWithValue("@ExecSubUnitSeq", subUnitSeq);
             cmd.Parameters.AddWithValue("@pageIndex", pageRecordCount * (pageIndex - 1));
             cmd.Parameters.AddWithValue("@pageRecordCount", pageRecordCount);
@@ -464,9 +486,10 @@ namespace EQC.Services
         public List<T> GetEegReportBySeq<T>(int seq)
         {
             string sql = @"
-                SELECT *
-                FROM [dbo].[view_EngReportList]
-                WHERE Seq = @Seq
+                SELECT v.*, e.RefCarbonEmission _RefCarbonEmission
+                FROM [dbo].[view_EngReportList] v
+                inner join EngReportList e on v.Seq = e.Seq
+                WHERE v.Seq = @Seq
             ";
             SqlCommand cmd = db.GetCommand(sql);
             cmd.Parameters.Clear();
@@ -677,8 +700,10 @@ namespace EQC.Services
                     }
                     break;
                 case 5:
-                    strSubSQL += ", RptYear = '" + m.RptYear + "'";
                     strSubSQL += ", RptName = '" + m.RptName + "'";
+                    break;
+                case 6:
+                    strSubSQL += ", RptYear = '" + m.RptYear + "'";
                     break;
             }
 
@@ -879,7 +904,7 @@ namespace EQC.Services
             update EngReportList set 
                 ModifyTime = GetDate()
                 ,ModifyUserSeq = @ModifyUserSeq
-
+                ,[RefCarbonEmission] = @RefCarbonEmission
                 ,[RptTypeSeq] = @RptTypeSeq
                 ,[RptName] = @RptName
                 ,[ProposalReviewTypeSeq] = @ProposalReviewTypeSeq
@@ -937,7 +962,7 @@ namespace EQC.Services
                 cmd.Parameters.AddWithValue("@EngineeringScaleMemo", m.EngineeringScaleMemo);
                 cmd.Parameters.AddWithValue("@RelatedReportContent", m.RelatedReportContent);
                 cmd.Parameters.AddWithValue("@HistoricalCatastrophe", m.HistoricalCatastrophe);
-                cmd.Parameters.AddWithValue("@HistoricalCatastropheMemo", m.HistoricalCatastropheMemo);
+                cmd.Parameters.AddWithValue("@HistoricalCatastropheMemo", Utils.NulltoDBNull(m.HistoricalCatastropheMemo) );
                 cmd.Parameters.AddWithValue("@ProtectionTarget", m.ProtectionTarget);
                 cmd.Parameters.AddWithValue("@SetConditions", m.SetConditions);
                 cmd.Parameters.AddWithValue("@DemandCarbonEmissions", m.DemandCarbonEmissions.HasValue ? m.DemandCarbonEmissions : 0);
@@ -954,6 +979,7 @@ namespace EQC.Services
                 cmd.Parameters.AddWithValue("@ManagementPlanningLayoutSituation", m.ManagementPlanningLayoutSituation);
                 cmd.Parameters.AddWithValue("@IsFloodControlRecords", m.IsFloodControlRecords.HasValue? m.IsFloodControlRecords:0);
                 cmd.Parameters.AddWithValue("@ModifyUserSeq", getUserSeq());
+                cmd.Parameters.AddWithValue("@RefCarbonEmission", m.RefCarbonEmission);
                 db.ExecuteNonQuery(cmd);
 
                 return 0;
@@ -1064,14 +1090,17 @@ namespace EQC.Services
         }
 
         //更新工程 FOR 年度經費檢討會議
-        public int UpdateEngReportForAF(EngReportVModel m)
+        public EngReportVModel UpdateEngReportForAF(EngReportVModel m)
         {
             Null2Empty(m);
+
+            EngReportVModel.GetRefCarbonEmission(m);
+
             string sql = @"
             UPDATE EngReportList set 
                 ModifyTime = GetDate()
                 ,ModifyUserSeq = @ModifyUserSeq
-
+                ,[RefCarbonEmission] = @RefCarbonEmission
                 ,[ApprovedFund] = @ApprovedFund
                 ,[ApprovedCarbonEmissions] = @ApprovedCarbonEmissions
                 ,[Expenditure] = @Expenditure
@@ -1084,21 +1113,22 @@ namespace EQC.Services
             {
                 SqlCommand cmd = db.GetCommand(sql);
                 cmd.Parameters.AddWithValue("@Seq", m.Seq);
-                cmd.Parameters.AddWithValue("@ApprovedFund", m.ApprovedFund);
+                cmd.Parameters.AddWithValue("@ApprovedFund", m.ApprovedFund *1000);
+                cmd.Parameters.AddWithValue("@RefCarbonEmission", decimal.Round(m.RefCarbonEmission.Value, 4));
                 cmd.Parameters.AddWithValue("@ApprovedCarbonEmissions", m.ApprovedCarbonEmissions);
-                cmd.Parameters.AddWithValue("@Expenditure", m.Expenditure);
+                cmd.Parameters.AddWithValue("@Expenditure", m.Expenditure*1000);
                 cmd.Parameters.AddWithValue("@Resolution", m.Resolution);
                 if (m.ResolutionAuditOpinion != null)
                     cmd.Parameters.AddWithValue("@ResolutionAuditOpinion", m.ResolutionAuditOpinion);
                 cmd.Parameters.AddWithValue("@ModifyUserSeq", getUserSeq());
-                db.ExecuteNonQuery(cmd);
-
-                return 0;
+                if (db.ExecuteNonQuery(cmd) > 0)
+                    return m;
+                else return null;
             }
             catch (Exception e)
             {
                 log.Info("EngReportService.UpdateEngReportForAF: " + e.Message);
-                return -1;
+                return null;
             }
         }
 
@@ -1150,6 +1180,29 @@ namespace EQC.Services
                 cmd.Parameters.AddWithValue("@ModifyUserSeq", getUserSeq());
                 db.ExecuteNonQuery(cmd);
 
+                using(var context = new EQC_NEW_Entities())
+                {
+                    var target = context.EngReportList.Find(Seq);
+                    if(target.RptTypeSeq == 8 )
+                    {
+                        context.EngApprovalImport.Add(new EngApprovalImport
+                        {
+                            EngYear = target.RptYear,
+                            EngNo = target.EngNo,
+                            EngName = target.RptName,
+                            TotalBudget = target.ApprovedFund,
+                            ApprovedCarbonQuantity = (int) target.ApprovedCarbonEmissions*1000,
+                            CarbonDemandQuantity = (int)target.DemandCarbonEmissions*1000,
+                            SubContractingBudget = 0,
+                            CreateTime = DateTime.Now,
+                            ModifyTime = DateTime.Now
+
+                        });
+                        context.SaveChanges();
+                    }
+
+                }
+
                 return 0;
             }
             catch (Exception e)
@@ -1159,6 +1212,37 @@ namespace EQC.Services
             }
         }
 
+
+        //刪除工程(全部關聯)
+        public int DelEngReportAll(int Seq)
+        {
+            try
+            {
+                string sql = @"
+                    delete from EngReportApprove where
+                    EngReportSeq = @Seq;
+                    delete from EngReportEstimatedCost where
+                    EngReportSeq = @Seq;
+                    delete from EngReportLocalCommunication where
+                    EngReportSeq = @Seq;
+                    delete from EngReportMainJobDescription where
+                    EngReportSeq = @Seq;
+                    delete from EngReportOnSiteConsultation where
+                    EngReportSeq = @Seq;
+
+                    delete from EngReportList where Seq = @Seq;";
+                SqlCommand cmd = db.GetCommand(sql);
+                cmd.Parameters.Clear();
+                cmd.Parameters.AddWithValue("@Seq", Seq);
+                return db.ExecuteNonQuery(cmd);
+            }
+            catch (Exception e)
+            {
+                //db.TransactionRollback();
+                log.Info("EngReportService.DelEngReport" + e.Message);
+                return -1;
+            }
+        }
         //刪除工程
         public int DelEngReport(int Seq)
         {
@@ -1199,6 +1283,7 @@ namespace EQC.Services
                 case "D3": col = ",EcologicalConservationD03 as FileName"; break;
                 case "D4": col = ",EcologicalConservationD04 as FileName"; break;
                 case "D5": col = ",EcologicalConservationD05 as FileName"; break;
+                case "D6": col = ",EcologicalConservationD06 as FileName"; break;
                 default: col = ""; break;
             }
             string sql = @"
@@ -1866,7 +1951,7 @@ UPDATE [dbo].[EngReportMainJobDescription]
                                ,[UnitSeq],[SubUnitSeq],[PositionSeq],[UserMainSeq]
                                ,CreateTime ,CreateUserSeq ,ModifyTime ,ModifyUserSeq)
                     SELECT @EngReportSeq, @MAX, FN1.[Seq], ''
-	                    ,@ExecUnitSeq 
+	                    ,CASE WHEN FN2.[Name] = '不限'  THEN NULL  ELSE @ExecUnitSeq END
                         ,CASE WHEN FN2.[Name] IN ('申請人','提案單位主管') THEN @ExecSubUnitSeq ELSE FN3.Seq END
                         ,CASE WHEN FN2.[Name]='申請人' THEN 0 ELSE FN4.[PositionSeq] END 
                         ,CASE WHEN FN2.[Name]='申請人' THEN @CreateUserSeq ELSE 0 END 

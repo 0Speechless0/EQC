@@ -19,6 +19,7 @@ namespace EQC.EDMXModel
         {
             this.SchProgressPayItem = new HashSet<SchProgressPayItem>();
             this.SupPlanOverview = new HashSet<SupPlanOverview>();
+            this.EC_SchEngProgressPayItem = new HashSet<EC_SchEngProgressPayItem>();
         }
     
         public int Seq { get; set; }
@@ -50,5 +51,7 @@ namespace EQC.EDMXModel
         public virtual ICollection<SchProgressPayItem> SchProgressPayItem { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<SupPlanOverview> SupPlanOverview { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<EC_SchEngProgressPayItem> EC_SchEngProgressPayItem { get; set; }
     }
 }

@@ -32,14 +32,13 @@ namespace EQC
         }
         protected void Application_Start()
         {
-      
             AreaRegistration.RegisterAllAreas();
             GlobalConfiguration.Configure(WebApiConfig.Register);
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
 
-            DbContext.changeTextSetter = 
+            DbContext.changeTextSetter =
                 (changeText, changeTable)
                 =>
                 {
@@ -59,6 +58,7 @@ namespace EQC
             // log4net
             string log4netPath = Server.MapPath("~/log4net.config");
             log4net.Config.XmlConfigurator.ConfigureAndWatch(new System.IO.FileInfo(log4netPath));
+            Utils.rootPath =  HttpContext.Current.Server.MapPath("~");
             EmailForDepUser emailForDepUserScheduler = new EmailForDepUser();
             HttpConfiguration config = GlobalConfiguration.Configuration;
             config.Formatters.JsonFormatter.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Serialize;
@@ -68,8 +68,10 @@ namespace EQC
 
         protected void Application_EndRequest()
         {
-            if(Detection.APIDetection.GetActionRecord(Thread.CurrentThread.ManagedThreadId).CreateTime != null)
-                Detection.APIDetection.FinishAction(Thread.CurrentThread.ManagedThreadId);
+        
+            var record = Detection.APIDetection.GetActionRecord(Thread.CurrentThread.ManagedThreadId);
+            if (record.CreateTime != null)
+                Detection.APIDetection.FinishAction(Thread.CurrentThread.ManagedThreadId, record.UserMainSeq);
         }
         protected void Application_BeginRequest()
         {

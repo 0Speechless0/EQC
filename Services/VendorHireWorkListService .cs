@@ -1,4 +1,5 @@
 ﻿using EQC.Common;
+using EQC.EDMXModel;
 using EQC.Models;
 using System;
 using System.Collections.Generic;
@@ -111,6 +112,61 @@ namespace EQC.Services
 
 			return list;
 		}
+
+		public void ImportFromPrj(int? year = null)
+        {
+			using(var context = new EQC_NEW_Entities())
+            {
+				var targetList =  context.PrjXML.Where(r => r.TenderYear >= year || year == null).ToList().GroupJoin(
+						context.VendorHireWorkList.ToList(),
+						r1 => r1.Seq,
+						r2 => r2.PrjXMLSeq,
+						(r1, r2) =>
+						{
+							var current= r2.FirstOrDefault();
+							if (current == null)
+                            {
+								return new VendorHireWorkList
+								{
+									EngName = r1.TenderName,
+									OrganizerUnitName = r1.ExecUnitName,
+									EngType = r1.EngType,
+									AwardAmount = r1.BidAmount,
+									ActualBidAwardDate = r1.ActualBidAwardDate,
+									ActualProgress = (
+									(r1.ProgressData?.LastOrDefault()?.PDAccuActualProgress ?? 0) / 100).ToString(),
+									ProjectMangement = r1.PrjXMLExt?.PrjManageUnit,
+									SupervisorUnitName = r1.SupervisionUnitName,
+									ContractorName = r1.ContractorName1,
+									PrjXMLSeq = r1.Seq,
+									CreateTime = DateTime.Now
+								};
+							}
+
+							else
+							{
+
+								current.EngName = r1.TenderName;
+								current.OrganizerUnitName = r1.ExecUnitName;
+								current.EngType = r1.EngType;
+								current.AwardAmount = r1.BidAmount;
+								current.ActualBidAwardDate = r1.ActualBidAwardDate;
+								current.ActualProgress = (
+								(r1.ProgressData?.LastOrDefault()?.PDAccuActualProgress ?? 0) / 100).ToString();
+								current.ProjectMangement = r1.PrjXMLExt?.PrjManageUnit;
+								current.SupervisorUnitName = r1.SupervisionUnitName;
+								current.ContractorName = r1.ContractorName1;
+								current.ModifyTime = DateTime.Now;
+							}
+
+							return null;
+						}
+					).ToList();
+                var insertList = targetList.Where(r => r != null);
+                context.VendorHireWorkList.AddRange(insertList);
+				context.SaveChanges();
+            }
+        }  
 		//public int Delete(int SNo)
 		//{
 		//	string sql = @"

@@ -5,12 +5,13 @@
         .MenuList.Select(row => row.Url)
         .FirstOrDefault(path =>
             path.Split('/')[0] == HttpContext.Current.Request.Url.AbsolutePath.Split('/')[1]
-            || HttpContext.Current.Request.Url.AbsolutePath.StartsWith("/Portal")
+            || ( HttpContext.Current.Request.Url.AbsolutePath.StartsWith("/PortalDepUser") && userInfo.RoleSeq   <= 3 )
+            || (HttpContext.Current.Request.Url.AbsolutePath.StartsWith("/PortalDepAdmin") && userInfo.RoleSeq <= 2)
             || HttpContext.Current.Request.Url.AbsolutePath.StartsWith("/CarbonReductionCal")
             );
 
     Dictionary<int, string> videoCodeDic = new Dictionary<int, string>()
-    {
+{
         { 12, "0bwPs7UOvt8"},
         { 10, "0rO17rfM4jw"},
         { 3, "WmdphqeZfGw"},
@@ -18,9 +19,16 @@
     };
 
 
-    if (enterSignal == null)
+
+    if (enterSignal == null && HttpContext.Current.Request.Url.AbsolutePath.Split('/')[1] != "SystemProblem")
     {
-        Response.Redirect("/");
+        Response.RedirectToRoute(new RouteValueDictionary(
+            new
+            {
+                controller = "Login",
+                action = "NoPermission",
+                returnUrl = HttpContext.Current.Request.Url.AbsolutePath
+            }));
     }
     ViewBag.mainLeftClass = ViewBag.mainLeftClass ?? "main-left menu_bg_R";
     ViewBag.nvaClass = ViewBag.nvaClass ?? "navbar navbar-expand-lg fixed-top navbar-bg-R";
@@ -33,30 +41,57 @@
     bool isEngForm = HttpContext.Current.Request.Path.Contains("/EngForum");
 
     bool LeftMenuDisplay = !HttpContext.Current.Request.Path.Contains("/Portal")
-        && !isEngForm;
-
-    string rightContentStyle = LeftMenuDisplay ? "margin-left:230px" : "margin-left:30px";
+    && !isEngForm  && ViewBag.funcPage  != true;
+    string rightContentStyle = (LeftMenuDisplay ? "margin-left:230px" : "margin-left:30px ") ;
     string bodyClass = HttpContext.Current.Request.Path.Contains("/PortalDepAdmin") ? "index mainpage-demobg" : "";
-    string mainContentStyle= HttpContext.Current.Request.Path.Contains("/PortalDepAdmin") ? "margin-bottom:-112px" : "";
-    int? systemSeq = (int)HttpContext.Current.Session["SystemType"];
-
+    string mainContentStyle = HttpContext.Current.Request.Path.Contains("/PortalDepAdmin") ? "margin-bottom:-112px" : "";
+    Int32.TryParse(new EQC.Common.SessionManager().currentSystemSeq, out int systemSeq );
+    string selectedEngSeq = HttpContext.Current.Session["selectedEngSeq"]?.ToString();
+    string menuPath = (string)(HttpContext.Current.Session["MenuPath"] ?? "");
     if (isEngForm)
     {
         ViewBag.mainLeftClass += " off";
     }
 
+
     var notifications = EQC.Common.NotificationProcesser.GetNotifications(userInfo);
 
     var notify = notifications.Count() > 0;
 
-    string SerialNotifications= Newtonsoft.Json.JsonConvert.SerializeObject(notifications);
-    var _SerialNotifications = HttpUtility.HtmlEncode(SerialNotifications);
-    HttpCookie userIdCookie = new HttpCookie("SerialNotifications");
 
-    userIdCookie.Value = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(SerialNotifications) );
-    Response.Cookies.Add(userIdCookie);
 
-    videoCodeDic.TryGetValue(systemSeq ?? 0, out string  videoCode);
+    videoCodeDic.TryGetValue(systemSeq , out string videoCode);
+    var downloadFiles = Directory.GetDirectories(EQC.Common.Utils.GetTempFolderForUser())
+    .Select(d => new FileInfo(Directory.GetFiles(d).FirstOrDefault() ?? "/"))
+    .OrderByDescending(f => f.Directory != null ? f.CreationTime : DateTime.MaxValue);
+    string host = Request.Url.Host;
+    var uri = new Uri(HttpContext.Current.Request.Url.AbsoluteUri);
+    var query = HttpUtility.ParseQueryString(uri.Query);
+
+    var posCatch = Session["AlertSetting"] != null ? true : false;
+    //if (enterSignal == null)
+    //{
+    //    Response.Redirect("/");
+    //}
+    string websocket_url = System.Configuration.ConfigurationManager.AppSettings.Get("websocket_url");
+    string initContent = $@"
+                        `為保護您的權益，請詳細閱讀「 隱私權及個人資料保護政策 」，如您已充分瞭解並同意，請繼續進行對談服務。
+          <br><br>
+          點選  <a href='" + Url.Content("~/TemplateFile/隱私權及個人資料保護政策.pdf") + @"' target='_blank'>隱私權及個人資料保護政策如附件pdf </a>
+            ";
+
+    var queueOrder = EQC.Detection.DownloadTaskDetection.getUserQueueWaitingPercent(userInfo.Seq);
+    var queueMessage = "";
+    switch (
+       queueOrder
+       )
+    {
+
+        case -1: queueMessage = null; break;
+        case 150: queueMessage = "即將完成"; break;
+        default: queueMessage = queueOrder.ToString() + "%"; break;
+
+    }
 }
 
 
@@ -68,64 +103,89 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>經濟部水利署-水利工程品管系統</title>
-    <meta name="keywords" content="經濟部水利署,水利工程,品管系統">
-    <meta name="description" content="經濟部水利署-水利工程品管系統">
+    <title>經濟部水利署-水利工程數位轉型系統</title>
+    <meta name="keywords" content="經濟部水利署,水利工程,數位轉型系統">
+    <meta name="description" content="經濟部水利署-水利工程數位轉型系統">
     <!-- CSS -->
     <link rel="icon" href="@Url.Content("~/Content/images1/ROC_Water_Resources_Agency_Seal.svg")" type="image/ico" />
     <link href="@Url.Content("~/Content/css1/bootstrap.min.css")" rel="stylesheet">
     <link href="@Url.Content("~/Content/css1/fontawesome.min.css")" rel="stylesheet">
+    <link href="@Url.Content("~/Content/css1/font-awesome-4.min.css")" rel="stylesheet">
     <link rel="stylesheet" href="@Url.Content("~/Scripts/assets/libs/jquery-ui/jquery-ui.min.css")" />
     <!-- CSS -->
     <!-- Page Specific CSS -->
     <script type="text/javascript" src="@Url.Content("~/Content/js/jquery-3.6.0.min.js")"></script>
     <script src="@Url.Content("~/Scripts/assets/libs/jquery-ui/jquery-ui.min.js")"></script>
     <script src="@Url.Content("~/Scripts/assets/libs/jquery-ui-i18n/ui/i18n/datepicker-zh-TW.js")"></script>
+    <script type="text/javascript" src="@Url.Content("~/Content/js/popper.min.js")"></script>
     <script type="text/javascript" src="@Url.Content("~/Content/js/bootstrap.min.js")"></script>
     <script type="text/javascript" src="@Url.Content("~/Content/js/script.js")"></script>
-    <!--自訂RWD設定-->
+
     <!--[if lt IE 9]>
       <script src="@Url.Content("~/assets/js/html5shiv.min.js")"></script>
       <script src="@Url.Content("~/assets/js/respond.min.js")"></script>
     <![endif]-->
+    @if (!posCatch)
+    {
+        <script type="module" src=@Url.Content("~/Content/js/captureHTML.js")></script>
+    }
     <script src="@Url.Content("~/Content/qrcode.js")"></script>
+
 </head>
 
 <header>
-    <nav class="@ViewBag.nvaClass">
-        <a class="navbar-brand" href="@Url.Content(sessionManager.GetUserHome())" title="回首頁"><img src="@Url.Content("~/Content/images1/major_logo.png")" alt="經濟部水利署logo"></a>
-        <button class="navbar-toggler collapsed" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="主選單開合">
-            <i class="fas fa-bars fa-2x"></i>
-        </button>
-        <div class="navbar-collapse collapse" id="navbarCollapse">
-            <ul class="navbar-nav nav-top ml-auto" style="max-width:60%">
-                @{
-                    if (userInfo != null && userInfo.SystemList != null)
-                    {
-                        foreach (EQC.ViewModel.VSystemMenu system in userInfo.SystemList)
+    @if (!posCatch)
+    {
+        <nav class="@ViewBag.nvaClass">
+            <a class="navbar-brand" href="@Url.Content(sessionManager.GetUserHome() ?? ViewBag.UserHomeUrl)" title="回首頁"><img src="@Url.Content("~/Content/images1/major_logo.png")" alt="經濟部水利署logo"></a>
+            <button class="navbar-toggler collapsed" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="主選單開合">
+                <i class="fas fa-bars fa-2x"></i>
+            </button>
+
+            <div class="navbar-collapse collapse" id="navbarCollapse">
+                <ul class="navbar-nav nav-top ml-auto" style="max-width:60%">
+                    @{
+                        if (userInfo != null && userInfo.SystemList != null)
                         {
-                            <li class="nav-item">
-                                <a class="nav-link" href="../@system.PathName" title='@system.Name'> @system.Name</a>
-                            </li>
+                            foreach (EQC.ViewModel.VSystemMenu system in userInfo.SystemList)
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" href="../@system.PathName" title='@system.Name'> @system.Name</a>
+                                </li>
+                            }
                         }
                     }
-                }
-                <li class="nav-item">
-                    <a class="nav-link" href="@Url.Action("LoginOut", "Login")" title="登出">登出</a>
-                </li>
-            </ul>
-        </div>
-    </nav>
-</header>
+                    <li class="nav-item">
+                        <a class="nav-link" href="@Url.Action("LoginOut", "Login")" title="登出">登出</a>
+                    </li>
+                </ul>
+            </div>
+      
+
+        </nav>  
+    }
+            else
+            {
+                <h1 style=" color:red !important">點擊畫面設定位置，連續點擊2次出現紅點，再點紅點一次確認位置</h1>
+            }
+    </header>
 <body class="@bodyClass">
+    <script src="@Url.Content("~/Content/js/axios.js")"></script>
     <div id="WRAPPER" class="container-fluid" style="@mainContentStyle">
+        <div id="agent" title="智能客服" style="z-index: 1;">
+            <a v-on:click="messagistOpen">
+                <img src="@Url.Content("~/Content/images1/agent_people.png")" alt="智能客服" width="70" >
+            </a>
+        </div>
+        <messagistcomponent init_content="@initContent" v-bind:api_action="API" websocket_url="@websocket_url" v-show="messagistVisiable" v-on:cancel="messagistClose"> </messagistcomponent>
         <div style="position: absolute ;top:150px; right: 50px; z-index: 1; display: none;" id="info">
             <img src="/Content/images1/info.png" style="
     width: 400px;
 ">
         </div>
+
         <!-- 內容開始 -->
-        @if (LeftMenuDisplay)
+        @if (LeftMenuDisplay && !posCatch)
         {
             <div id="leftMenuBody" class="@ViewBag.mainLeftClass">
                 <div id="leftMenuTab" class="menu-control btn-color13">
@@ -170,11 +230,17 @@
                         }
                     }
                 </div>
+                @*<div class="d-flex justify-content-center p-2">
+                        <button role="button" onclick="funcBtnClick()" class="btn btn-color9-1 btn-xs mx-1 " style="width:200px">
+                            功能列表
+                        </button>
+
+                    </div>*@
             </div>
         }
         @if (HttpContext.Current.Request.Path.Contains("/PortalDepAdmin"))
         {
-            <div class="box">
+            <div class="box" id="content">
                 @RenderBody()
             </div>
         }
@@ -193,15 +259,69 @@
                     </div>
                 </div>
                 <!-- 內容開始 -->
-                @RenderBody()
+                <div id="content">
+                    @RenderBody()
+                </div>
+
 
             </div>
         }
         else
         {
 
-            <div class="main-right" style="@rightContentStyle ">
+            <div class="main-right" style="@rightContentStyle">
                 <div class="d-flex mb-3 justify-content-end">
+
+                    <div class="dropdown mr-auto d-flex" style="
+                        padding: 10px;
+                    ">
+                        @if (downloadFiles.Count() > 0)
+                        {
+                            <a href="#" role="button" data-toggle="dropdown" aria-expanded="false" class="dropdown-toggle btn btn-color11-1  mx-1">
+                                <i class="fas fa-download"></i>下載完成
+                            </a>
+                            <button onclick="stackDelete()" class="btn btn-color9-1 btn-xs m-1">清空</button>
+                            if(queueMessage != null)
+                            {<div style="color: red; margin-top: 5px; margin-left: 20px;">
+                                    資料產製中,  @queueMessage
+                                </div>
+
+                            }
+
+                            <div class="dropdown-menu p-2" x-placement="bottom-start" style="position: absolute; transform: translate3d(14px, 48px, 0px); top: 0px; left: 0px; will-change: transform;">
+                                <table class="table" style="width:500px">
+                                    @foreach (var file in downloadFiles)
+                                    {
+                                        <tr>
+
+                                            @if (file.Directory != null)
+                                            {
+
+                                                <td>@file.CreationTime.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                                                <td>
+                                                    <a href="@Url.Action("DownloadUserFile", "DownloadTask", new { uuid = System.IO.Path.GetFileName(file.DirectoryName) })" download>@file.Name</a>
+                                                </td>
+                                            }
+                                            else
+                                            {
+                                                <td style="color:lawngreen" colspan="2">產製中... </td>
+                                                <td></td>
+
+
+                                            }
+
+                                        </tr>
+                                    }
+
+
+                                </table>
+                            </div>
+                        }
+
+                    </div>
+                    <a role="button" href="@Url.Action("Index", "SystemProblem")" class="btn btn-color9-1 btn-s mx-1 ml-auto m-2" style="background-color: #f08686;" onclick="funcBtnClick()">
+                        異常申報
+                    </a>
                     <div onclick="showInfo()">
                         <img src="@Url.Content("~/Content/images1/info_logo.png")" style="width:80px; height:60px">
                     </div>
@@ -210,15 +330,16 @@
                         <div class="name">
                             歡迎！ &nbsp;@userInfo.DisplayName
                         </div>
+
                     </div>
                 </div>
                 @if (ViewBag.hasCard)
                 {
-                    <div class="@ViewBag.cardClass">
+                    <div class="@ViewBag.cardClass" id="content">
                         <div class="card-header d-flex">
                             <h3 class="card-title font-weight-bold">@ViewBag.BarTitle</h3>
                             <div class="mt-auto">
-                                @if(videoCode != null)
+                                @if (videoCode != null)
                                 {
                                     <a style="color: white;" href="@("https://www.youtube.com/watch?v="+ videoCode + "&ab_channel=敦陽科技" )" target="_blank">
                                         操作影片
@@ -235,7 +356,7 @@
                     </div>
                 }
                 else
-                { <div class="@ViewBag.cardClass">
+                { <div class="@ViewBag.cardClass" id="content">
                         @RenderBody()
                     </div>
                 }
@@ -248,15 +369,36 @@
         }
 
     </div>
+    @*<div id="bottomNav" class=" d-flex fixed-bottom pl-2" style="background-color: rgb(255 232 232) !important; z-index: 100;   margin-top: 80px; padding: 10px; display: none !important">
+            <a   role="button" href="@Url.Action("Index", "SystemProblem")" class="btn btn-color9-1 btn-s mx-1 " style="background-color: #f08686;margin-left: 200px !important;">
+                異常申報
+            </a>
+            <button role="button" class="btn btn-color9-1 btn-s mx-1 ml-auto" onclick="funcNavCancel()">
+                返回
+            </button>
+        </div>*@
     <footer class="@ViewBag.footerClass">
-        <div class="container d-flex justify-content-end" ">
-            <div class="mr-5">客服專線:0905-546-726</div>
-            <div>
-                經濟部水利署 Copyright © 2021 All Rights Reserved
-            </div>
 
+
+    <div class="container d-flex justify-content-end" ">
+        <div class="mr-5">客服專線:0905-546-726</div>
+        <div>
+            經濟部水利署 Copyright © 2021 All Rights Reserved
         </div>
         <div id="gotop" class="@ViewBag.gotopBtn" title="回到最上方"><img src="@Url.Content("~/Content/images1/icon-up.png")" alt="回到最上方icon"></div>
+
+
+        @if (ViewBag.funcPage == true)
+        {
+            <div id="gotop" onclick="funcPageGoBack()" class="btn-color1" title="返回主頁面" style="display: block; opacity: 1; bottom : 55px !important"><i class="fas fa-arrow-left"></i></div>
+        }
+        @*else
+            {
+                <button id="funcButton" style=" position: fixed; width: 100px; left: 10px; bottom: 10px; z-index: 101;" role="button" onclick="funcBtnClick()" class="btn btn-color9-1 btn-xs mx-1 " style="width:200px">
+                    功能列表
+                </button>
+
+            }*@
     </footer>
 
     <!-- CSS 設定-->
@@ -277,10 +419,93 @@
 
         });
     <script -->
+    <script src=@Url.Content("~/Content/js/asyncSupport.js")></script>
+    @if (posCatch)
+    {
+        <script src=@Url.Content("~/Content/js/alertPosHandler.js")></script>
+    }
+    else
+    {
+        <script src=@Url.Content("~/Content/js/alertPosRender.js")></script>
 
+
+    }
     <script src=@Url.Content("~/Content/dist/js/app.js")></script>
 
     <script>
+        console.log("posCatch", '@posCatch')
+        if ('@posCatch' != 'True') {
+            createAlertRender('@menuPath')
+        }
+        var deleteFileTagTemp = [];
+
+        function stackDelete(uuid) {
+
+            if (!uuid) {
+                if (!confirm("下載暫存將會全部清除，確定嗎")) {
+                    return ;
+                }
+            }
+            $.ajax({
+                url: "/DownloadTask/DeleteDownloadFile",
+                type: "post",
+                dataType: "html",
+                data: {
+                    uuid: uuid
+                },
+                success: (config) => {
+                    console.log("config", config);
+
+                    window.location.reload();
+                }
+
+            });
+        }
+
+        function stackDownload(uuid) {
+            $.ajax({
+                url: "/DownloadTask/DownloadUserFile",
+                type: "get",
+                dataType: "html",
+                data: {
+                    uuid: uuid
+                },
+                success: (config) => {
+                    alert()
+                }
+
+            });
+        }
+
+        function watchAnyObject(
+            object = {},
+            methods = [],
+            callbackBefore = function () { },
+            callbackAfter = function () { },
+        ) {
+            for (let method of methods) {
+                const original = object[method].bind(object);
+                const newMethod = function (...args) {
+                    callbackBefore(method, ...args);
+                    const result = original.apply(null, args);
+                    callbackAfter(method, ...args);
+                    return result;
+                };
+                object[method] = newMethod.bind(object);
+            }
+        }
+        watchAnyObject(
+            window.sessionStorage,
+            ['setItem'],
+            (method, key, ...args) => {
+                if (key == 'EPC_SelectTrenderSeq') {
+                    document.cookie = "selectedEngSeq=" + args[0];
+                }
+
+            });
+
+
+
         window.QRCodeImageGenerate = (id, url) =>
         {
             var QrcodeDiv = document.getElementById(id);
@@ -293,6 +518,38 @@
         document.oncontextmenu = new Function("return false");
         oncontextmenu = "return false;"
         var app = new Vue({
+            data: {
+                API: {
+                    GetUserMessagesNewToOld : (skip, count, result) => {
+                        axios.post(window.location.origin +"/InteliAgency/GetUserMessagesNewToOld", {userSeq : '@userInfo.Seq', skip : skip, count :count})
+                        .then((resp) => {
+                        result(resp)
+                        console.log("resp", resp)
+                        });
+
+                    },
+                    StoreUserMessage: (data, result) => {
+                        data.UserMainSeq = '@userInfo.Seq';
+                        axios.post(window.location.origin +"/InteliAgency/StoreUserMessage", { vm: data })
+                            .then((resp) => {
+                                if (result)
+                                    result(resp);
+                            });
+                    },
+                    SuggestAgencyMessage(data) {
+                        axios.post(window.location.origin +"/InteliAgency/SuggestAgencyMessage", { vm: data })
+                    }
+                },
+                messagistVisiable: false
+            },
+            methods: {
+                messagistClose() {
+                    this.messagistVisiable = false;
+                },
+                messagistOpen() {
+                    this.messagistVisiable = true;
+                }
+            }
             //store,
             //render: (h) => h(App),
         }).$mount('#WRAPPER');
@@ -310,24 +567,24 @@
     let a = 0;
 
     const scroll = document.querySelector("#accordion");
-        if (scroll != null) {
+    if (scroll != null) {
 
-            scroll.scrollTop = localStorage.getItem("scrollTop") ?? 0;
-            scroll.addEventListener("scroll", event => {
-                localStorage.setItem("scrollTop", scroll.scrollTop);
-            }, { passive: true });
-        }
+        scroll.scrollTop = localStorage.getItem("scrollTop") ?? 0;
+        scroll.addEventListener("scroll", event => {
+            localStorage.setItem("scrollTop", scroll.scrollTop);
+        }, { passive: true });
 
+
+    }
         //console.log(document.getElementById("leftMenu"));
         //document.getElementById("leftMenu").click();
     //$('#myModal').on('hidden.bs.modal', function () {
     //    getPttContent()
     //});
 
-
-        localStorage.setItem('Role', '@userInfo.RoleSeq');
-        //localStorage.setItem('SerialNotifications', '@SerialNotifications')
+    localStorage.setItem('Role', '@userInfo.RoleSeq');
     //getPttContent();
+
 
     //function getPttContent() {
     //    $.ajax({
@@ -388,6 +645,37 @@
             $("#info").show();
         else $("#info").hide()
     }
+
+
+        function funcBtnClick() {
+            //var leftMenu = document.getElementById("leftMenuTab");
+            //var funcButton = document.getElementById("funcButton");
+            //document.getElementById("bottomNav").style["display"] = "";
+
+            //if (funcButton != null)
+            //    funcButton.style["display"] = "none";
+            //if (leftMenu != null) {
+            //    document.getElementById("leftMenuTab").click();
+            //    document.getElementById("leftMenuTab").style["display"] = 'none';
+            //}
+
+            window.sessionStorage.setItem("funcOriginLocation", window.location.href);
+        }
+        function funcNavCancel() {
+            console.log("ddd");
+            var leftMenu = document.getElementById("leftMenuTab");
+            var funcButton = document.getElementById("funcButton");
+            document.getElementById("leftMenuTab").style["display"] = 'block';
+            document.getElementById("leftMenuTab").click();
+            if (funcButton != null)
+                funcButton.style["display"] = "block";
+            document.getElementById("bottomNav").style.setProperty("display", "none", "important");
+        }
+
+    function funcPageGoBack() {
+        window.location.href = window.sessionStorage.getItem("funcOriginLocation");
+        }
+
     </script>
 
     @RenderSection("scripts", required: false)

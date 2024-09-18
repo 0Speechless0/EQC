@@ -32,7 +32,7 @@ import 'vue-loading-overlay/dist/vue-loading.css'
 import '@/assets/css/layout.css';
 import '@/assets/css/all.css';
 
-
+import '@/assets/css/font-awesome-4.min.css';
 
 import './mobile.js' // �����
 //API設定
@@ -47,6 +47,14 @@ import VueResource from 'vue-resource'
 
 import VueSweetalert2 from 'vue-sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
+
+
+import Messagist from 'chat-ui-websocket'
+
+Vue.prototype.$websocket_url = "";
+
+Vue.component('messagistcomponent', Messagist)
+
 Vue.use(VueSweetalert2);
 // ��l�ƴ���
 //Vue.use(Loading);
@@ -69,6 +77,57 @@ function oncancel() {
 Vue.use(VCalendar, {
     componentPrefix: 'vc',
 })
+
+window.myAjax = axios.create({ baseURL: process.env.NODE_ENV != 'production' ? 'https://localhost:44300': window.location.origin  });
+// response 攔截器
+window.myLoader = null;
+//攔截請求
+window.requestWaiting =  {};
+window.myAjax.interceptors.request.use(
+    (config) => {
+        console.log('攔截請求');
+        window.requestWaiting[config.url] = true;
+        if (!window.myLoader) {
+            if(config.url != "/SupervisionPlan/CreatePlan")
+                window.myLoader = Vue.$loading.show();
+        }
+        return config;
+    },
+    (error) => {
+        console.log('攔截器request失敗');
+
+        myhideLoader();
+        return Promise.reject(error);
+    }
+);
+
+function myhideLoader() {
+    window.myLoader && window.myLoader.hide();
+    window.myLoader = null;
+}
+//攔截回應
+window.myAjax.interceptors.response.use(
+    (response) => {
+        console.log('攔截回應', response);
+        //console.log(response);
+        window.ReadyCapture = true;
+        window.requestWaiting[response.config.url] = false;
+        if(Object.values(window.requestWaiting).filter(e => e).length  == 0 )
+        {
+            myhideLoader();
+        }
+        if (response.data.result == -1919) {
+            window.location.href = response.data.url;
+            return null;
+        }
+        return response;
+    },
+    (error) => {
+        //console.log('攔截器response失敗')
+        myhideLoader();
+        return Promise.reject(error);
+    }
+);
 
 //import Vuex, { Store } from 'vuex'
 //Vue.use(Vuex);
@@ -213,7 +272,59 @@ axios.interceptors.response.use(
 //這裡設定路由，避免衝突，不同人使用不同檔案引入
 import './sub1.js'; // �Ф�ʥ[�J shioulo, alex
 import './sub2.js'; // �Ф�ʥ[�J alex
+import "./styleObserver.js";
 
+window.myAjax = axios.create({ baseURL: process.env.NODE_ENV != 'production' ? 'https://localhost:44300': window.location.origin  });
+// response 攔截器
+window.myLoader = null;
+//攔截請求
+var requestWaiting =  {};
+window.myAjax.interceptors.request.use(
+    (config) => {
+        console.log('攔截請求');
+        requestWaiting[config.url] = true;
+        if (!window.myLoader) {
+            if(config.url != "/SupervisionPlan/CreatePlan")
+                window.myLoader = Vue.$loading.show();
+        }
+        console.log("config", config);
+        return config;
+    },
+    (error) => {
+        console.log('攔截器request失敗');
+        requestWaiting =  {};
+        myhideLoader();
+        return Promise.reject(error);
+    }
+);
+
+// function myhideLoader() {
+//     window.myLoader && window.myLoader.hide();
+//     window.myLoader = null;
+// }
+//攔截回應
+window.myAjax.interceptors.response.use(
+    (response) => {
+        console.log('攔截回應', response);
+        //console.log(response);
+        window.ReadyCapture = true;
+        requestWaiting[response.config.url] = false;
+        if(Object.values(requestWaiting).filter(e => e).length  == 0 )
+        {
+            myhideLoader();
+        }
+        if (response.data.result == -1919) {
+            window.location.href = response.data.url;
+            return null;
+        }
+        return response;
+    },
+    (error) => {
+        //console.log('攔截器response失敗')
+        myhideLoader();
+        return Promise.reject(error);
+    }
+);
 
 
 

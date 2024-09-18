@@ -13,6 +13,8 @@ namespace EQC.Services
 {
     public class EngOpenAPIService :BaseService
     {
+
+        
         public List<object> GetEngDataForOpenNetWork(DateTime? startTime, DateTime? endTime)
         {
             string sql = @"
@@ -28,13 +30,13 @@ namespace EQC.Services
                     p.TenderName,
 				    p.ActualBidReviewDate,
                     p.ActualBidAwardDate,
-				    p.TownName,
+				    ISNULL(p.TownName, '') TownName,
 				    p.EngOverview,
 				    p.SupervisionUnitName,
 				    p.ContractorName1,
                     px.ActualCompletionDate,
                     px.BelongPrj,
-                    p.ExecUnitName,
+                    u.Name ExecUnitName,
                     pr.PDExecState,
                     p.BidAmount,
 				    pr.PDAccuScheProgress,
@@ -68,6 +70,7 @@ namespace EQC.Services
                     eco.ModifyTime ModifyTime1,
                     eco2.ModifyTime ModifyTime2
                     from EngMain e 
+                    left join Unit u on (u.Seq = e.ExecUnitSeq and u.ParentSeq is null)
                     left join PrjXML p on e.PrjXMLSeq = p.Seq  
                     left join PrjXMLExt px on p.Seq = px.PrjXMLSeq
                     left join ProgressData pr on pr.PrjXMLSeq = p.Seq
@@ -75,6 +78,7 @@ namespace EQC.Services
                     left join EcologicalChecklist  eco2 on (eco2.EngMainSeq = e.Seq and eco2.Stage = 2)
                     where ( eco2.Stage is null and ( eco.ModifyTime >= @startDate and eco.ModifyTime <= @endDate )  ) or (eco2.Stage is not null  and ( eco2.ModifyTime >= @startDate and eco2.ModifyTime <= @endDate ) )
                 ) ee where ee.PDAccuActualProgressRow = 1 and ee.PDAccuScheProgressRow = 1
+                and ee.EngName is not null and ee.EngYear >= 111
                 order by ee.ModifyTime1 desc, ee.ModifyTime2 desc
                 
             ";
@@ -300,7 +304,7 @@ namespace EQC.Services
                     ActualCompletionDate = ROCDateStrHandler(row.Field<string>("ActualCompletionDate")),
                     EngOverview = row.Field<object>("EngOverview"),
                     BelongPrj = row.Field<object>("BelongPrj"),
-                    ExecUnitCd = row.Field<object>("ExecUnitCd"),
+                    //ExecUnitCd = row.Field<object>("ExecUnitCd"),
                     ExecUnitName = row.Field<object>("ExecUnitName"),
                     PDExecState = row.Field<object>("PDExecState"),
                     BidAmount = row.Field<object>("BidAmount"),
@@ -340,7 +344,36 @@ namespace EQC.Services
 
         }
 
+        
 
+        public List<object> GetEngReportEC(DateTime? startTime, DateTime? endTime)
+        {
+            using(var context =new EQC_NEW_Entities())
+            {
+                string baseUrl = HttpContext.Current.Request.Url.Scheme + "://"
+                    +  HttpContext.Current.Request.Url.Authority;
+                string urlTemplate = baseUrl + "/FileUploads/EngReport/{0}/{1}" ;
+                return context.EngReportList
+                    .Where(r => r.RptYear >= 111)
+                    .Where(r => r.CreateTime >= startTime || startTime == null)
+                    .Where(r => r.CreateTime <= endTime || endTime == null)
+                    .ToList()
+                    .Select(r =>
+                        new
+                        {
+                            EngName = r.RptName,
+                            EngNo = r.EngNo,
+                            EngYear = r.RptYear,
+                            EngReportECD01 = r.EcologicalConservationD01 != null ? String.Format(urlTemplate, r.Seq, Uri.EscapeDataString(r.EcologicalConservationD01) ) : null,
+                            EngReportECD02 = r.EcologicalConservationD02 != null ? String.Format(urlTemplate, r.Seq, Uri.EscapeDataString(r.EcologicalConservationD02)) : null,
+                            EngReportECD03 = r.EcologicalConservationD03 != null ? String.Format(urlTemplate, r.Seq, Uri.EscapeDataString(r.EcologicalConservationD03)) : null,
+                            EngReportECD04 = r.EcologicalConservationD04 != null ? String.Format(urlTemplate, r.Seq, Uri.EscapeDataString(r.EcologicalConservationD04)) : null,
+                            EngReportECD05 = r.EcologicalConservationD05 != null ? String.Format(urlTemplate, r.Seq, Uri.EscapeDataString(r.EcologicalConservationD05)) : null,
+                            EngReportECD06 = r.EcologicalConservationD06 != null ? String.Format(urlTemplate, r.Seq, Uri.EscapeDataString(r.EcologicalConservationD06)) : null
+
+                        }).Cast<object>().ToList();
+            }
+        }
         public List<object> GetGIS()
         {
             using (var context = new EQC_NEW_Entities())

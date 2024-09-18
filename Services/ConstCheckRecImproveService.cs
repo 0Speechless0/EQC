@@ -782,10 +782,12 @@ namespace EQC.Services
         }
         //NCR程序追蹤改善表 s20230522
         public List<T> GetNCRList<T>(int constructionSeq, int itemSeq)
-        {
-            string sql = @"
+        {      
+        string sql = @"
                         select
                             b.*,
+                            a.CCRPosDesc,
+                            a.CCRCheckDate,
                             b1.IncompKind,
                             a.CCRPosDesc
                         FROM ConstCheckRec a

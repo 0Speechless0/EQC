@@ -5,6 +5,7 @@ namespace EQC.Models
 {
     public class ConstCheckRecModel
     {//抽驗紀錄填報
+        public string  EngName { get; set; }
         public int Seq { get; set; }
         public int EngConstructionSeq { get; set; }
         public byte CCRCheckType1 { get; set; }
@@ -23,12 +24,26 @@ namespace EQC.Models
         public int? SupervisorUserSeq { get; set; }
         public int? SupervisorDirectorSeq { get; set; }
 
+        public string SupervisionComSignature { get; set; }
+
+        public string SupervisionDirectorSignature { get; set; }
+        public string SupervisionComSignaturePath { 
+            get {
+                return $@"FileUploads\SignatureFiles\{SupervisorUserSeq}\{Guid.NewGuid().ToString("B").ToUpper()}.png"  ;
+            } 
+        }
+        public string SupervisionDirectorSignaturePath { 
+            get {
+                return $@"FileUploads\SignatureFiles\{SupervisorDirectorSeq}\{Guid.NewGuid().ToString("B").ToUpper()}.png"; 
+            } 
+        }
         public string chsCheckDate
-        {
+        {                                                                                                               
             get
             {
                 return Utils.ChsDate(this.CCRCheckDate);
             }
         }
+        public bool IsFromMobile { get; set; }
     }
 }

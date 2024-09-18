@@ -141,7 +141,6 @@ namespace EQC.Services
                 SupDailyDateSeq,
                 KindName,
                 TodayQuantity,
-                --AccQuantity,
                 CreateTime,
                 CreateUserSeq,
                 ModifyTime,
@@ -150,10 +149,9 @@ namespace EQC.Services
                 @SupDailyDateSeq,
                 @KindName,
                 @TodayQuantity,
-                --@AccQuantity,
                 GetDate(),
                 @ModifyUserSeq,
-                GetDate(),
+                0,
                 @ModifyUserSeq
             )";
 
@@ -188,9 +186,7 @@ namespace EQC.Services
             Null2Empty(m);
             string sql = @"
             update SupDailyReportConstructionPerson set 
-                --KindName = @KindName,
                 TodayQuantity = @TodayQuantity,
-                --AccQuantity = @AccQuantity,
                 ModifyTime = GetDate(),
                 ModifyUserSeq = @ModifyUserSeq
             where Seq=@Seq";

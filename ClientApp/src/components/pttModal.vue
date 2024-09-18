@@ -7,21 +7,6 @@ export default {
 
     return {
       notifications: [
-      {
-        Title :"AD",
-        EmitContent : "SDfsdf" 
-
-      },
-      {
-        Title :"AD",
-        EmitContent : "SDfsdf" 
-
-      },
-      {
-        Title :"AD",
-        EmitContent : "SDfsdf" 
-
-      },
 
       ],
       viewNotification : {
@@ -53,19 +38,19 @@ export default {
         this.mainModalShow = false;
         
       }
+    },
+    getNotification()
+    {
+      window.myAjax.post('UserNotification/GetNotifications')
+        .then(resp => {
+          this.notifications = resp.data.list;
+        });
     }
   },
   mounted()
   {
-    this.notifications = JSON.parse(  
-      base64.decode((Common.getCookie('SerialNotifications'))
-
-      )      
-    )
-      
-    ;
-    console.log("this.notifications", this.notifications);
-
+    
+    this.getNotification();
   }
 }
 
@@ -73,7 +58,7 @@ export default {
 </script>
 
 <template>
-  <div>
+  <div v-if="notifications.length > 0">
 
 
     <el-dialog title="系統公告" :visible.sync="mainModalShow" width="80%">

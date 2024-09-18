@@ -1,4 +1,5 @@
 ﻿using EQC.Common;
+using EQC.EDMXModel;
 using EQC.Models;
 using EQC.ViewModel;
 using System;
@@ -197,7 +198,7 @@ namespace EQC.Services
             dt = db.GetDataTable(cmd);
             if (dt.Rows.Count > 0) unitSeq = Convert.ToInt16(dt.Rows[0]["Seq"].ToString());
 
-            sql = @"SELECT Seq FROM UserMain where UserNo=@taxId";
+            sql = @"SELECT Seq FROM UserMain where UserNo=@taxId and IsDelete = 0";
             cmd = db.GetCommand(sql);
             cmd.Parameters.AddWithValue("@taxId", uType + engNo); //s20230316 cmd.Parameters.AddWithValue("@taxId", uType+taxId);
             dt = db.GetDataTable(cmd);
@@ -508,7 +509,6 @@ namespace EQC.Services
         {
             string sql = @"";
             int userSeq = new SessionManager().GetUser().Seq;
-            bool isSuperviosr = UserRoleCheckService.checkSupervisor(userSeq);
             if (subUnitSeq == -1) {
                 sql = @"
                 SELECT distinct
@@ -516,13 +516,12 @@ namespace EQC.Services
                 FROM EngMain a
                 inner join Unit b on(b.Seq=a.ExecUnitSeq)
 
-                " + ((isSuperviosr) ? "left join EngSupervisor es on es.EngMainSeq = a.Seq" : "") + @"
                 where a.ExecUnitSeq=@ExecUnitSeq
                 "
                 + ((year == -1) ? "" : "  and a.EngYear=" + year)
-                + ((isSuperviosr) ? " and es.UserMainSeq=" + userSeq : Utils.getAuthoritySql("a."))
                 + ((hasCouncil >= 0) ? ((hasCouncil == 0) ? " and a.PrjXMLSeq is not null"
-                  : "  and a.PrjXMLSeq is null") : "" );///and a.CreateUserSeq=@CreateUserSeq";
+                  : "  and a.PrjXMLSeq is null") : "" )
+                  + Utils.getAuthoritySql("a.");///and a.CreateUserSeq=@CreateUserSeq";
             }
             else
             {
@@ -532,13 +531,12 @@ namespace EQC.Services
                 FROM EngMain a
                 inner join Unit b on(b.Seq=a.ExecUnitSeq)
 
-                " + ((isSuperviosr) ? "left join EngSupervisor es on es.EngMainSeq = a.Seq" : "") + @"
                 where a.ExecSubUnitSeq=@ExecSubUnitSeq
                 "
                 + ((year == -1) ? "" : " and a.EngYear=" + year)
-                + ((isSuperviosr) ? " and es.UserMainSeq=" + userSeq : Utils.getAuthoritySql("a."))
                 + ((hasCouncil >= 0) ? ((hasCouncil == 0) ? " and a.PrjXMLSeq is not null"
-                  : "  and a.PrjXMLSeq is null") : "");///and a.CreateUserSeq=@CreateUserSeq";
+                  : "  and a.PrjXMLSeq is null") : "")
+                  + Utils.getAuthoritySql("a.");///and a.CreateUserSeq=@CreateUserSeq";
             }
             string sql2 = @"
                 SELECT count(*) as total from ("+ sql + @") b
@@ -558,7 +556,6 @@ namespace EQC.Services
         {
             string sql = @"";
             int userSeq = new SessionManager().GetUser().Seq;
-            bool isSuperviosr = UserRoleCheckService.checkSupervisor(userSeq);
             if (subUnitSeq == -1)
             {
                 sql = @"
@@ -566,13 +563,12 @@ namespace EQC.Services
                         a.Seq
                     FROM EngMain a
 
-                    " + ((isSuperviosr) ? " left join EngSupervisor es on es.EngMainSeq = a.Seq" : "") + @"
                     where a.ExecUnitSeq=@ExecUnitSeq
                     "
                     + ((year == -1) ? "" : " and a.EngYear=" + year)
-                    + ((isSuperviosr) ? " and es.UserMainSeq=" + userSeq : Utils.getAuthoritySql("a."))
                     + ((hasCouncil >= 0) ? ((hasCouncil == 0) ? " and a.PrjXMLSeq is not null"
-                      : "  and a.PrjXMLSeq is null") : "");///and a.CreateUserSeq=@CreateUserSeq";
+                      : "  and a.PrjXMLSeq is null") : "")
+                    + Utils.getAuthoritySql("a.");///and a.CreateUserSeq=@CreateUserSeq";
 
             }
             else
@@ -581,14 +577,12 @@ namespace EQC.Services
                     SELECT distinct
                         a.Seq
                     FROM EngMain a
-
-                    " + ((isSuperviosr) ? "left join EngSupervisor es on es.EngMainSeq = a.Seq" : "") + @"
                     where a.ExecSubUnitSeq=@ExecSubUnitSeq
                     "
                     + ((year == -1) ? "" : " and a.EngYear=" + year)
-                    + ((isSuperviosr) ? " and es.UserMainSeq=" + userSeq : Utils.getAuthoritySql("a.")) //and a.CreateUserSeq=@CreateUserSeq
                     + ((hasCouncil >= 0) ? ((hasCouncil == 0) ? " and a.PrjXMLSeq is not null"
-                      : "  and a.PrjXMLSeq is null") : "");///and a.CreateUserSeq=@CreateUserSeq";
+                      : "  and a.PrjXMLSeq is null") : "")
+                    + Utils.getAuthoritySql("a.");///and a.CreateUserSeq=@CreateUserSeq";
             }
             string sql2 = @"
                      SELECT
@@ -601,7 +595,8 @@ namespace EQC.Services
                         aa.ApproveDate,
                         aa.PccesXMLDate,
                         d.DocState,
-                        aa.PrjXMLSeq
+                        aa.PrjXMLSeq,
+						ec.ToDoChecklit
                     FROM EngMain aa
                     inner join Unit b on(b.Seq=aa.ExecUnitSeq)
                     left outer join Unit c on(c.Seq=aa.ExecSubUnitSeq)
@@ -609,11 +604,11 @@ namespace EQC.Services
                         d.EngMainSeq=aa.Seq
                         and d.Seq=(select max(Seq) from SupervisionProjectList where EngMainSeq=aa.Seq)
                     )
+                    left join  EcologicalChecklist ec on (ec.Stage = 1 and ec.EngMainSeq = aa.Seq)
                     where aa.Seq in (" + sql + @")
                     order by aa.EngNo DESC
                     OFFSET @pageIndex ROWS
                     FETCH FIRST @pageRecordCount ROWS ONLY";
-
             SqlCommand cmd = db.GetCommand(sql2);
             cmd.Parameters.AddWithValue("@ExecUnitSeq", unitSeq);
             cmd.Parameters.AddWithValue("@ExecSubUnitSeq", subUnitSeq);

@@ -11,5 +11,7 @@ namespace EQC.ViewModel
         public string SupervisionUnitName { get; set; }
         public string DesignUnitName { get; set; }
         public string ExecState { get; set; }
+        public bool Updated { get; set; }
+
     }
 }

@@ -30,7 +30,7 @@ namespace EQC.Controllers
         private APIService apiService = new APIService();
 
 
-        private string userHomeUrlSwitch(UserInfo userInfo)
+        public static string userHomeUrlSwitch(UserInfo userInfo)
         {
             string homeUrl = "";
             List<Models.Role> roles = userInfo.Role;
@@ -38,7 +38,7 @@ namespace EQC.Controllers
             {
                 int roleSeq = roles[0].Seq;
                 if (roleSeq == 1) //系統管理者
-                {
+                { 
                     homeUrl = "/Users";
                 }
                 else if (roleSeq == ConfigManager.DepartmentAdmin_RoleSeq) //署管理者
@@ -76,14 +76,57 @@ namespace EQC.Controllers
                     homeUrl = "/TenderPlan/TenderPlanList";
                 }
             }
+
+            var targetUrl = userInfo.MenuList
+                .ToList().FirstOrDefault(r => ( "/" + r.Url ).StartsWith(homeUrl));
+
+            if (targetUrl != null)
+                new SessionManager().currentSystemSeq = targetUrl.SystemTypeSeq?.ToString();
+            else if (!homeUrl.StartsWith("/Portal") )
+            {
+                homeUrl = "/" + userInfo.MenuList.FirstOrDefault()?.Url;
+            }
             return homeUrl;
         }
+
+        public ActionResult NoPermission()
+        {
+            return View();
+        }
+
         /// <summary> 登入頁 </summary>
         /// <returns> View </returns>
         public ActionResult Index()
         {
+
             Session.Abandon();
-            return View();
+            if (ConfigurationManager.AppSettings.Get("TestUserNo")?.ToString() == null)
+                return View();
+
+
+            var path = UploadFilesProcesser.ReadTxTFromFile("App_Data", "debug_url.txt")
+                .Split('/');
+            var action = path.Length > 1 ? path[1] : "Index";
+            var controllerName = path[0] != "" ? path[0] : "Users";
+            var userNo = ConfigurationManager.AppSettings.Get("TestUserNo")?.ToString();
+            string selectedEngSeq = null;
+            string systemType = null;
+            if (path.Length > 2)
+            {
+                var envirnVar = path[2].Split(':');
+
+                if (envirnVar.Length > 0)
+                {
+                    systemType = envirnVar[0];
+                }
+                if(envirnVar.Length > 1)
+                {
+                    selectedEngSeq = envirnVar[1];
+                }
+            }
+            SetTestInfo(userNo, systemType, selectedEngSeq);
+
+            return RedirectToAction(action, controllerName);
         }
 
         /// <summary> 系統登出 </summary>
@@ -102,6 +145,7 @@ namespace EQC.Controllers
             try
             {
                 int count = userService.CheckUser4(userNo, phone);
+                   
 
 
 
@@ -132,7 +176,7 @@ namespace EQC.Controllers
                     }
 
                     object userInfo = userService.GetMobileUserInfo(userNo);
-                    return Json(new { token = token.Value, status = "success", status_code = 0, userInfo = userInfo });
+                    return Json(new { token = token.Value, status = "success", status_code = 0, userInfo = userInfo, isSDirector = Utils.CheckDirectorOfSupervision(userNo) });
                 }
                 return Json(new { status = "登入驗證失敗", status_code = 1 });
             }
@@ -186,17 +230,28 @@ namespace EQC.Controllers
         /// <param name="account"> 帳號 </param>
         /// <param name="passWd"> 密碼 </param>
         /// <returns> 登入結果 </returns>
-        public JsonResult CheckUserForDebug(string userNo, string passWd)
+        public JsonResult CheckUserForDebug(string userNo, string passWd, string token=null)
         {
             try
             {
+                APIService.Token _token = null;
+                    
+                if(token != null)
+                    _token = apiService.GetTokenData(token);
+                if (_token != null)
+                {
+                    userNo = _token.userNo;
+                    passWd = _token.passWd;
+                    apiService.removeToken(token);
+                }
+
                 int count;
                 string homeUrl = string.Empty;
                 count = userService.CheckUser(userNo, passWd);
                 if (count > 0)
                 {
                     SetSessionManager(userNo);
-                    if (ConfigurationManager.AppSettings.Get("Debug") != null) return Json(null);
+                    if (ConfigurationManager.AppSettings.Get("Debug") != null) return Json(new SessionManager().GetUser() );
                     SharedController sc = new SharedController();
                     MenuController mc = new MenuController();
                     homeUrl = mc.GetTopMenuUrl();
@@ -209,6 +264,7 @@ namespace EQC.Controllers
                         homeUrl = userHomeUrlSwitch(userInfo);
                         using (var context = new EQC_NEW_Entities())
                         {
+                            context.UserMain.Find(userInfo.Seq).LastLoginTime = DateTime.Now;
                             context.UserLoginRecord.Add(new
                             UserLoginRecord
                             {
@@ -218,20 +274,20 @@ namespace EQC.Controllers
                             });
                             context.SaveChanges();
                         }
-
                     }
 
-                        Response.Cookies.Set(new HttpCookie("DateCookieExample"));
+                    Response.Cookies.Set(new HttpCookie("DateCookieExample"));
                    _session["UserhomeUrl"] = homeUrl;
 
+ 
                         return Json(new
-                        {
-                            result = 1,
-                            isLogin = true,
-                            errorMessage = string.Empty,
-                            homeUrl = homeUrl,
-                            sessionId = _session.SessionID
-                        });
+                    {
+                        result = 1,
+                        isLogin = true,
+                        errorMessage = string.Empty,
+                        homeUrl = homeUrl,
+                        sessionId = _session.SessionID
+                    });
                 }
                 return Json(new
                 {
@@ -253,9 +309,11 @@ namespace EQC.Controllers
                 }, JsonRequestBehavior.AllowGet);
             }
         }
-        public JsonResult CheckUserLevel1(string userNo, string passWd)
+        public JsonResult CheckUserLevel1(string userNo = null, string passWd = null, string token = null)
         {//shioulo 20220706
-            if (ConfigManager.LoingEmailCodeDisabled) return CheckUserForDebug(userNo, passWd);//shioulo 20220710
+
+
+            if (ConfigManager.LoingEmailCodeDisabled || token != null) return CheckUserForDebug(userNo, passWd, token);//shioulo 20220710
 
             try
             {
@@ -391,10 +449,35 @@ namespace EQC.Controllers
             }
         }
 
-        private void SetSessionManager(string userNo)
+        public static void SetSessionManager(string userNo)
         {
             System.Web.SessionState.HttpSessionState _session = System.Web.HttpContext.Current.Session;
             HttpContext httpContext = System.Web.HttpContext.Current;
+            var sm = new SessionManager();
+            _session["Account"] = userNo;
+            if (httpContext.Session != null)
+            {
+                if (_session["Account"] != null)
+                {
+                    sm.CheckSession(_session);
+                }
+                else
+                {
+                    sm.LogOut(null);
+                }
+            }
+        }
+
+        public static int? systemType;
+        public static string selectedEngSeq;
+        public static void SetTestInfo(string userNo, string _systemType = null, string _selectedEngSeq = null)
+        {
+            Int32.TryParse(_systemType, out int s);
+            systemType = s;
+            selectedEngSeq = _selectedEngSeq;
+            System.Web.SessionState.HttpSessionState _session = System.Web.HttpContext.Current.Session;
+            HttpContext httpContext = System.Web.HttpContext.Current;
+            var sm = new SessionManager();
             _session["Account"] = userNo;
             if (httpContext.Session != null)
             {
@@ -553,6 +636,7 @@ namespace EQC.Controllers
         public ActionResult OauthVerify(string grant_type, string client_id, string client_secret, string redirect_uri, string code)
         {
             string token = null;
+            SaveChangeStatus changeData = null;
             JObject res_array2 = new JObject();
             try
             {
@@ -612,12 +696,11 @@ namespace EQC.Controllers
 
                 }
 
-                //return responseBody;
-                //return token;
-
-                int count=0;
-                string Unit = null;
-                //string parentUnit = null;
+                int count = 0;
+                string Unit = null;//單位 ex:
+                string UpperUnit1 = null;//上層單位
+                string UpperUnit2 = null;//最上層單位
+                int ouCount = 0;//計數用最多會有3層單位
                 string homeUrl = string.Empty;
                 string userNo = (string)res_array2["sAMAccountName"];//帳號
                 string Mail = (string)res_array2["mail"];//信箱
@@ -628,21 +711,28 @@ namespace EQC.Controllers
                 string[] UnitArray = UnitData.Split(',').ToArray();
                 foreach (string arr in UnitArray)
                 {
-                    string[] arr2 = arr.Split('=').ToArray();
-                    string key = arr2[0].ToString();
-                    string value = arr2[1];
-                    //string value = (string)arr2.GetValue(1);
-                    if (key == "OU" && Unit == null)
+                    string[] arr2 = arr.Split('=');
+                    if (arr2.Length < 2) continue;
+                    string key = arr2[0].Trim(); // 修剪空白字符
+                    string value = arr2[1].Trim(); // 修剪空白字符
+                    if (key == "OU")
                     {
-                        Unit = value;
-                        //break;
+                        ouCount++;
+                        if (ouCount == 1)
+                        {
+                            Unit = value;
+                        }
+                        else if (ouCount == 2)
+                        {
+                            UpperUnit1 = value;
+                        }
+                        else if (ouCount == 3)
+                        {
+                            UpperUnit2 = value;
+                        }
                     }
-                    //else if (key == "OU" && Unit != null)
-                    //{
-                    //    parentUnit = value;
-                    //}
                 }
-                if(Unit == null)
+                if (Unit == null)
                 {
                     BaseService.log.Info($"AD Response for {client_id}:{responseBody}");
 
@@ -650,15 +740,17 @@ namespace EQC.Controllers
                 count = userService.CheckUser3(userNo, Name);
                 if (count == 0)
                 {
-                    count = userService.OauthAddUser(userNo, Mail, Name, Phone, Unit);
+                    count = userService.OauthAddUser(userNo, Mail, Name, Phone, Unit, UpperUnit1, UpperUnit2);
                 }
 
                 if (count > 0) {
+
                     SetSessionManager(userNo);
                     //SharedController sc = new SharedController();
                     //MenuController mc = new MenuController();
                     System.Web.SessionState.HttpSessionState _session = System.Web.HttpContext.Current.Session;
                     UserInfo userInfo = (UserInfo)_session["UserInfo"];
+                    changeData = userService.OauthUpdateUserData(userInfo.Seq, Mail, Name, Phone, Unit, UpperUnit1, UpperUnit2);
                     using (var context = new EQC_NEW_Entities())
                     {
                         context.UserLoginRecord.Add(new
@@ -678,7 +770,8 @@ namespace EQC.Controllers
                 {
                     isLogin = count > 0 ? true : false,
                     errorMessage = string.Empty,
-                    homeUrl = homeUrl
+                    homeUrl = homeUrl,
+                    changeData = changeData
                 }, JsonRequestBehavior.AllowGet);
             }
             catch (Exception ex)

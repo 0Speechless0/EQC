@@ -31,7 +31,7 @@ namespace EQC.Common
             using(var context = new EQC_NEW_Entities())
             {
                 var userNotiy = context.UserNotification.Where(r => r.UserMainSeq == userInfo.Seq).FirstOrDefault();
-                context.Notification.RemoveRange(context.Notification.Where(r => r.ExpireTime < DateTime.Now));
+                //context.Notification.RemoveRange(context.Notification.Where(r => r.ExpireTime < DateTime.Now));
                 context.SaveChanges();
                 return context
                     .Notification
@@ -40,7 +40,7 @@ namespace EQC.Common
                     .Where(r =>
                     (r.Role == userInfo.RoleSeq || r.Role == null) &&
                     (r.Unit == userInfo.UnitSeq1 || r.Unit == null) &&
-                    ( r.CreateTime > userNotiy?.NotifyTime || userNotiy == null) 
+                    ( (r.CreateTime > userNotiy?.NotifyTime || userNotiy == null) &&  r.ExpireTime > DateTime.Now) 
                 ).ToList();
             }
 

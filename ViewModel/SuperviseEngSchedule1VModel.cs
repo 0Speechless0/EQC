@@ -7,5 +7,14 @@ namespace EQC.ViewModel
         public string PhaseCode { get; set; }
         public string EngPlace { get; set; }
         public string BelongPrj { get; set; }
+
+        public string BelongPrjNoNum { 
+            get {
+                var i = BelongPrj.IndexOf("(");
+                return i > 0 ? BelongPrj.Split('(')[0] : BelongPrj;
+
+
+            } 
+        }
     }
 }

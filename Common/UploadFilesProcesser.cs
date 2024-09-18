@@ -6,6 +6,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Text;
 using System.Web;
 
 namespace EQC.Common
@@ -13,7 +14,45 @@ namespace EQC.Common
     public static class UploadFilesProcesser
     {
 
+        public static  string ReadTxTFromFile(string pathName, string fileName = null)
+        {
+            if (!File.Exists(Path.Combine(rootPath, pathName, fileName)))
+            {
+                return "";
+            }
+            return File.ReadAllText(Path.Combine(rootPath, pathName, fileName));
+        }
+        public static void SaveToTxTFile(this string text, string pathName, string fileName = null)
+        {
+            if(!Directory.Exists(Path.Combine(rootPath, pathName ) ) )
+            {
+                Directory.CreateDirectory(Path.Combine(rootPath, pathName));
+            }
+            if(fileName == null)
+            {
+                fileName = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss.txt");
+            }
+            using (StreamWriter outputFile = new StreamWriter(Path.Combine(rootPath, pathName, fileName)))
+            {
+                outputFile.Write(text);
+            }
+        }
 
+        //public static void SaveToFile(this MemoryStream stream, bool relative, string pathName, string fileName = null)
+        //{
+        //    var folder = relative ? Path.Combine(rootPath, pathName) : pathName;
+        //    if (!Directory.Exists(folder))
+        //    {
+        //        Directory.CreateDirectory(folder);
+        //    }
+        //    using (var fileStream = File.Create(Path.Combine(folder, fileName)))
+        //    {
+        //        stream.Seek(0, SeekOrigin.Begin);
+        //        stream.CopyTo(fileStream);
+        //    }
+
+
+        //}
         public static FileStream getFileStreamWithConvert(this string pathName, Func<string, string> convert, string ext)
         {
            
@@ -50,10 +89,10 @@ namespace EQC.Common
             {
                 zipFileName += ".zip";
             }
-
+            ZipOutputStream s = null;
             try
             {
-                using (ZipOutputStream s = new ZipOutputStream(File.Create(Path.Combine(zipFilePath, zipFileName))))
+                using (s = new ZipOutputStream(File.Create(Path.Combine(zipFilePath, zipFileName))))
                 {
                     s.SetLevel(9); // 壓縮級別 0-9
                                    //s.Password = "123"; //Zip壓縮檔案密碼
@@ -83,7 +122,10 @@ namespace EQC.Common
             }
             catch (Exception ex)
             {
+                s?.Finish();
+                s?.Close();
                 throw new Exception($"Exception during processing");
+
             }
 
             return Path.Combine(zipFilePath, zipFileName);
@@ -155,7 +197,7 @@ namespace EQC.Common
             }
             return true;
         }
-        static string rootPath = Path.Combine(HttpContext.Current.Server.MapPath("~"), "FileUploads");
+        static string rootPath =  Path.Combine(Utils.rootPath ??  HttpContext.Current.Server.MapPath("~"), "FileUploads");
        public static void UploadFilesToFolder(this IEnumerable<HttpPostedFileBase> files, string paths)
        {
             string fileFolderPath = Path.Combine(rootPath, paths);
@@ -270,25 +312,29 @@ namespace EQC.Common
             byte[] bytes = File.ReadAllBytes(fullPath);
             return Convert.ToBase64String(bytes);
         }
-        public static void SaveImageByBase64(this string filePath, string str, int imageFormat = 0)
+        public static string SaveImageByBase64(this string filePath, string str, int imageFormat = 0, bool pathRelative = true)
         {
-            byte[] data = Convert.FromBase64String(str);
+            byte[] data = Convert.FromBase64String(str.Replace("data:image/png;base64,", ""));
             //var compressed;
             //var from = new MemoryStream(compressed);
             //var to = new MemoryStream();
             // var gZipStream = new GZipStream(from, CompressionMode.Decompress);
             //gZipStream.CopyTo(to);
             //var a = to.ToString();
+            string fullPath = Path.Combine(pathRelative ? rootPath : "", filePath);
             using (var stream = new MemoryStream(data, 0, data.Length))
             {
-                string fullPath = Path.Combine(rootPath, filePath);
+         
                 var dir = Path.GetDirectoryName(fullPath);
                 if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
 
                 Image image = Image.FromStream(stream);
-                image.Save(Path.Combine(rootPath, filePath), imageFormat == 0  ? ImageFormat.Jpeg : ImageFormat.Png );
+                image.Save(fullPath, imageFormat == 0  ? ImageFormat.Jpeg : ImageFormat.Png );
                 //TODO: do something with image
+               
             }
+
+            return fullPath;
         }
 
         public static string RootPath

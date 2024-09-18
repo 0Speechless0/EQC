@@ -28,6 +28,15 @@ namespace EQC.Models
                 return this.PccesXMLDate.HasValue ? Utils.ChsDate(this.PccesXMLDate) : "";
             }
         }
-        
+
+        public int ToDoChecklit { get; set; }
+
+        public bool IsEcPrepare { 
+            get {
+                return ToDoChecklit < 3;    
+            } 
+        }
+
+
     }
 }

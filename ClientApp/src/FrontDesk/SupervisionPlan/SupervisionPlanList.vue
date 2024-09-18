@@ -1,6 +1,6 @@
 <template>
     <div>
-
+        123
      </div>
 </template>
 <script>
@@ -19,7 +19,7 @@
         },
         async mounted() {
             console.log('mounted() 監造計畫');
-            let targetId = window.sessionStorage.getItem(window.eqSelTrenderPlanSeq);
+            let targetId = new URLSearchParams(window.location.search).get("id") ?? window.sessionStorage.getItem(window.eqSelTrenderPlanSeq) ;
             if (targetId == null) {
                 alert('請先選取標案');
                 return;

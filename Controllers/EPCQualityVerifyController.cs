@@ -21,7 +21,7 @@ namespace EQC.Controllers
             return View("Index");
         }
         //工程資料表
-        public ActionResult DnDoc2(int id)
+        public ActionResult DnDoc2(int id, DownloadArgExtension downloadArg)
         {
             List<EPCQualityVerifyDoc2VMode> items = iService.GetDoc2<EPCQualityVerifyDoc2VMode>(id);
             if(items.Count != 1)
@@ -75,6 +75,7 @@ namespace EQC.Controllers
                 if (wordApp != null) wordApp.Quit();
 
                 Stream iStream = new FileStream(tarfile, FileMode.Open, FileAccess.Read, FileShare.Read);
+                downloadArg?.targetPathSetting(tarfile);
                 return File(iStream, "application/blob", filename);
             }
             catch (Exception e)
@@ -98,7 +99,7 @@ namespace EQC.Controllers
             return v.HasValue ? v.Value.ToString() : "";
         }
         //施工抽查成果
-        public ActionResult DnDoc1(int id)
+        public ActionResult DnDoc1(int id, DownloadArgExtension downloadArg = null)
         {
             List<EngMainEditVModel> engs = new EngMainService().GetItemBySeq<EngMainEditVModel>(id);//20220602
             if (engs.Count != 1)
@@ -147,6 +148,7 @@ namespace EQC.Controllers
                 if (wordApp != null) wordApp.Quit();
 
                 Stream iStream = new FileStream(tarfile, FileMode.Open, FileAccess.Read, FileShare.Read);
+                downloadArg?.targetPathSetting(tarfile);
                 return File(iStream, "application/blob", filename);
             }
             catch (Exception e)

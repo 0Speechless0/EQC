@@ -19,6 +19,9 @@
 
                         <th >姓名</th>
                         <th >帳號</th>
+                        <th>機關/單位</th>
+                        <th>角色</th>
+                        <th>下載日期</th>
                         <th >功能</th>
                     </tr>
                 </thead>
@@ -27,6 +30,9 @@
                         <td style="text-align: center;">{{index+1}}</td>
                         <td style="text-align: center;">{{item.DisplayName}}</td>
                         <td style="text-align: center;">{{item.UserNo}}</td>
+                        <td style="text-align: center;">{{item.UnitName1}}{{item.UnitName2}}</td>
+                        <td style="text-align: center;">{{item.RoleName}}</td>
+                        <td style="text-align: center;">{{item.ConstCheckAppCreateTime ? Com.ToDate(item.ConstCheckAppCreateTime, true) : ""}}</td>
                         <td class="d-flex justify-content-center">
                             <button class="btn btn-color11-3 btn-xs mx-1" @click="unLockConstCheckApp(item.ConstCheckAppLock, index)"><i class="fas fa-lock"></i>抽查APP解鎖</button>
                         </td>
@@ -56,6 +62,8 @@
     import moment from 'moment';
     import {userStore} from "./userStore";
     import {computed} from "vue";
+    import Com from "../../Common/Common2";
+import { store } from '../../components/store/importTemplateStore';
     // Suppress the warnings
     moment.suppressDeprecationWarnings = true;
 
@@ -70,6 +78,7 @@
         props :["users"],
         data: function () {
             return {
+                Com : Com,
                 Role : 0,
                 subUnitSeq : 0,
                 nameSearch: null,
@@ -134,15 +143,18 @@
 
 
         },
-        // watch :{
-        //     users :{
-        //         handler(value)
-        //         {
-        //             console.log("this.userList", value);
-        //             this.userList_ = value;
-        //         }
-        //     }
-        // },
+        watch :{
+            "store.hasConstCheckApp" :{
+                handler(value, _value)
+                {
+                    if(value == true && value != _value)
+                    {
+                        store.currentPage= 1;
+                    }
+
+                }
+            }
+        },
         setup()
         {
 

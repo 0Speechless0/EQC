@@ -1,16 +1,24 @@
-﻿<!DOCTYPE html>
+﻿@{ 
+    string initContent = $@"
+                        `為保護您的權益，請詳細閱讀「 隱私權及個人資料保護政策 」，如您已充分瞭解並同意，請繼續進行對談服務。
+          <br><br>
+          點選 隱私權及個人資料保護政策如附件pdf
+";
+}
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>經濟部水利署-水利工程品管系統</title>
+    <title>經濟部水利署-水利工程數位轉型系統</title>
     <meta name="keywords" content="經濟部水利署,水利工程,品管系統">
-    <meta name="description" content="經濟部水利署-水利工程品管系統">
+    <meta name="description" content="經濟部水利署-水利工程數位轉型系統">
     <link rel="icon" href="@Url.Content("~/Content/images1/ROC_Water_Resources_Agency_Seal.svg")" type="image/ico" />
     <link href="@Url.Content("~/Content/css1/bootstrap.min.css")" rel="stylesheet">
     <link href="@Url.Content("~/Content/css1/fontawesome.min.css")" rel="stylesheet">
     <link href="@Url.Content("~/Content/css1/all.css")" rel="stylesheet">
+    <link rel="stylesheet" href="@Url.Content("~/Content/css1/element-ui.css")">
     <!--icon font設定-->
     <link href="/Content/css1/layout.css" rel="stylesheet">
     <!--自訂CSS-->
@@ -22,7 +30,9 @@
       <![endif]-->
 
 </head>
+
 <body class="index">
+    <script src="@Url.Content("~/Content/js/axios.js")"></script>
     <div id="WRAPPER">
         <header><img class="logo" src="/Content/images1/major_logo.png"></header>
         <div id="app">
@@ -43,10 +53,44 @@
     <script src=@Url.Content("~/Content/dist/js/app.js")></script>
 
     <script>
-        new Vue({
+        var app = new Vue({
+            data: {
+                API: {
+                    GetUserMessagesNewToOld: (skip, count, result) => {
+
+                        axios.post("InteliAgency/GetUserMessagesNewToOld", { userSeq: 1, skip: skip, count: count })
+                            .then((resp) => {
+                                result(resp)
+                                console.log("resp", resp)
+                            });
+
+                    },
+                    StoreUserMessage: (data, result) => {
+                        data.UserMainSeq = 0;
+                        axios.post("InteliAgency/StoreUserMessage", { vm: data })
+                            .then((resp) => {
+                                if (result)
+                                    result(resp);
+                            });
+                    },
+                    SuggestAgencyMessage(data) {
+                        axios.post("InteliAgency/SuggestAgencyMessage", { vm: data })
+                    }
+
+                },
+                messagistVisiable: false
+            },
+            methods: {
+                messagistClose() {
+                    this.messagistVisiable = false;
+                },
+                messagistOpen() {
+                    this.messagistVisiable = true;
+                }
+            }
             //store,
             //render: (h) => h(App),
-        }).$mount('#app')
+        }).$mount('#WRAPPER');
     </script>
 
     @RenderSection("scripts", required: false)

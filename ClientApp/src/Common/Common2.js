@@ -5,6 +5,26 @@ moment.suppressDeprecationWarnings = true;
 
 export default {
 
+    numberComma(num, decimal = 0){
+
+        let comma=/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g
+        if(decimal)
+        {
+            return num.toString().replace(comma, ',')
+        }
+        return Math.round(num).toString().replace(comma, ',')
+    },
+    convertToCanvas(div, canvasId)
+    {
+
+        var canvas = document.createElement("canvas");
+        var CanvasDiv = document.getElementById(canvasId);
+        canvas.width = div.offsetWidth;
+        canvas.height = div.offsetHeight;
+        var ctx = canvas.getContext("2d");
+        ctx.drawImage(div, 0, 0, canvas.width, canvas.height);
+        CanvasDiv.appendChild(canvas);
+    },
     yearDiff: function(d1, d2) {
         d1 = new Date(d1);
         d2 = new Date(d2);
@@ -37,6 +57,7 @@ export default {
         }
     },
     ToROCDate: function (date, hasTime) {
+      if(!date) return null;
       var m = moment(date);
       if (m.isValid() == false) return '';
       var year = moment(date).format('YYYY') - 1911;
@@ -128,9 +149,15 @@ export default {
                   } else {
                       console.log('saveFilename is null');
                   }
+
+                  if(resp.data.message)
+                    {
+                    alert(resp.data.message)
+                    }
               } else {
                   alert('格式錯誤下載失敗');
               }
+
           }).catch(error => {
               console.log(error);
           });
@@ -165,11 +192,29 @@ export default {
         }
 
     },
+    setRadioBoxToNullIfSetted(item, propertyName, value)
+    {
+        console.log(item, "FFFF", value);
+        if(item[propertyName] == null)
+        {
+            item[propertyName] = value
+        }
+        else{
+            item[propertyName] = null
+        }
+    },
     htmlDecode(str)
     {
         var div = document.createElement('div');
         div.innerHTML = str;
         return div.innerText|| div.textContent;
+    },
+    setPropertyInArr(arr, item, propertyName, value)
+    {
+        console.log("dff");
+        item[propertyName] = value;
+        arr = arr.map(e => e);
+        return arr;
     },
     getCookie(cookieName) {
         var cookieValue = document.cookie;

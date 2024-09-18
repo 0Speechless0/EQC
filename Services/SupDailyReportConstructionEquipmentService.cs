@@ -185,7 +185,7 @@ namespace EQC.Services
                 @KgCo2e,
                 GetDate(),
                 @ModifyUserSeq,
-                GetDate(),
+                0,
                 @ModifyUserSeq
             )";
 
@@ -193,8 +193,8 @@ namespace EQC.Services
             {
                 SqlCommand cmd = db.GetCommand(sql);
                 cmd.Parameters.AddWithValue("@SupDailyDateSeq", m.SupDailyDateSeq);
-                cmd.Parameters.AddWithValue("EquipmentName", m.EquipmentName);
-                cmd.Parameters.AddWithValue("EquipmentModel", m.EquipmentModel);
+                cmd.Parameters.AddWithValue("@EquipmentName", m.EquipmentName);
+                cmd.Parameters.AddWithValue("@EquipmentModel", m.EquipmentModel);
                 cmd.Parameters.AddWithValue("@TodayQuantity", m.TodayQuantity);
                 cmd.Parameters.AddWithValue("@TodayHours", this.NulltoDBNull(m.TodayHours));
                 cmd.Parameters.AddWithValue("@KgCo2e", this.NulltoDBNull(m.KgCo2e));//s20230502
@@ -234,8 +234,8 @@ namespace EQC.Services
             {
                 SqlCommand cmd = db.GetCommand(sql);
                 cmd.Parameters.AddWithValue("@Seq", m.Seq);
-                //cmd.Parameters.AddWithValue("@EquipmentName", m.EquipmentName);
-                cmd.Parameters.AddWithValue("EquipmentModel", m.EquipmentModel);
+                cmd.Parameters.AddWithValue("@EquipmentName", m.EquipmentName);
+                cmd.Parameters.AddWithValue("@EquipmentModel", m.EquipmentModel);
                 cmd.Parameters.AddWithValue("@TodayQuantity", m.TodayQuantity);
                 cmd.Parameters.AddWithValue("@TodayHours", this.NulltoDBNull(m.TodayHours));
 

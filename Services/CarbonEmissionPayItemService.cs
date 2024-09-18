@@ -1,4 +1,5 @@
 ﻿using EQC.Common;
+using EQC.EDMXModel;
 using EQC.Models;
 using EQC.ViewModel;
 using System;
@@ -36,6 +37,36 @@ namespace EQC.Services
         public const int _C10NotMatch = 5;          //5:第10碼不同
         public const int _NotMatch = 1;             //1:無匹配
         public const int _Init = 0;                 //0:未比對
+        public bool unLockData(int engMainSeq)
+        {
+            using (var context = new EQC_NEW_Entities())
+            {
+                if ((context.EngMain.Find(engMainSeq)
+                    .CarbonEmissionHeader.FirstOrDefault() is CarbonEmissionHeader target))
+                {
+                    target.State = 0;
+                    context.SaveChanges();
+                    return true;
+                }
+
+            }
+            return false;
+        }
+        public bool LockData(int engMainSeq)
+        {
+            using(var context = new EQC_NEW_Entities())
+            {
+                if ( (context.EngMain.Find(engMainSeq)
+                    .CarbonEmissionHeader.FirstOrDefault() is CarbonEmissionHeader target)  )  
+                {
+                    target.State = 2;
+                    context.SaveChanges();
+                    return true;
+                }
+
+            }
+            return false;
+        }
 
         //資料檢查
         public void CheckData(int engMainSeq, ref bool c10NotMatch, ref bool notMatch, ref bool notLongEnough, ref bool c10NotMatchUnit)
@@ -108,7 +139,8 @@ namespace EQC.Services
             catch { }
             try
             {
-                Co2ItemTotal = Convert.ToDecimal(dt.Rows[0]["Co2ItemTotal"].ToString());
+                //Co2ItemTotal = Convert.ToDecimal(dt.Rows[0]["Co2ItemTotal"].ToString());
+                Co2ItemTotal = 0;
             }
             catch { }
             try
@@ -130,6 +162,7 @@ namespace EQC.Services
                     RStatusCode=@RStatusCode,
                     GreenFundingSeq=@GreenFundingSeq,
                     GreenFundingMemo=@GreenFundingMemo,
+                    Suggestion = @Suggestion,
                     ModifyTime=GetDate(),
                     ModifyUserSeq=@ModifyUserSeq
                 where Seq=@Seq";
@@ -139,6 +172,7 @@ namespace EQC.Services
                 cmd.Parameters.AddWithValue("@Seq", m.Seq);
                 cmd.Parameters.AddWithValue("@KgCo2e", this.NulltoDBNull(m.KgCo2e));
                 cmd.Parameters.AddWithValue("@Memo", m.Memo);
+                cmd.Parameters.AddWithValue("@Suggestion", m.Suggestion);
                 cmd.Parameters.AddWithValue("@GreenFundingSeq", this.NulltoDBNull(m.GreenFundingSeq));//s20230418
                 cmd.Parameters.AddWithValue("@GreenFundingMemo", m.GreenFundingMemo);//s20230418
                 cmd.Parameters.AddWithValue("@RStatusCode", m.RStatusCode);
@@ -891,6 +925,7 @@ namespace EQC.Services
                     a.Memo,
                     a.RStatus,
                     a.RStatusCode,
+                    a.Suggestion,
                     a.GreenFundingSeq,
                     a.GreenFundingMemo
                 from CarbonEmissionHeader b
@@ -954,6 +989,7 @@ namespace EQC.Services
                     a.EngNo,
                     a.EngName,
                     a.TotalBudget,
+                    a.ApprovedCarbonQuantity,
                     a.SubContractingBudget,
                     c1.Name ExecUnitName,
                     (d1.CityName +d.TownName) EngPlace,

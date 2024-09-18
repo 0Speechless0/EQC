@@ -5,6 +5,7 @@ using EQC.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Web.Mvc;
 
 namespace EQC.Controllers
@@ -16,6 +17,7 @@ namespace EQC.Controllers
         public ActionResult Index()
         {
             Utils.setUserClass(this, 1);
+            new SessionManager().currentSystemSeq = "8";
             return View("Index");
         }
 
@@ -25,19 +27,21 @@ namespace EQC.Controllers
             return Json(new
             {
                 result = 0,
-                items = iService.GetPhaseOptions(DateTime.Now.Year - 1911)
+                items = iService.GetPhaseOptions((DateTime.Now.Year - 1911).ToString() )
             });
         }
         //期別查詢
         public JsonResult SearchPhase(string keyWord)
         {
             List<SupervisePhaseModel> list = iService.GetPhaseCode(keyWord);
-            if(list.Count==1)
+            var phaseOption = iService.GetPhaseOptions(keyWord.Substring(0, 3));
+            if (list.Count > 0 )
             {
                 return Json(new
                 {
                     result = 0,
-                    item = list[0]
+                    item = list[0],
+                    phaseOption = phaseOption
                 });
             }
             return Json(new

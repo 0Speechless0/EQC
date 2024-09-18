@@ -3,9 +3,14 @@
          <h5 class="insearch mt-0 py-2">
              <div class="form-row mb-1">
                  <div class="col-12 my-1">
-                     工程：{{tenderItem.EngName}}({{tenderItem.EngNo}})&nbsp;預定進度:{{tenderItem.SchProgress}}<br>
-                     標案：{{tenderItem.TenderName}}({{tenderItem.TenderNo}})&nbsp;實際進度:{{tenderItem.AcualProgress}}<br />
-                     {{tenderItem.DurationCategory}}：{{tenderItem.EngPeriod}}天、{{tenderItem.StartDateStr}} ~ {{tenderItem.SchCompDateStr}}
+                    編號：{{tenderItem.EngNo}} <br>
+                     名稱：{{tenderItem.EngName}}<br>
+                     預定進度:{{tenderItem.SchProgress}}
+                     &nbsp;實際進度:{{tenderItem.AcualProgress}}<br>
+                {{tenderItem.DurationCategory}}：{{tenderItem.EngPeriod}}天、{{tenderItem.StartDateStr}}
+                    <span v-if="tenderItem.prjSchStartDateStr  && tenderItem.prjSchStartDateStr != Com.ToROCDate(tenderItem.schOrgStartDate)" style="color:purple"> ( {{tenderItem.prjSchStartDateStr }})</span>
+                     ~ {{tenderItem.SchCompDateStr}}
+                     <span v-if="tenderItem.prjSchCompDateStr && tenderItem.prjSchCompDateStr != Com.ToROCDate(tenderItem.schOrgEndDate)" style="color:purple"> ( {{tenderItem.prjSchCompDateStr   }})</span>
                      <button v-if="spHeader.PccesXMLDateStr != null && spHeader.PccesXMLDateStr != ''" @click="downloadPcces(spHeader)" class="btn btn-color11-1 btn-xs mx-1">
                          <i class="fas fa-download"></i> Pcces下載({{spHeader.PccesXMLDateStr}})
                      </button>
@@ -16,22 +21,22 @@
                      </button>
                  </div>
                  <div class="col-12 col-sm-4 col-md-2 mb-1">
-                     <button v-on:click="selectTab='Construction'" v-bind:disabled="isNotWork()" v-bind:class="{'btn-color3':!isActiveState('Construction'), 'btn-color11-2':isActiveState('Construction')}" class="btn btn-block font-weight-bold">
+                     <button v-on:click="selectTab='Construction'" v-bind:disabled="isNotWork" v-bind:class="{'btn-color3':!isActiveState('Construction'), 'btn-color11-2':isActiveState('Construction')}" class="btn btn-block font-weight-bold">
                          施工日誌
                      </button>
                  </div>
                  <div class="col-12 col-sm-4 col-md-2 mb-1">
-                     <button v-on:click="selectTab='Supervision'" v-bind:disabled="isNotWork()" v-bind:class="{'btn-color3':!isActiveState('Supervision'), 'btn-color11-3':isActiveState('Supervision')}" class="btn btn-block font-weight-bold">
+                     <button v-on:click="selectTab='Supervision'" v-bind:disabled="isNotWork" v-bind:class="{'btn-color3':!isActiveState('Supervision'), 'btn-color11-3':isActiveState('Supervision')}" class="btn btn-block font-weight-bold">
                          監造報表
                      </button>
                  </div>
                  <div class="col-12 col-sm-4 col-md-2 mb-1">
-                     <button v-on:click="selectTab='AskPayment'" v-bind:disabled="isNotWork()" v-bind:class="{'btn-color3':!isActiveState('AskPayment'), 'btn-color11-3-1':isActiveState('AskPayment')}" class="btn btn-block font-weight-bold">
+                     <button v-on:click="selectTab='AskPayment'" v-bind:disabled="isNotWork" v-bind:class="{'btn-color3':!isActiveState('AskPayment'), 'btn-color11-3-1':isActiveState('AskPayment')}" class="btn btn-block font-weight-bold">
                          估驗請款
                      </button>
                  </div>
                  <div class="col-12 col-sm-4 col-md-2 mb-1">
-                     <button v-on:click.stop="selectTab='PriceAdjustment'" v-bind:disabled="isNotWork()" v-bind:class="{'btn-color3':!isActiveState('PriceAdjustment'), 'btn-color11-1':isActiveState('PriceAdjustment')}" class="btn btn-block font-weight-bold">
+                     <button v-on:click.stop="selectTab='PriceAdjustment'" v-bind:disabled="isNotWork" v-bind:class="{'btn-color3':!isActiveState('PriceAdjustment'), 'btn-color11-1':isActiveState('PriceAdjustment')}" class="btn btn-block font-weight-bold">
                          物價調整款
                      </button>
                  </div>
@@ -85,6 +90,7 @@
      </div>
 </template>
 <script>
+import Com from "../../Common/Common2";
     export default {
         data: function () {
             return {
@@ -96,6 +102,8 @@
                 canEditConstruction: false,
                 canEditSupervision: false,
                 rejectCompanys:[], //s20230720
+                isInit : false,
+                Com : Com
             };
         },
         components: {
@@ -105,7 +113,24 @@
             AskPayment: require('./PM_EngChange_AskPayment.vue').default,
             PriceAdjustment: require('./PM_EngChange_PriceAdjustment.vue').default,
         },
+        computed : {
+            isNotWork() {
+                if (this.targetId == null || this.sepHeader.SPState < 1 || this.spHeader.SPState != 1 || !this.isInit)
+                    return true;
+                return false;
+            },
+        },
         methods: {
+            checkInit()
+            {
+                window.myAjax.post('/EPCProgressEngChange/CheckInit', { engSeq: this.targetId })
+                    .then(resp => {
+                        this.isInit = resp.data;
+                    })
+                    .catch(err => {
+                        console.log(err);
+                    });
+            },
             //停權廠商 s20230720
             getRejectCompany() {
                 this.rejectCompanys = [];
@@ -119,10 +144,7 @@
                         console.log(err);
                     });
             },
-            isNotWork() {
-                if (this.targetId == null || this.sepHeader.SPState < 1 || this.spHeader.SPState != 1)
-                return true;
-            },
+
             isActiveState(key) {
                 if (this.targetId == null) return false;
                 return (this.selectTab == '' || this.selectTab==key)
@@ -216,11 +238,15 @@
                     .then(resp => {
                         if (resp.data.result == 0) {
                             this.tenderItem = resp.data.item;
+                            this.tenderItem.schOrgStartDate  = resp.data.schOrgStartDate;
+                            this.tenderItem.schOrgEndDate = resp.data.schOrgEndDate;
                             this.canEditConstruction = resp.data.editConstruction;
                             this.canEditSupervision = resp.data.editSupervision;
+                            this.tenderItem.isContractBreaked = resp.data.isContractBreaked;
                             this.getSEPHeader();//s20230329
                             this.getCEHeader();
                             this.getRejectCompany();
+
                         } else
                             alert(resp.data.msg);
                     })
@@ -231,7 +257,8 @@
         },
         async mounted() {
             console.log('mounted 進度管理-工程變更');
-            this.targetId = window.sessionStorage.getItem(window.epcSelectTrenderSeq)
+            this.targetId = window.sessionStorage.getItem(window.epcSelectTrenderSeq);
+            this.checkInit();
             this.getItem();
             //sessionStorage.getItem('selectYear') == null
             //sessionStorage.removeItem('selectYear');

@@ -14,6 +14,12 @@ namespace EQC.EDMXModel
     
     public partial class EquOperTestList
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
+        public EquOperTestList()
+        {
+            this.EquOperControlSt = new HashSet<EquOperControlSt>();
+        }
+    
         public int Seq { get; set; }
         public Nullable<int> EngMainSeq { get; set; }
         public Nullable<byte> EPKind { get; set; }
@@ -30,5 +36,7 @@ namespace EQC.EDMXModel
         public byte DataType { get; set; }
     
         public virtual EngMain EngMain { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<EquOperControlSt> EquOperControlSt { get; set; }
     }
 }

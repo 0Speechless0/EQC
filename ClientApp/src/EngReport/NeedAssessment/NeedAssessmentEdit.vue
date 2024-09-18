@@ -7,9 +7,14 @@
                     <tr>
                         <th class="insearch" style="width: 200px; text-align:left;"><span class="small-red">*</span>年度</th>
                         <td colspan="5">
-                            <input v-model.trim="engReport.RptYear" maxlength="3" type="text" class="form-control" v-bind:disabled="disabledF == 1">
+                            <input v-model.trim="engReport.RptYear" maxlength="3" type="text" class="form-control" v-bind:disabled="disabledG == 1">
                         </td>
                         <td style="width: 200px;">
+                            <div class=" justify-content-center" v-if="isAdmin" >
+                                <button v-if="disabledG == 1" @click="checkState(6)" class="btn btn-color11-3 btn-xs sharp mx-1" title="編輯"><i class="fas fa-pencil-alt"></i> 編輯</button>
+                                <button v-else v-on:click.stop=" onSave('RptYear',0)" class="btn btn-color11-2 btn-xs sharp mx-1" title="儲存"><i class="fas fa-save"></i> 儲存</button>
+                                <button v-if="editG==1" @click="disabledG=1;" class="btn btn-color11-4 btn-xs mx-1" title="取消"><i class="fas fa-times"></i></button>
+                            </div>
                         </td>
                     </tr>
                     <tr>
@@ -122,7 +127,7 @@
                     <tr>
                         <th class="insearch" style="width: 200px; text-align:left;"><span class="small-red">*</span>提案範圍用地概述</th>
                         <td colspan="5">
-                            <textarea v-model.trim="engReport.ProposalScopeLand" rows="7" class="form-control" v-bind:disabled="disabledD == 1" placeholder="1.是否涉及都市計畫變更□否：□是：預計何時完成都變2.是否已將計畫範圍內公私有地情形，提供工務課□否：原因□是：3.其他："></textarea>
+                            <textarea v-model.trim="engReport.ProposalScopeLand" rows="7" class="form-control" v-bind:disabled="disabledD == 1" placeholder="1.是否涉及都市計畫變更□否：□是：預計何時完成都變2.是否已將計畫範圍內公私有地情形，工務科□否：原因□是：3.其他："></textarea>
                         </td>
                         <td style="width: 200px;">
                             <div class=" justify-content-center">
@@ -166,7 +171,7 @@
         </div>
         <h5>附件上傳</h5>
         <a href="#" title="說明" target="_blank" data-toggle="modal" data-target="#prepare_edit01" >說明&nbsp;</a>
-        <p style="color: red; padding-top: 20px;" >*請上傳 jpg、png、pdf格式</p>
+        <p style="color: red; padding-top: 20px;" >*請上傳 jpg、png 格式</p>
         <!-- 小視窗 編輯人員 -->
         <div class="modal fade" id="prepare_edit01">
             <div class="modal-dialog modal-xl modal-dialog-centered " style="max-width: fit-content;">
@@ -298,7 +303,7 @@
                         <td>{{item.ApprovalWorkFlow}}</td>
                         <td>{{item.ApproverName}}</td>
                         <td>
-                            <button v-if="isAdmin&&item.ApproveUser==''" v-on:click.stop="onSavaApprovalOne(item.Seq)" role="button" class="btn btn-color11-2 btn-xs mx-1">
+                            <button v-if="isAdmin&&item.ApproveUser==null" v-on:click.stop="onSavaApprovalOne(item.Seq)" role="button" class="btn btn-color11-2 btn-xs mx-1">
                                 <i class="fas fa-save">簽核(數位簽章)</i>
                             </button>
                             {{item.ApproveUser}}
@@ -322,12 +327,16 @@
     </div>-->
         <div class="row justify-content-center mt-5">
             <div class="d-flex">
-                <button v-if="engReport.IsSavaApproval==true" v-on:click.stop="onSavaApproval()" role="button" class="btn btn-color11-2 btn-xs mx-1">
+                <button v-if="engReport.IsSavaApproval==true && ( engReportApprove.ApprovalModuleListSeq == 1|| engReportApprove.Approved)" v-on:click.stop="onSavaApproval()" role="button" class="btn btn-color11-2 btn-xs mx-1">
                     <i class="fas fa-save">&nbsp;{{engReportApprove.ApprovalModuleListSeq==1?'送簽':'簽核(數位簽章)'}}</i>
                 </button>
+                
             </div>
             <div class="d-flex">
                 <button v-on:click.stop="back()" role="button" class="btn btn-color9-1 btn-xs mx-1"> 回上頁</button>
+                <button @click.prevent="onDownloadNeedAssessment" class="btn btn-color11-1 btn-block ml-4">
+                        <i class="fas fa-download"></i>產製提案需求評估表
+                    </button>
             </div>
         </div>
     </div>
@@ -354,6 +363,7 @@ import { ref } from "vue";
                 disabledC: 1,
                 disabledD: 1,
                 disabledF: 1,
+                disabledG: 1,
 
                 editA: 0,
                 editB: 0,
@@ -374,6 +384,10 @@ import { ref } from "vue";
             };
         },
         methods: {
+                        //下載
+            onDownloadNeedAssessment() {
+                window.comm.dnFile('/EngReport/DownloadNeedAssessmentVF?year=' + this.engReport.RptYear + '&unit=' + this.engReport.ExecUnitSeq + '&subUnit=' + '-1' + '&rptType=' + '1' + '&seq=' + this.engReport.Seq);
+            },
             checkState(itemNo) {
                 if (itemNo == 1) {
                     this.disabledA = (this.disabledA + 1) % 2;
@@ -407,6 +421,9 @@ import { ref } from "vue";
                     if (this.strEmpty(this.engReport.RptName))
                         this.engReport.RptName = "";
                 }
+                else if (itemNo == 6){
+                    this.disabledG = 0; 
+                }
             },
             getItem() {
                 this.engReport = {};
@@ -418,6 +435,7 @@ import { ref } from "vue";
                             //this.checkReviewStateC = this.engReport.FacilityManagementReviewState;
                             //this.checkReviewStateD = this.engReport.ProposalScopeLandReviewState;
                             //this.setCanvas();
+                            this.getApprove(resp.data.item)
                         } else {
                             alert(resp.data.message);
                         }
@@ -440,12 +458,13 @@ import { ref } from "vue";
                         console.log(err);
                     });
             },
-            getApprove() {
-                this.engReport = {};
+            getApprove(engReport = {}) {
+                this.engReport = engReport;
                 window.myAjax.post('/ERNeedAssessment/GetEngReportApprove', { engReportSeq: this.targetId })
                     .then(resp => {
                         if (resp.data.result == 0) {
                             this.engReportApprove = resp.data.item;
+                            this.engReportApprove.Approved  = resp.data.Approved;
                             //if (document.getElementById('image') != null)
                             //    document.getElementById('image').innerHTML = "<img src='" + this.engReportApprove.Signature + "' style='width: 400px; height: 200px;'/>";
                         } else {
@@ -457,7 +476,7 @@ import { ref } from "vue";
                     });
             },
             //儲存
-            onSave(str, isSend) {
+            onSave(str, isSend = 0) {
                 let NAType = 0;
 
                 if (str == 'OriginAndScope') { NAType = 1; }
@@ -469,6 +488,7 @@ import { ref } from "vue";
                     // this.engReport.ProposalScopeLandReviewState = this.checkReviewStateD; 
                 }
                 if (str == 'RptYearRptName') { NAType = 5; }
+                if (str == 'RptYear') { NAType = 6; }
                 window.myAjax.post('/ERNeedAssessment/UpdateEngReportForNA', { m: this.engReport, naType: NAType })
                     .then(resp => {
                         if (resp.data.result == 0) {
@@ -483,6 +503,7 @@ import { ref } from "vue";
                             this.disabledC = 1;
                             this.disabledD = 1;
                             this.disabledF = 1;
+                            this.disabledG = 1;
                             //this.editSeq = -99;
                             this.getItem();
                             //if (uItem.Seq == -1) this.onNewRecord();
@@ -574,11 +595,15 @@ import { ref } from "vue";
             },
             //儲存送簽或簽核
             onSavaApproval() {
-                if (this.strEmpty(this.engReport.OriginAndScope) || this.strEmpty(this.engReport.RelatedReportResults)
+
+
+                if ( (
+                    this.strEmpty(this.engReport.OriginAndScope) || this.strEmpty(this.engReport.RelatedReportResults)
                     || this.strEmpty(this.engReport.FacilityManagement) || this.strEmpty(this.engReport.ProposalScopeLand)
                     || this.strEmpty(this.engReport.LocationMapFileName)
                     || this.strEmpty(this.engReport.AerialPhotographyFileName)
                     || this.strEmpty(this.engReport.ScenePhotoFileName)
+                    ) 
                     //|| this.strEmpty(this.engReport.BaseMapFileName)
                     //|| this.strEmpty(this.engReport.EngPlaneLayoutFileName)
                     //|| this.strEmpty(this.engReport.LongitudinalSectionFileName)
@@ -587,6 +612,15 @@ import { ref } from "vue";
                 {
                     alert('此頁有標注*的資料皆為必填!!');
                     return;
+                }
+                else if(
+                    (!this.engReport.RelatedReportResultsReviewTime  && this.engReport.RelatedReportResultsReviewState ) ||
+                    (!this.engReport.FacilityManagementReviewTime  && this.engReport.FacilityManagementReviewState) ||
+                    (!this.engReport.ProposalScopeLandReviewTime && this.engReport.ProposalScopeLandReviewState) 
+                )
+                {
+                    alert('需要先覆核');
+                    return ;
                 }
                 window.myAjax.post('/ERNeedAssessment/UpdateEngReportForNAApproval', { m: this.engReport, era: this.engReportApprove })
                     .then(resp => {
@@ -727,7 +761,7 @@ import { ref } from "vue";
             console.log('mounted() 需求評估-填報 ' + window.location.href);
             let urlParams = new URLSearchParams(window.location.search);
             if (!urlParams.has('id')) window.history.back();
-            this.isAdmin = localStorage.getItem('isAdmin') == 'True' ? true : false;
+            this.isAdmin = localStorage.getItem('isAdmin') == 'True'  ||  localStorage.getItem('isEQCAdmin') == 'True' ? true : false;
             this.targetId = parseInt(urlParams.get('id'), 10);
             // console.log(this.targetId);
             if (Number.isInteger(this.targetId)) {

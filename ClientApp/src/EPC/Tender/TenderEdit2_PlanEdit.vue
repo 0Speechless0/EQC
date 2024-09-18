@@ -371,7 +371,7 @@
                      </div>
                  </div>
                  <div class="row justify-content-center mt-5">
-                         <button v-on:click.stop="updateData()" role="button" class="btn btn-color11-4 btn-xs mx-1" >
+                         <button  role="button" v-on:click.stop="updateData()"  class="btn btn-color11-4 btn-xs mx-1" >
                              <i class="fas fa-save"> 儲存</i>
                          </button>
                  </div>
@@ -782,6 +782,23 @@
                     if (!confirm("決標日期已填寫, 但工程會標案編號 未設定")) return;
                 }*/
 
+                if(this.engMain.ExecType == 1)
+                {
+                    this.engMain.DesignManName = "";
+                    this.engMain.DesignUnitEmail = "";
+                    this.engMain.DesignUnitName = '';
+                    this.engMain.DesignUnitTaxId = '';
+                }
+                if(this.engMain.SupervisorExecType == 1)
+                {
+                    this.engMain.SupervisorContact = '';
+                    this.engMain.SupervisorDirector = '';
+                    this.engMain.SupervisorSelfPerson1 = '';
+                    this.engMain.SupervisorSelfPerson2 = '';
+                    this.engMain.SupervisorTaxid = '';
+                    this.engMain.SupervisorTechnician = '';
+                    this.engMain.SupervisorUnitName = '';
+                }   
                 window.myAjax.post('/TenderPlan/UpdateTenderPlan', { engMain: this.engMain })
                     .then(resp => {
                         this.saveFlag = false;

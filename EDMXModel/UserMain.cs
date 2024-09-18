@@ -22,6 +22,9 @@ namespace EQC.EDMXModel
             this.UserLoginRecord = new HashSet<UserLoginRecord>();
             this.SignatureFile = new HashSet<SignatureFile>();
             this.APIRecord = new HashSet<APIRecord>();
+            this.SuperviseEng = new HashSet<SuperviseEng>();
+            this.SystemProblem = new HashSet<SystemProblem>();
+            this.EngSupervisor = new HashSet<EngSupervisor>();
         }
     
         public int Seq { get; set; }
@@ -42,6 +45,7 @@ namespace EQC.EDMXModel
         public Nullable<int> ModifyUserSeq { get; set; }
         public Nullable<int> MobileType { get; set; }
         public string MobileModel { get; set; }
+        public Nullable<System.DateTime> LastLoginTime { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<UserUnitPosition> UserUnitPosition { get; set; }
@@ -53,5 +57,11 @@ namespace EQC.EDMXModel
         public virtual ICollection<SignatureFile> SignatureFile { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<APIRecord> APIRecord { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<SuperviseEng> SuperviseEng { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<SystemProblem> SystemProblem { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<EngSupervisor> EngSupervisor { get; set; }
     }
 }

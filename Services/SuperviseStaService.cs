@@ -11,20 +11,29 @@ namespace EQC.Services
     public class SuperviseStaService : BaseService
     {//督導統計
         //統計
-        public List<T> GetStaList<T>(int docNo, DateTime sDate, DateTime eDate)
+        public List<T> GetStaList<T>(List<string> docNo, DateTime sDate, DateTime eDate)
         {
+            string docNo1 = (docNo[0] == "1") ? "4%" : "5%";
+            string docNo2 = (docNo.Count > 1 && docNo[1] == "2") ? "5%" : "4%";
+            string sqlString1 = "d2.MissingNo LIKE @docNo1";
+            string sqlString2 = "b.MissingNo LIKE @docNo1";
+            if (docNo.Count > 1 && docNo[1] != "")
+            {
+                sqlString1 = "(d2.MissingNo like @docNo1 OR d2.MissingNo like @docNo2)";
+                sqlString2 = "(b.MissingNo like @docNo1 OR b.MissingNo like @docNo2)";
+            }
             string sql = @"
-                select top 50 z1.MissingNo, z1.Content, z1.MissingCnt, z.Total, cast(z1.MissingCnt*100/z.Total as decimal(18,2)) MissingRate
+                select z1.MissingNo, z1.Content, z1.MissingCnt, z.Total, cast(z1.MissingCnt*100/z.Total as decimal(18,2)) MissingRate
                 from (
-                    select cast(count(d1.Seq) as decimal(18,2)) Total from SuperviseEng d1
-                    inner join SuperviseFill d2 on(d2.SuperviseEngSeq=d1.Seq and d2.MissingNo like @docNo)
+                    select cast(count(DISTINCT d1.PrjXMLSeq) as decimal(18,2)) Total from SuperviseEng d1
+                    inner join SuperviseFill d2 on(d2.SuperviseEngSeq=d1.Seq and " + sqlString1 + @")
                     where d1.SuperviseDate >=@sDate
                     and d1.SuperviseDate <=@eDate
                 ) z
                 inner join (
                     select b.MissingNo, c.Content, cast(COUNT(b.MissingNo) as decimal(18,2)) MissingCnt
                     from SuperviseEng a
-                    inner join SuperviseFill b on(b.SuperviseEngSeq=a.Seq and b.MissingNo like @docNo)
+                    inner join SuperviseFill b on(b.SuperviseEngSeq=a.Seq and " + sqlString2 + @")
                     left outer join QualityDeductionPoints c ON(c.MissingNo=b.MissingNo)
                     where a.SuperviseDate >=@sDate
                     and a.SuperviseDate <=@eDate
@@ -34,11 +43,71 @@ namespace EQC.Services
 				";
 
             SqlCommand cmd = db.GetCommand(sql);
-            cmd.Parameters.AddWithValue("@docNo", (docNo==1) ? "4%" :"5%");
+            cmd.Parameters.AddWithValue("@docNo1", docNo1);
+            if (docNo.Count > 1)
+            {
+                cmd.Parameters.AddWithValue("@docNo2", docNo2);
+            }
             cmd.Parameters.AddWithValue("@sDate", sDate);
             cmd.Parameters.AddWithValue("@eDate", eDate);
 
             return db.GetDataTableWithClass<T>(cmd);
+        }
+
+        //缺失總數
+        public int GetStaNum(List<string> docNo, DateTime sDate, DateTime eDate)
+        {
+            string docNo1 = (docNo[0] == "1") ? "4%" : "5%";
+            string docNo2 = (docNo.Count > 1 && docNo[1] == "2") ? "5%" : "4%";
+            string sqlString1 = "d2.MissingNo LIKE @docNo1";
+            string sqlString2 = "b.MissingNo LIKE @docNo1";
+            if (docNo.Count > 1 && docNo[1] != "")
+            {
+                sqlString1 = "(d2.MissingNo like @docNo1 OR d2.MissingNo like @docNo2)";
+                sqlString2 = "(b.MissingNo like @docNo1 OR b.MissingNo like @docNo2)";
+            }
+
+            string sql = @"select COUNT(DISTINCT z1.PrjXMLSeq) as num
+                from (
+                    select cast(count(d1.Seq) as decimal(18,2)) Total from SuperviseEng d1
+                    inner join SuperviseFill d2 on(d2.SuperviseEngSeq=d1.Seq and " + sqlString1 + @")
+                    where d1.SuperviseDate >=@sDate
+                    and d1.SuperviseDate <=@eDate
+                ) z
+                inner join (
+                    select a.PrjXMLSeq
+                    from SuperviseEng a
+                    inner join SuperviseFill b on(b.SuperviseEngSeq=a.Seq and " + sqlString2 + @")
+                    left outer join QualityDeductionPoints c ON(c.MissingNo=b.MissingNo)
+                    where a.SuperviseDate >=@sDate
+                    and a.SuperviseDate <=@eDate
+                ) z1 ON(1=1)";
+
+            SqlCommand cmd = db.GetCommand(sql);
+            cmd.Parameters.AddWithValue("@docNo1", docNo1);
+            if (docNo.Count > 1)
+            {
+                cmd.Parameters.AddWithValue("@docNo2", docNo2);
+            }
+            cmd.Parameters.AddWithValue("@sDate", sDate);
+            cmd.Parameters.AddWithValue("@eDate", eDate);
+
+            DataTable dt = db.GetDataTable(cmd);
+            return Convert.ToInt32(dt.Rows[0]["num"].ToString());
+        }
+        //期間案件總數
+        public int GetStaTotal( DateTime sDate, DateTime eDate)
+        {
+            string sql = @"select COUNT(DISTINCT PrjXMLSeq) as total 
+                    from SuperviseEng
+                    where SuperviseDate >=@sDate
+                    and SuperviseDate <=@eDate";
+
+            SqlCommand cmd = db.GetCommand(sql);
+            cmd.Parameters.AddWithValue("@sDate", sDate);
+            cmd.Parameters.AddWithValue("@eDate", eDate);
+            DataTable dt = db.GetDataTable(cmd);
+            return Convert.ToInt32(dt.Rows[0]["total"].ToString());
         }
         //外聘委員 清單與查詢
         public List<T> GetOutCommitte<T>(int superviseEngSeq)
@@ -49,6 +118,7 @@ namespace EQC.Services
 	                b.ECName,
                     b.ECId,
                     b.ECAddr1,
+                    b.ECAddr2,
                     b.ECBankNo,
                     b.ECMemo
                 from OutCommittee a

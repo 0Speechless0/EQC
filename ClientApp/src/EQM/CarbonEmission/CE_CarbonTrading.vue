@@ -6,7 +6,7 @@
                     <button @click="defaultDesc" role="button" class="btn btn-color11-2 btn-xs mx-1">預設說明</button>
                 </h5>
                 <label class="my-2 mx-2"></label>
-                <textarea v-model.trim="ceTradeHeader.CarbonTradingDesc" :disabled="ceTradeHeader.State!=0" maxlength="500" class="form-control" style="min-width: 750px;min-height: 100px;"></textarea>
+                <textarea v-model.trim="ceTradeHeader.CarbonTradingDesc" :disabled="ceTradeHeader.State == 1" maxlength="500" class="form-control" style="min-width: 750px;min-height: 100px;"></textarea>
                 <!--
                 <textarea v-if="ceHeader.CarbonTradingNo != null" v-model="ceHeader.CarbonTradingDesc" disabled class="form-control" style="min-width: 750px;min-height: 100px;"></textarea>
                 -->
@@ -23,7 +23,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-if="ceTradeHeader.State == 0">
+                    <tr v-if="ceTradeHeader.State != 1">
                         <td style="text-align: center;"><input v-model="editDoc.CarbonTradingApprovedDate" type="date" name="bday"></td>
                         <td><input v-model="editDoc.CarbonTradingNo" maxlength="100" type="text" class="form-control"></td>
                         <td>
@@ -60,7 +60,7 @@
                             <th>執行單位</th>
                             <th>核定碳排量</th>
                             <th>設計碳排量</th>
-                            <th v-if="ceTradeHeader.State==0">可交易量</th>
+                            <th v-if="ceTradeHeader.State != 1">可交易量</th>
                             <th>交易碳排量</th>
                         </tr>
                     </thead>
@@ -71,11 +71,11 @@
                             <td>{{item.ExecUnitName}}</td>
                             <td>{{item.ApprovedCarbonQuantity}}</td>
                             <td>{{item.CarbonDesignQuantity}}</td>
-                            <template v-if="ceTradeHeader.State==0">
+                            <template v-if="ceTradeHeader.State != 1">
                                 <td>{{item.ApprovedCarbonQuantity-item.CarbonDesignQuantity-item.TradingTotalQuantity}}</td>
                                 <td><input v-show="item.Seq!=-2" v-model.trim="item.Quantity" type="text" @change="tradeChange=true" class="form-control"></td>
                             </template>
-                            <template v-if="ceTradeHeader.State!=0">
+                            <template v-if="ceTradeHeader.State == 1">
                                 <td>{{item.Quantity}}</td>
                             </template>
 
@@ -83,7 +83,7 @@
                     </tbody>
                 </table>
             </div>
-            <div v-if="ceTradeHeader.State == 0" class="row justify-content-center mt-5">
+            <div v-if="ceTradeHeader.State != 1" class="row justify-content-center mt-5">
                 <div v-if="requireDesc" class="d-flex">
                     <button @click="onUpdateTrade" role="button" class="btn btn-color11-2 btn-xs mx-1">
                         <i class="fas fa-save">&nbsp;儲存</i>

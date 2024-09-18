@@ -22,15 +22,15 @@ namespace EQC.Controllers
         }
 
         //工程清單
-        public JsonResult GetList(int year, int unit, int subUnit, int rptType, int pageRecordCount, int pageIndex)
+        public JsonResult GetList(int year, int unit, int subUnit, int rptType, int pageRecordCount, int pageIndex, string keyWord = null)
         {
             List<EngReportVModel> engList = new List<EngReportVModel>();
             List<EngReportEstimatedCostVModel> engEREC = new List<EngReportEstimatedCostVModel>();
 
-            int total = engReportService.GetEngListCount(year, unit, subUnit, rptType, 4);
+            int total = engReportService.GetEngListCount(year, unit, subUnit, rptType, 4, keyWord);
             if (total > 0)
             {
-                engList = engReportService.GetEngList<EngReportVModel>(year, unit, subUnit, rptType, pageRecordCount, pageIndex, 4);
+                engList = engReportService.GetEngList<EngReportVModel>(year, unit, subUnit, rptType, pageRecordCount, pageIndex, 4, keyWord);
 
                 int iCount = 0;
                 foreach (EngReportVModel item in engList) 
@@ -56,12 +56,12 @@ namespace EQC.Controllers
         public ActionResult UpdateEngReport(EngReportVModel m)
         {
             int state;
-            state = engReportService.UpdateEngReportForAF(m);
-            if (state == 0)
+            var item = engReportService.UpdateEngReportForAF(m);
+            if (item != null)
             {
                 return Json(new
                 {
-                    result = 0,
+                    result = item,
                     msg = "儲存成功"
                 });
             }

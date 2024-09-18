@@ -20,7 +20,7 @@ namespace EQC.Common
             string token = filterContext.HttpContext.Request.Headers["token"];
             string adminPassword = filterContext.HttpContext.Request.Headers["adminPassword"];
             string actionName =  filterContext.RouteData.Values["action"].ToString();
-            filterContext.ActionDescriptor.Record(new UserInfo() { Seq = -1 } );
+            //filterContext.ActionDescriptor.Record(new UserInfo() { Seq = -1 } );
             if (adminPassword == ConfigurationManager.AppSettings["APIUserControlPassword"].ToString() )
             {
                 base.OnActionExecuting(filterContext);

@@ -197,7 +197,7 @@ namespace EQC.Controllers
             }
         }
         //抽查記錄表單下載 s20230522
-        public ActionResult SIRDnDoc(int mode, int seq, int eId, int docType, int filetype)
+        public ActionResult SIRDnDoc(int mode, int seq, int eId, int docType, int filetype, DownloadArgExtension downloadArg = null)
         {
             try
             {
@@ -216,7 +216,9 @@ namespace EQC.Controllers
                         List<NgReportModel> items = constCheckRecImproveService.GetNgReoprtList<NgReportModel>(engItem.subEngNameSeq, seq);
                         foreach (NgReportModel item in items)
                         {
-                            NgReport(engItem, item, folder, filetype);
+                            var tarfile = NgReport(engItem, item, folder, filetype);
+                            downloadArg?.targetPathSetting(tarfile, $"{item.Seq}-{engItem.subEngName}-{item.CCRPosDesc}-{item.CCRCheckDate?.ToString("yyyyMMdd")}-不符合事項報告");
+
                         }
                     }
                     else if (docType == 45)
@@ -225,7 +227,8 @@ namespace EQC.Controllers
                         List<NcrModel> items = constCheckRecImproveService.GetNCRList<NcrModel>(engItem.subEngNameSeq, seq);
                         foreach (NcrModel item in items)
                         {
-                            NCRReport(engItem, item, folder, filetype);
+                            var tarfile = NCRReport(engItem, item, folder, filetype);
+                            downloadArg?.targetPathSetting(tarfile, $"{item.Seq}-{engItem.subEngName}-{item.CCRPosDesc}-{item.CCRCheckDate?.ToString("yyyyMMdd")}-NCR程序追蹤改善表");
                         }
                     }
                     else if (docType == 46)
@@ -235,7 +238,8 @@ namespace EQC.Controllers
                         foreach (NgReportModel item in items)
                         {
                             item.GetImgGroupOption(constCheckRecImproveService);
-                            PhotoReport(engItem, item, folder, filetype);
+                            PhotoReport(engItem, item, folder, filetype, downloadArg);
+
                         }
                     }
                     else
@@ -247,31 +251,38 @@ namespace EQC.Controllers
                         }, JsonRequestBehavior.AllowGet);
                     }
                 }
-                if (filetype == 2)
+                if(downloadArg?.DistFilePath == null)
                 {
-                    string path = Path.Combine(Path.GetTempPath(), uuid) + "pdf";
-                    string zipFile = Path.Combine(Path.GetTempPath(), uuid + "pdf.zip");
-                    ZipFile.CreateFromDirectory(path, zipFile);// AddFiles(files, "ProjectX");
-                    Stream iStream = new FileStream(zipFile, FileMode.Open, FileAccess.Read, FileShare.Read);
-                    return File(iStream, "application/blob", dName);
+                    if (filetype == 2)
+                    {
+                        string path = Path.Combine(Path.GetTempPath(), uuid) + "pdf";
+                        string zipFile = Path.Combine(Path.GetTempPath(), uuid + "pdf.zip");
+                        ZipFile.CreateFromDirectory(path, zipFile);// AddFiles(files, "ProjectX");
+                        Stream iStream = new FileStream(zipFile, FileMode.Open, FileAccess.Read, FileShare.Read);
+                        downloadArg?.targetPathSetting(zipFile);
+                        return File(iStream, "application/blob", dName);
 
+                    }
+                    else if (filetype == 3)
+                    {
+                        string path = Path.Combine(Path.GetTempPath(), uuid) + "odt";
+                        string zipFile = Path.Combine(Path.GetTempPath(), uuid + "odt.zip");
+                        ZipFile.CreateFromDirectory(path, zipFile);// AddFiles(files, "ProjectX");
+                        Stream iStream = new FileStream(zipFile, FileMode.Open, FileAccess.Read, FileShare.Read);
+                        downloadArg?.targetPathSetting(zipFile);
+                        return File(iStream, "application/blob", dName);
+                    }
+                    else
+                    {
+                        string path = Path.Combine(Path.GetTempPath(), uuid);
+                        string zipFile = Path.Combine(Path.GetTempPath(), uuid + ".zip");
+                        ZipFile.CreateFromDirectory(path, zipFile);// AddFiles(files, "ProjectX");
+                        Stream iStream = new FileStream(zipFile, FileMode.Open, FileAccess.Read, FileShare.Read);
+                        downloadArg?.targetPathSetting(zipFile);
+                        return File(iStream, "application/blob", dName);
+                    }
                 }
-                else if (filetype == 3)
-                {
-                    string path = Path.Combine(Path.GetTempPath(), uuid) + "odt";
-                    string zipFile = Path.Combine(Path.GetTempPath(), uuid + "odt.zip");
-                    ZipFile.CreateFromDirectory(path, zipFile);// AddFiles(files, "ProjectX");
-                    Stream iStream = new FileStream(zipFile, FileMode.Open, FileAccess.Read, FileShare.Read);
-                    return File(iStream, "application/blob", dName);
-                }
-                else
-                {
-                    string path = Path.Combine(Path.GetTempPath(), uuid);
-                    string zipFile = Path.Combine(Path.GetTempPath(), uuid + ".zip");
-                    ZipFile.CreateFromDirectory(path, zipFile);// AddFiles(files, "ProjectX");
-                    Stream iStream = new FileStream(zipFile, FileMode.Open, FileAccess.Read, FileShare.Read);
-                    return File(iStream, "application/blob", dName);
-                }
+
             }
             catch
             {
@@ -281,6 +292,7 @@ namespace EQC.Controllers
                     message = "產製錯誤"
                 }, JsonRequestBehavior.AllowGet);
             }
+            return null;
         }
         //抽查記錄表單下載
         public ActionResult SIRDownload(int seq, int mode ,int filetype)
@@ -533,7 +545,7 @@ namespace EQC.Controllers
 
 
         //表7-44　不符合事項報告
-        public void NgReport(EngConstructionEngInfoVModel engItem, NgReportModel item, string folder,int filetype)
+        public string NgReport(EngConstructionEngInfoVModel engItem, NgReportModel item, string folder,int filetype)
         {
             SignatureFileService signatureFileService = new SignatureFileService();
             string tempFile = CopyTemplateFile("表7-44-不符合事項報告.docx");
@@ -670,6 +682,7 @@ namespace EQC.Controllers
                 wordDocument.Close();
                 //結束 word
                 appWord.Quit();
+                return filePatdownloadhName;
             }
             else if (filetype == 3)
             {
@@ -688,7 +701,10 @@ namespace EQC.Controllers
                 wordDocument.Close();
                 //結束 word
                 appWord.Quit();
+                return filePatdownloadhName;
             }
+
+            return outFile;
         }
         //
         public Stream NgReportdownload(EngConstructionEngInfoVModel engItem, NgReportModel item, string folder, int filetype)
@@ -883,7 +899,7 @@ namespace EQC.Controllers
             }
         }
         //表7-45-NCR程序追蹤改善表
-        public void NCRReport(EngConstructionEngInfoVModel engItem, NcrModel item, string folder,int filetype)
+        public string NCRReport(EngConstructionEngInfoVModel engItem, NcrModel item, string folder,int filetype)
         {
             SignatureFileService signatureFileService = new SignatureFileService();
             string tempFile = CopyTemplateFile("表7-45-NCR程序追蹤改善表.docx");
@@ -1002,6 +1018,7 @@ namespace EQC.Controllers
                 wordDocument.Close();
                 //結束 word
                 appWord.Quit();
+                return filePatdownloadhName;
             }
             else if (filetype == 3)
             {
@@ -1020,7 +1037,9 @@ namespace EQC.Controllers
                 wordDocument.Close();
                 //結束 word
                 appWord.Quit();
+                return filePatdownloadhName;
             }
+            return outFile;
 
         }
 
@@ -1178,13 +1197,13 @@ namespace EQC.Controllers
 
 
         //表7-46-改善照片
-        public void PhotoReport(EngConstructionEngInfoVModel engItem, NgReportModel item, string folder,int filetype)
+        public void PhotoReport(EngConstructionEngInfoVModel engItem, NgReportModel item, string folder,int filetype, DownloadArgExtension downloadArg = null)
         {
             string tempFile = CopyTemplateFile("表7-46-改善照片.docx");
             string filePath = Utils.GetEngMainFolder(engItem.Seq);
             var widthPic = (int)((double)6000 / 587 * 38.4 * 9525);
             var heightPic = (int)((double)3600 / 587 * 38.4 * 9525);
-
+            string filePatdownloadhName ="";
             foreach (NgReportPhotoGroupModel group in item.photoGroups)
             {
                 DateTime dt = item.CreateTime.Value;
@@ -1204,6 +1223,7 @@ namespace EQC.Controllers
                     XWPFTableCell cell;
                     foreach (UploadFileModel m in group.photos)
                     {
+                        if (!System.IO.File.Exists(Path.Combine(filePath, m.UniqueFileName))) continue;
                         FileStream img = new FileStream(Path.Combine(filePath, m.UniqueFileName), FileMode.Open, FileAccess.Read);
                         if (m.ItemGroup == 0)
                         {
@@ -1224,13 +1244,15 @@ namespace EQC.Controllers
                         cell.AddParagraph().CreateRun().SetText(m.Memo);
                         img.Close();
                     }
-                } catch (Exception) { }
+                } catch (Exception e) { 
                 
+                }
+
                 doc.Write(fsOut);
                 fsOut.Close();
                 doc.Close();
                 fs.Close();
-
+                filePatdownloadhName = outFile;
                 //轉檔
                 if (filetype == 2)
                 {
@@ -1241,7 +1263,7 @@ namespace EQC.Controllers
                     //pdf檔路徑
                     string pdfFile = String.Format("{0}-{1}{2:00}{3:00}-{4}-{5}.pdf", "改善照片", dt.Year - 1911, dt.Month, dt.Day, group.Value, item.Seq);
                     if (!Directory.Exists(folder + "pdf")) Directory.CreateDirectory(folder + "pdf");
-                    string filePatdownloadhName = Path.Combine(folder + "pdf", pdfFile);
+                    filePatdownloadhName = Path.Combine(folder + "pdf", pdfFile);
 
                     //匯出為 pdf
                     wordDocument.ExportAsFixedFormat(filePatdownloadhName, WdExportFormat.wdExportFormatPDF);
@@ -1260,7 +1282,7 @@ namespace EQC.Controllers
                     //odt檔路徑
                     string pdfFile = String.Format("{0}-{1}{2:00}{3:00}-{4}-{5}.odt", "改善照片", dt.Year - 1911, dt.Month, dt.Day, group.Value, item.Seq);
                     if (!Directory.Exists(folder + "odt")) Directory.CreateDirectory(folder + "odt");
-                    string filePatdownloadhName = Path.Combine(folder + "odt", pdfFile);
+                    filePatdownloadhName = Path.Combine(folder + "odt", pdfFile);
                     //匯出為 pdf
                     wordDocument.SaveAs2(filePatdownloadhName, Microsoft.Office.Interop.Word.WdSaveFormat.wdFormatOpenDocumentText);
 
@@ -1270,7 +1292,9 @@ namespace EQC.Controllers
                     appWord.Quit();
                 }
 
+                downloadArg?.targetPathSetting(filePatdownloadhName, $"{item.Seq}-{engItem.subEngName}-{item.CCRPosDesc}-{group.Text}-{item.CCRCheckDate?.ToString("yyyyMMdd")}");
             }
+
         }
 
         public Stream PhotoReportdownload(EngConstructionEngInfoVModel engItem, NgReportModel item, string folder, int filetype,int num)

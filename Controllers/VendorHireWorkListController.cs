@@ -106,5 +106,11 @@ namespace EQC.Controllers
             VendorHireWorkListService.delete((context) => context.VendorHireWorkList.Find(id));
             return Json(true);
         }
+
+        public JsonResult ImportFromPrj(int? year)
+        {
+            VendorHireWorkListService.ImportFromPrj(year);
+            return Json(true);
+        }
     }
 }

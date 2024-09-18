@@ -5,6 +5,7 @@ using EQC.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Web.Mvc;
 
 namespace EQC.Controllers
@@ -145,13 +146,16 @@ namespace EQC.Controllers
         //期別查詢
         public JsonResult SearchPhase(string keyWord)
         {
-            List<SupervisePhaseModel> list = iService.GetPhaseCode(keyWord);
-            if (list.Count == 1)
+            var service = new SupervisePhaseService();
+            List<SupervisePhaseModel> list = service.GetPhaseCode(keyWord);
+            var phaseOption = service.GetPhaseOptions(keyWord.Substring(0, 3));
+            if (list.Count > 0)
             {
                 return Json(new
                 {
                     result = 0,
-                    item = list[0]
+                    item = list[0],
+                    phaseOption =phaseOption
                 });
             }
             return Json(new
@@ -300,6 +304,7 @@ namespace EQC.Controllers
                 }
                 Microsoft.Office.Interop.Excel.Worksheet sheet = dict["督導紀錄"];
                 List<ESSuperviseRecordSheetVModel> items = iService.GetSuperviseRecordSheet<ESSuperviseRecordSheetVModel>(id);
+                iService.SetSuperviseRecordSheetWithSupervisionDirectorSelf(items);
                 List<SuperviseFillVModel> fills = iService.GetRecords<SuperviseFillVModel>(id);
                 if (items.Count == 0)
                 {
@@ -352,14 +357,7 @@ namespace EQC.Controllers
                 sheet.Cells[6, 2] = sd;
                 sheet.Cells[6, 5] = item.Location;
                 sheet.Cells[6, 7] = item.SupervisionUnitName;
-                if (!String.IsNullOrEmpty(item.SupervisorSelfPerson1) && !String.IsNullOrEmpty(item.SupervisorCommPerson1))
-                {
-                    str = item.SupervisorSelfPerson1 + "、" + item.SupervisorCommPerson1;
-                } else
-                {
-                    str = item.SupervisorSelfPerson1 + item.SupervisorCommPerson1;
-                }
-                sheet.Cells[7, 7] = str;
+                sheet.Cells[7, 7] = item.SupervisorExecType == 1 ? item.SupervisorDirectorSelf : item.SupervisorExecType == 2 ? item.SupervisorDirectorOutSide : "" ;
                 sheet.Cells[8, 2] = Utils.ChsDateFormat(item.ActualStartDate);
                 sheet.Cells[8, 5] = Utils.ChsDateFormat(item.ScheCompletionDate);
                 sheet.Cells[8, 7] = item.ContractorName1;
@@ -372,9 +370,9 @@ namespace EQC.Controllers
                 sheet.Cells[11, 2] = item.CommitteeList;
                 sheet.Cells[11, 7] = item.CommitteeAverageScore.HasValue ? item.CommitteeAverageScore.Value.ToString() : "";
                 sheet.Cells[30, 2] = item.Inspect;
-                if (item.DeductPoints.HasValue) sheet.Cells[31, 2] = item.DeductPoints.Value;
+                string DedcutCategory = "";
 
-                if(fills.Count >0)
+                if (fills.Count >0)
                 {
                     Microsoft.Office.Interop.Excel.Range excelRange;
                     int mergeStart = 0, mergeEnd = 0;
@@ -385,43 +383,47 @@ namespace EQC.Controllers
                     GetMissingNo("0.03", fills, ref missingNo);
                     GetMissingNo("0.04", fills, ref missingNo);
                     GetMissingNo("0.05", fills, ref missingNo);
-                    inx = WriteRow(sheet, inx, row, missingNo, -1);
+                    inx = WriteRow(sheet, inx, row, missingNo, -1, false);
                     //主辦機關：
+                    
                     inx = 1;
                     tarRow += (missingNo.Count < 3 ? 5 : (missingNo.Count < 2 ? missingNo.Count+4 : missingNo.Count + 3));//s20230320
                     mergeStart = tarRow - 3;
                     row = tarRow;
                     missingNo = new List<SuperviseFillVModel>();
                     GetMissingNo("4.01", fills, ref missingNo);
-                    inx = WriteRow(sheet, inx, row, missingNo);
-
+                    inx = WriteRow(sheet, inx, row, missingNo, true, true);
+                    decimal sumPoint = missingNo.Sum(r => r.DeductPoint) ;
+                    DedcutCategory += sumPoint > 0 ? $"(主辦機關)扣{sumPoint}點," : ""; 
                     //監造單位：
                     tarRow += (missingNo.Count == 0 ? 2 : missingNo.Count + 1);
                     row = tarRow;
                     missingNo = new List<SuperviseFillVModel>();
                     GetMissingNo("4.02", fills, ref missingNo);
-                    inx = WriteRow(sheet, inx, row, missingNo);
- 
+                    inx = WriteRow(sheet, inx, row, missingNo, true, true);
+                    sumPoint = missingNo.Sum(r => r.DeductPoint);
+                    DedcutCategory += sumPoint > 0 ? $"(監造單位)扣{sumPoint}點," : "";
                     //B、承攬廠商：
                     tarRow += (missingNo.Count == 0 ? 2 : missingNo.Count + 1);
                     row = tarRow;
                     missingNo = new List<SuperviseFillVModel>();
                     GetMissingNo("4.03", fills, ref missingNo);
-                    inx = WriteRow(sheet, inx, row, missingNo);
-
+                    inx = WriteRow(sheet, inx, row, missingNo, true, true);
+                    sumPoint = missingNo.Sum(r => r.DeductPoint);
+                    DedcutCategory += sumPoint > 0 ? $"(承攬廠商)扣{sumPoint}點," : "";
                     //二、施工品質：
                     tarRow += (missingNo.Count == 0 ? 2 : missingNo.Count + 1);
                     row = tarRow;
                     missingNo = new List<SuperviseFillVModel>();
                     GetMissingNo("5.", fills, ref missingNo);
-                    inx = WriteRow(sheet, inx, row, missingNo);
+                    inx = WriteRow(sheet, inx, row, missingNo, true, true);
 
                     //三、施工進度：
                     tarRow += (missingNo.Count == 0 ? 2 : missingNo.Count + 1);
                     row = tarRow;
                     missingNo = new List<SuperviseFillVModel>();
                     GetMissingNo("6.01", fills, ref missingNo);
-                    inx = WriteRow(sheet, inx, row, missingNo);
+                    inx = WriteRow(sheet, inx, row, missingNo, true, true);
 
                     //四、規劃設計建議：
                     tarRow += (missingNo.Count == 0 ? 2 : missingNo.Count + 1);
@@ -450,12 +452,13 @@ namespace EQC.Controllers
                     row = tarRow;
                     missingNo = new List<SuperviseFillVModel>();
                     GetMissingNo("8.01", fills, ref missingNo);
-                    inx = WriteRow(sheet, inx, row, missingNo);
+                    inx = WriteRow(sheet, inx, row, missingNo, false);
                     tarRow += (missingNo.Count == 0 ? 2 : missingNo.Count + 1);
                     //其他建議 合併
                     mergeEnd = tarRow - 2;
                     excelRange = sheet.Range[sheet.Cells[mergeStart, 1], sheet.Cells[mergeEnd, 1]];
                     excelRange.Merge(0);
+                    if (item.DeductPoints.HasValue && item.DeductPoints > 0) sheet.Cells[tarRow, 2] = $"{DedcutCategory} 總: 扣{item.DeductPoints}點";
                 }
 
                 /*
@@ -484,11 +487,11 @@ namespace EQC.Controllers
                 }, JsonRequestBehavior.AllowGet);
             }
         }
-        private int WriteRow(Microsoft.Office.Interop.Excel.Worksheet sheet, int inx, int row, List<SuperviseFillVModel> missingNo)
+        private int WriteRow(Microsoft.Office.Interop.Excel.Worksheet sheet, int inx, int row, List<SuperviseFillVModel> missingNo, bool hasNo = true, bool hasPoint = false)
         {
-            return WriteRow(sheet, inx, row, missingNo, 0);
+            return WriteRow(sheet, inx, row, missingNo, 0, hasNo, hasPoint);
         }
-        private int WriteRow(Microsoft.Office.Interop.Excel.Worksheet sheet, int inx, int row, List<SuperviseFillVModel> missingNo, int rowAadj)
+        private int WriteRow(Microsoft.Office.Interop.Excel.Worksheet sheet, int inx, int row, List<SuperviseFillVModel> missingNo, int rowAadj, bool hasNo = true, bool hasPoint = false)
         {
             Microsoft.Office.Interop.Excel.Range excelRange;
             for (int i = 1; i < (missingNo.Count+ rowAadj); i++)
@@ -500,7 +503,7 @@ namespace EQC.Controllers
                 excelRange = sheet.Range[sheet.Cells[row, 3], sheet.Cells[row, 9]];
                 excelRange.Merge(0);
                 sheet.Cells[row, 2] = String.Format("{0}、", inx);
-                sheet.Cells[row, 3] = String.Format("{0}({1})", m.SuperviseMemo, m.MissingNo);
+                sheet.Cells[row, 3] = String.Format("{0}" + (hasNo ? "({1})" :"") + (hasPoint && m.DeductPoint > 0 ? "(扣點:{2})": "" ), m.SuperviseMemo, m.MissingNo, m.DeductPoint);
                 
                 row++;
                 inx++;

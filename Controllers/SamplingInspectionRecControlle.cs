@@ -1,4 +1,6 @@
 ﻿using EQC.Common;
+using EQC.EDMXModel;
+using EQC.EDMXModel.InterFace;
 using EQC.Models;
 using EQC.Services;
 using EQC.ViewModel;
@@ -6,6 +8,7 @@ using Microsoft.Office.Interop.Word;
 using NPOI.XWPF.UserModel;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -57,6 +60,20 @@ namespace EQC.Controllers
             ViewBag.breadcrumb = menu;
 
             return View();
+        }
+
+
+        //刪除抽查
+        public JsonResult removeRec(int id)
+        {
+            using(var context = new EQC_NEW_Entities() )
+            {
+                context.ConstCheckRec.Remove(
+                    context.ConstCheckRec.Find(id)
+                );
+                context.SaveChanges();
+            }
+            return Json(true);
         }
 
         //標案年分
@@ -198,11 +215,12 @@ namespace EQC.Controllers
             }
         }
         //抽查記錄表單下載 s20230520
-        public virtual ActionResult SIRDnDoc(int mode, int seq, int filetype, int eId)
+        public virtual ActionResult SIRDnDoc(int mode, int seq, int filetype, int eId, DownloadArgExtension downloadArg = null)
         {
             try
             {
                 string engNo = "";
+                //var a = Utils.getUserSeq();
                 SignatureFileService signatureFileService = new SignatureFileService();
                 string uuid = Guid.NewGuid().ToString("B").ToUpper();
 
@@ -221,41 +239,55 @@ namespace EQC.Controllers
 
                     foreach (ConstCheckRecSheetModel item in recItems)
                     {
+                        string outputFilePath = null;
                         if (item.CCRCheckType1 == 1)
-                            CheckSheet1(engItem, item, uuid, signatureFileService, filetype);
+                            outputFilePath = CheckSheet1(engItem, item, uuid, signatureFileService, filetype);
                         else if (item.CCRCheckType1 == 2)
-                            CheckSheet2(engItem, item, uuid, signatureFileService, filetype);
+                            outputFilePath = CheckSheet2(engItem, item, uuid, signatureFileService, filetype);
                         else if (item.CCRCheckType1 == 3)
-                            CheckSheet3(engItem, item, uuid, signatureFileService, filetype);
+                            outputFilePath = CheckSheet3(engItem, item, uuid, signatureFileService, filetype);
                         else if (item.CCRCheckType1 == 4)
-                            CheckSheet4(engItem, item, uuid, signatureFileService, filetype);
+                            outputFilePath = CheckSheet4(engItem, item, uuid, signatureFileService, filetype);
+
+                        downloadArg?.targetPathSetting(outputFilePath);
                     }
-                }
-                if (filetype == 2)
-                {
-                    string path = Path.Combine(Path.GetTempPath(), uuid) + "pdf";
-                    string zipFile = Path.Combine(Path.GetTempPath(), uuid + "pdf.zip");
-                    ZipFile.CreateFromDirectory(path, zipFile);// AddFiles(files, "ProjectX");
-                    Stream iStream = new FileStream(zipFile, FileMode.Open, FileAccess.Read, FileShare.Read);
-                    return File(iStream, "application/blob", engNo + "-抽查紀錄表.zip");
+
 
                 }
-                else if (filetype == 3)
+                if(downloadArg?.DistFilePath == null)
                 {
-                    string path = Path.Combine(Path.GetTempPath(), uuid) + "odt";
-                    string zipFile = Path.Combine(Path.GetTempPath(), uuid + "odt.zip");
-                    ZipFile.CreateFromDirectory(path, zipFile);// AddFiles(files, "ProjectX");
-                    Stream iStream = new FileStream(zipFile, FileMode.Open, FileAccess.Read, FileShare.Read);
-                    return File(iStream, "application/blob", engNo + "-抽查紀錄表.zip");
+                    if (filetype == 2)
+                    {
+                        string path = Path.Combine(Path.GetTempPath(), uuid) + "pdf";
+                        string zipFile = Path.Combine(Path.GetTempPath(), uuid + "pdf.zip");
+                        ZipFile.CreateFromDirectory(path, zipFile);// AddFiles(files, "ProjectX");
+                        Stream iStream = new FileStream(zipFile, FileMode.Open, FileAccess.Read, FileShare.Read);
+
+                        return File(iStream, "application/blob", engNo + "-抽查紀錄表.zip");
+
+                    }
+                    else if (filetype == 3)
+                    {
+                        string path = Path.Combine(Path.GetTempPath(), uuid) + "odt";
+                        string zipFile = Path.Combine(Path.GetTempPath(), uuid + "odt.zip");
+                        ZipFile.CreateFromDirectory(path, zipFile);// AddFiles(files, "ProjectX");
+                        Stream iStream = new FileStream(zipFile, FileMode.Open, FileAccess.Read, FileShare.Read);
+                        return File(iStream, "application/blob", engNo + "-抽查紀錄表.zip");
+                    }
+                    else
+                    {
+                        string path = Path.Combine(Path.GetTempPath(), uuid);
+                        string zipFile = Path.Combine(Path.GetTempPath(), uuid + ".zip");
+                        ZipFile.CreateFromDirectory(path, zipFile);// AddFiles(files, "ProjectX");
+                        Stream iStream = new FileStream(zipFile, FileMode.Open, FileAccess.Read, FileShare.Read);
+                        return File(iStream, "application/blob", engNo + "-抽查紀錄表.zip");
+                    }
                 }
                 else
                 {
-                    string path = Path.Combine(Path.GetTempPath(), uuid);
-                    string zipFile = Path.Combine(Path.GetTempPath(), uuid + ".zip");
-                    ZipFile.CreateFromDirectory(path, zipFile);// AddFiles(files, "ProjectX");
-                    Stream iStream = new FileStream(zipFile, FileMode.Open, FileAccess.Read, FileShare.Read);
-                    return File(iStream, "application/blob", engNo + "-抽查紀錄表.zip");
+                    return null;
                 }
+
             }
             catch (Exception e)
             {
@@ -415,7 +447,7 @@ namespace EQC.Controllers
 
 
         //1-施工抽查-抽查紀錄表
-        public void CheckSheet1(EngConstructionEngInfoVModel engItem, ConstCheckRecSheetModel recItem, string uuid, SignatureFileService service,int filetype)
+        public string CheckSheet1(EngConstructionEngInfoVModel engItem, ConstCheckRecSheetModel recItem, string uuid, SignatureFileService service,int filetype)
         {
             string tempFile = CopyTemplateFile("1-施工抽查-抽查紀錄表.docx");
             string outFile = recItem.GetFilename(uuid);
@@ -455,58 +487,62 @@ namespace EQC.Controllers
                 Utils.insertRow(table, 8, 9);
             }
             int rowInx = 0;
-            foreach (ControlStVModel m in items)
+            using(var context = new EQC_NEW_Entities())
             {
-                if (rowInx == 0)
-                {//流程
-                    Utils.rowMergeStart(table.GetRow(8 + rowInx).GetCell(0));
-                    t = "";
-                    if (recItem.CCRCheckFlow == 1)
-                        t = "施工前";
-                    else if (recItem.CCRCheckFlow == 2)
-                        t = "施工中";
-                    else if (recItem.CCRCheckFlow == 3)
-                        t = "施工後";
-                    table.GetRow(8 + rowInx).GetCell(0).SetText(t);
-                }
-                else
-                    Utils.rowMergeContinue(table.GetRow(8 + rowInx).GetCell(0));
-
-                //管理項目
-                if (m.rowSpan > 0)
+                foreach (ControlStVModel m in items)
                 {
-                    if (m.rowSpan > 1)
-                    {
-                        Utils.rowMergeStart(table.GetRow(8 + rowInx).GetCell(1), "2");
-                        Utils.rowMergeStart(table.GetRow(8 + rowInx).GetCell(3));
-                        Utils.rowMergeStart(table.GetRow(8 + rowInx).GetCell(4));
+                    if (rowInx == 0)
+                    {//流程
+                        Utils.rowMergeStart(table.GetRow(8 + rowInx).GetCell(0));
+                        t = "";
+                        if (recItem.CCRCheckFlow == 1)
+                            t = "施工前";
+                        else if (recItem.CCRCheckFlow == 2)
+                            t = "施工中";
+                        else if (recItem.CCRCheckFlow == 3)
+                            t = "施工後";
+                        table.GetRow(8 + rowInx).GetCell(0).SetText(t);
                     }
-                    table.GetRow(8 + rowInx).GetCell(1).SetText(m.CheckItem1);// + m.CheckItem2);
-                    table.GetRow(8 + rowInx).GetCell(3).SetParagraph(Utils.setCellTextLeft(doc, table));
-                    table.GetRow(8 + rowInx).GetCell(3).SetText(m.CCRRealCheckCond);
-                    table.GetRow(8 + rowInx).GetCell(4).SetText(GetCheckCaption(m.CCRCheckResult));
-                }
-                else
-                {
-                    Utils.rowMergeContinue(table.GetRow(8 + rowInx).GetCell(1), "2");
-                    Utils.rowMergeContinue(table.GetRow(8 + rowInx).GetCell(3));
-                    Utils.rowMergeContinue(table.GetRow(8 + rowInx).GetCell(4));
-                }
+                    else
+                        Utils.rowMergeContinue(table.GetRow(8 + rowInx).GetCell(0));
 
-                //檢驗項目
-                if (m.rowSpanStd1 > 0)
-                {
-                    Utils.rowMergeStart(table.GetRow(8 + rowInx).GetCell(2));
-                    table.GetRow(8 + rowInx).GetCell(2).SetText(m.Stand1);
-                }
-                else
-                {
-                    Utils.rowMergeContinue(table.GetRow(8 + rowInx).GetCell(2));
-                }
+                    //管理項目
+                    if (m.rowSpan > 0)
+                    {
+                        if (m.rowSpan > 1)
+                        {
+                            Utils.rowMergeStart(table.GetRow(8 + rowInx).GetCell(1), "2");
+                            Utils.rowMergeStart(table.GetRow(8 + rowInx).GetCell(3));
+                            Utils.rowMergeStart(table.GetRow(8 + rowInx).GetCell(4));
+                        }
+                        table.GetRow(8 + rowInx).GetCell(1).SetText(m.CheckItem1);// + m.CheckItem2);
+                        table.GetRow(8 + rowInx).GetCell(3).SetParagraph(Utils.setCellTextLeft(doc, table));
+                        table.GetRow(8 + rowInx).GetCell(3).SetText(m.CCRRealCheckCond);
+                        table.GetRow(8 + rowInx).GetCell(4).SetText(GetCheckCaption(m.CCRCheckResult));
+                    }
+                    else
+                    {
+                        Utils.rowMergeContinue(table.GetRow(8 + rowInx).GetCell(1), "2");
+                        Utils.rowMergeContinue(table.GetRow(8 + rowInx).GetCell(3));
+                        Utils.rowMergeContinue(table.GetRow(8 + rowInx).GetCell(4));
+                    }
+                    
+                    //檢驗項目
+                    if (m.rowSpanStd1 > 0)
+                    {
+                        Utils.rowMergeStart(table.GetRow(8 + rowInx).GetCell(2));
+                        table.GetRow(8 + rowInx).GetCell(2).SetText(m.Stand1.Contains("_") ? m.StandardFilled(context) : m.Stand1 );
+                    }
+                    else
+                    {
+                        Utils.rowMergeContinue(table.GetRow(8 + rowInx).GetCell(2));
+                    }
 
-                rowInx++;
+                    rowInx++;
+                }
             }
-            service.RenderConstCheckDoc(doc, recItem, addSignatureFile);
+
+            service.RenderConstCheckDoc(doc, recItem, addSignatureFile, addSignatureFileAlter);
             //addSignatureFile(doc.Tables[1].GetRow(0).GetCell(1), recItem.SupervisorUserSeq, service);
             //addSignatureFile(doc.Tables[1].GetRow(0).GetCell(3), recItem.SupervisorDirectorSeq, service);
             //
@@ -557,6 +593,7 @@ namespace EQC.Controllers
                 wordDocument.Close();
                 //結束 word
                 appWord.Quit();
+                return filePatdownloadhName;
             }
             else if (filetype == 3)
             {
@@ -577,7 +614,9 @@ namespace EQC.Controllers
                 wordDocument.Close();
                 //結束 word
                 appWord.Quit();
+                return filePatdownloadhName;
             }
+            return outFile;
         }
         //1-施工抽查-抽查紀錄表下載
         public Stream CheckSheet1download(EngConstructionEngInfoVModel engItem, ConstCheckRecSheetModel recItem, string uuid, SignatureFileService service,int filetype)
@@ -620,60 +659,64 @@ namespace EQC.Controllers
                 Utils.insertRow(table, 8, 9);
             }
             int rowInx = 0;
-            foreach (ControlStVModel m in items)
+            using(var context = new EQC_NEW_Entities())
             {
-                if (rowInx == 0)
-                {//流程
-                    Utils.rowMergeStart(table.GetRow(8 + rowInx).GetCell(0));
-                    t = "";
-                    if (recItem.CCRCheckFlow == 1)
-                        t = "施工前";
-                    else if (recItem.CCRCheckFlow == 2)
-                        t = "施工中";
-                    else if (recItem.CCRCheckFlow == 3)
-                        t = "施工後";
-                    table.GetRow(8 + rowInx).GetCell(0).SetText(t);
-                }
-                else
-                    Utils.rowMergeContinue(table.GetRow(8 + rowInx).GetCell(0));
-
-                //管理項目
-                if (m.rowSpan > 0)
+                foreach (ControlStVModel m in items)
                 {
-                    if (m.rowSpan > 1)
-                    {
-                        Utils.rowMergeStart(table.GetRow(8 + rowInx).GetCell(1), "2");
-                        Utils.rowMergeStart(table.GetRow(8 + rowInx).GetCell(3));
-                        Utils.rowMergeStart(table.GetRow(8 + rowInx).GetCell(4));
+                    if (rowInx == 0)
+                    {//流程
+                        Utils.rowMergeStart(table.GetRow(8 + rowInx).GetCell(0));
+                        t = "";
+                        if (recItem.CCRCheckFlow == 1)
+                            t = "施工前";
+                        else if (recItem.CCRCheckFlow == 2)
+                            t = "施工中";
+                        else if (recItem.CCRCheckFlow == 3)
+                            t = "施工後";
+                        table.GetRow(8 + rowInx).GetCell(0).SetText(t);
                     }
-                    table.GetRow(8 + rowInx).GetCell(1).SetText(m.CheckItem1);// + m.CheckItem2);
-                    table.GetRow(8 + rowInx).GetCell(3).SetParagraph(Utils.setCellTextLeft(doc, table));
-                    table.GetRow(8 + rowInx).GetCell(3).SetText(m.CCRRealCheckCond);
-                    table.GetRow(8 + rowInx).GetCell(4).SetText(GetCheckCaption(m.CCRCheckResult));
-                }
-                else
-                {
-                    Utils.rowMergeContinue(table.GetRow(8 + rowInx).GetCell(1), "2");
-                    Utils.rowMergeContinue(table.GetRow(8 + rowInx).GetCell(3));
-                    Utils.rowMergeContinue(table.GetRow(8 + rowInx).GetCell(4));
-                }
+                    else
+                        Utils.rowMergeContinue(table.GetRow(8 + rowInx).GetCell(0));
 
-                //檢驗項目
-                if (m.rowSpanStd1 > 0)
-                {
-                    Utils.rowMergeStart(table.GetRow(8 + rowInx).GetCell(2));
-                    table.GetRow(8 + rowInx).GetCell(2).SetText(m.Stand1);
-                }
-                else
-                {
-                    Utils.rowMergeContinue(table.GetRow(8 + rowInx).GetCell(2));
-                }
+                    //管理項目
+                    if (m.rowSpan > 0)
+                    {
+                        if (m.rowSpan > 1)
+                        {
+                            Utils.rowMergeStart(table.GetRow(8 + rowInx).GetCell(1), "2");
+                            Utils.rowMergeStart(table.GetRow(8 + rowInx).GetCell(3));
+                            Utils.rowMergeStart(table.GetRow(8 + rowInx).GetCell(4));
+                        }
+                        table.GetRow(8 + rowInx).GetCell(1).SetText(m.CheckItem1);// + m.CheckItem2);
+                        table.GetRow(8 + rowInx).GetCell(3).SetParagraph(Utils.setCellTextLeft(doc, table));
+                        table.GetRow(8 + rowInx).GetCell(3).SetText(m.CCRRealCheckCond);
+                        table.GetRow(8 + rowInx).GetCell(4).SetText(GetCheckCaption(m.CCRCheckResult));
+                    }
+                    else
+                    {
+                        Utils.rowMergeContinue(table.GetRow(8 + rowInx).GetCell(1), "2");
+                        Utils.rowMergeContinue(table.GetRow(8 + rowInx).GetCell(3));
+                        Utils.rowMergeContinue(table.GetRow(8 + rowInx).GetCell(4));
+                    }
 
-                rowInx++;
+                    //檢驗項目
+                    if (m.rowSpanStd1 > 0)
+                    {
+                        Utils.rowMergeStart(table.GetRow(8 + rowInx).GetCell(2));
+                        table.GetRow(8 + rowInx).GetCell(2).SetText(m.Stand1.Contains("_") ? m.StandardFilled(context) : m.Stand1);
+                    }
+                    else
+                    {
+                        Utils.rowMergeContinue(table.GetRow(8 + rowInx).GetCell(2));
+                    }
+
+                    rowInx++;
+                }
             }
 
-            addSignatureFile(doc.Tables[1].GetRow(0).GetCell(1), recItem.SupervisorUserSeq, service);
-            addSignatureFile(doc.Tables[1].GetRow(0).GetCell(3), recItem.SupervisorDirectorSeq, service);
+            service.RenderConstCheckDoc(doc, recItem, addSignatureFile, addSignatureFileAlter);
+            //addSignatureFile(doc.Tables[1].GetRow(0).GetCell(1), recItem.SupervisorUserSeq, service);
+            //addSignatureFile(doc.Tables[1].GetRow(0).GetCell(3), recItem.SupervisorDirectorSeq, service);
             //
             List<ControlStVModel> Stitems = new List<ControlStVModel>();
             if (recItem.CCRCheckType1 > 0 && recItem.CCRCheckType1 < 5)
@@ -778,7 +821,7 @@ namespace EQC.Controllers
         }
 
         //2-設備運轉-抽查紀錄表
-        public void CheckSheet2(EngConstructionEngInfoVModel engItem, ConstCheckRecSheetModel recItem, string uuid, SignatureFileService service, int filetype)
+        public string CheckSheet2(EngConstructionEngInfoVModel engItem, ConstCheckRecSheetModel recItem, string uuid, SignatureFileService service, int filetype)
         {
             string tempFile = CopyTemplateFile("2-設備運轉-抽查紀錄表.docx");
             string outFile = recItem.GetFilename(uuid);
@@ -798,37 +841,41 @@ namespace EQC.Controllers
                 Utils.insertRow(table, 6, 7);
             }
             int rowInx = 0;
-            foreach (ControlStVModel m in items)
+            using(var context = new EQC_NEW_Entities())
             {
-                //管理項目
-                if (m.rowSpan > 0)
+                foreach (ControlStVModel m in items)
                 {
-                    Utils.rowMergeStart(table.GetRow(6 + rowInx).GetCell(0));
-                    Utils.rowMergeStart(table.GetRow(6 + rowInx).GetCell(2));
-                    Utils.rowMergeStart(table.GetRow(6 + rowInx).GetCell(3));
-                    table.GetRow(6 + rowInx).GetCell(0).SetText(m.CheckItem1);// + m.CheckItem2);
-                    table.GetRow(6 + rowInx).GetCell(2).SetText(m.CCRRealCheckCond);
-                    table.GetRow(6 + rowInx).GetCell(3).SetText(GetCheckCaption(m.CCRCheckResult));
-                }
-                else
-                {
-                    Utils.rowMergeContinue(table.GetRow(6 + rowInx).GetCell(0));
-                    Utils.rowMergeContinue(table.GetRow(6 + rowInx).GetCell(2));
-                    Utils.rowMergeContinue(table.GetRow(6 + rowInx).GetCell(3));
-                }
+                    //管理項目
+                    if (m.rowSpan > 0)
+                    {
+                        Utils.rowMergeStart(table.GetRow(6 + rowInx).GetCell(0));
+                        Utils.rowMergeStart(table.GetRow(6 + rowInx).GetCell(2));
+                        Utils.rowMergeStart(table.GetRow(6 + rowInx).GetCell(3));
+                        table.GetRow(6 + rowInx).GetCell(0).SetText(m.CheckItem1);// + m.CheckItem2);
+                        table.GetRow(6 + rowInx).GetCell(2).SetText(m.CCRRealCheckCond);
+                        table.GetRow(6 + rowInx).GetCell(3).SetText(GetCheckCaption(m.CCRCheckResult));
+                    }
+                    else
+                    {
+                        Utils.rowMergeContinue(table.GetRow(6 + rowInx).GetCell(0));
+                        Utils.rowMergeContinue(table.GetRow(6 + rowInx).GetCell(2));
+                        Utils.rowMergeContinue(table.GetRow(6 + rowInx).GetCell(3));
+                    }
 
-                //檢驗項目
-                if (m.rowSpanStd1 > 0)
-                {
-                    Utils.rowMergeStart(table.GetRow(6 + rowInx).GetCell(1));
-                    table.GetRow(6 + rowInx).GetCell(1).SetText(m.Stand1);
-                }
-                else
-                    Utils.rowMergeContinue(table.GetRow(6 + rowInx).GetCell(1));
+                    //檢驗項目
+                    if (m.rowSpanStd1 > 0)
+                    {
+                        Utils.rowMergeStart(table.GetRow(6 + rowInx).GetCell(1));
+                        table.GetRow(6 + rowInx).GetCell(1).SetText(m.Stand1.Contains("_") ? m.StandardFilled(context) : m.Stand1);
+                    }
+                    else
+                        Utils.rowMergeContinue(table.GetRow(6 + rowInx).GetCell(1));
 
-                rowInx++;
+                    rowInx++;
+                }
             }
-            service.RenderConstCheckDoc(doc, recItem, addSignatureFile);
+
+            service.RenderConstCheckDoc(doc, recItem, addSignatureFile, addSignatureFileAlter);
             //addSignatureFile(doc.Tables[1].GetRow(0).GetCell(1), recItem.SupervisorUserSeq, service);
             //addSignatureFile(doc.Tables[1].GetRow(0).GetCell(3), recItem.SupervisorDirectorSeq, service);
             //
@@ -880,6 +927,7 @@ namespace EQC.Controllers
                 wordDocument.Close();
                 //結束 word
                 appWord.Quit();
+                return filePatdownloadhName;
             }
             else if (filetype == 3)
             {
@@ -900,7 +948,10 @@ namespace EQC.Controllers
                 wordDocument.Close();
                 //結束 word
                 appWord.Quit();
+                return filePatdownloadhName;
             }
+
+            return outFile;
 
         }
         //2-設備運轉-抽查紀錄表下載
@@ -947,15 +998,18 @@ namespace EQC.Controllers
                 if (m.rowSpanStd1 > 0)
                 {
                     Utils.rowMergeStart(table.GetRow(6 + rowInx).GetCell(1));
-                    table.GetRow(6 + rowInx).GetCell(1).SetText(m.Stand1);
+                    using (var context = new EQC_NEW_Entities())
+                    {
+                        table.GetRow(6 + rowInx).GetCell(1).SetText(m.Stand1.Contains("_") ? m.StandardFilled(context) : m.Stand1);
+                    }
                 }
                 else
                     Utils.rowMergeContinue(table.GetRow(6 + rowInx).GetCell(1));
 
                 rowInx++;
             }
-            addSignatureFile(doc.Tables[1].GetRow(0).GetCell(1), recItem.SupervisorUserSeq, service);
-            addSignatureFile(doc.Tables[1].GetRow(0).GetCell(3), recItem.SupervisorDirectorSeq, service);
+
+           
             //
             List<ControlStVModel> Stitems = new List<ControlStVModel>();
             if (recItem.CCRCheckType1 > 0 && recItem.CCRCheckType1 < 5)
@@ -1100,7 +1154,7 @@ namespace EQC.Controllers
             }
         }
         //3-職業安全-抽查紀錄表
-        public void CheckSheet3(EngConstructionEngInfoVModel engItem, ConstCheckRecSheetModel recItem, string uuid, SignatureFileService service, int filetype)
+        public string CheckSheet3(EngConstructionEngInfoVModel engItem, ConstCheckRecSheetModel recItem, string uuid, SignatureFileService service, int filetype)
         {
             string tempFile = CopyTemplateFile("3-職業安全-抽查紀錄表.docx");
             string outFile = recItem.GetFilename(uuid);
@@ -1121,37 +1175,42 @@ namespace EQC.Controllers
                 Utils.insertRow(table, 4, 5);
             }
             int rowInx = 0;
-            foreach (ControlStVModel m in items)
+            using(var context = new EQC_NEW_Entities() )
             {
-                //管理項目
-                if (m.rowSpan > 0)
+                foreach (ControlStVModel m in items)
                 {
-                    Utils.rowMergeStart(table.GetRow(4 + rowInx).GetCell(0));
-                    Utils.rowMergeStart(table.GetRow(4 + rowInx).GetCell(2));
-                    Utils.rowMergeStart(table.GetRow(4 + rowInx).GetCell(3));
-                    table.GetRow(4 + rowInx).GetCell(0).SetText(m.CheckItem1);// + m.CheckItem2);
-                    table.GetRow(4 + rowInx).GetCell(2).SetText(GetCheckCaption(m.CCRCheckResult));// m.CCRRealCheckCond);
-                    //table.GetRow(4 + rowInx).GetCell(7).SetText(GetCheckCaption(m.CCRCheckResult));
-                }
-                else
-                {
-                    Utils.rowMergeContinue(table.GetRow(4 + rowInx).GetCell(0));
-                    Utils.rowMergeContinue(table.GetRow(4 + rowInx).GetCell(2));
-                    Utils.rowMergeContinue(table.GetRow(4 + rowInx).GetCell(3));
+                    //管理項目
+                    if (m.rowSpan > 0)
+                    {
+                        Utils.rowMergeStart(table.GetRow(4 + rowInx).GetCell(0));
+                        Utils.rowMergeStart(table.GetRow(4 + rowInx).GetCell(2));
+                        Utils.rowMergeStart(table.GetRow(4 + rowInx).GetCell(3));
+                        table.GetRow(4 + rowInx).GetCell(0).SetText(m.CheckItem1);// + m.CheckItem2);
+                        table.GetRow(4 + rowInx).GetCell(2).SetText(GetCheckCaption(m.CCRCheckResult));// m.CCRRealCheckCond);
+                                                                                                       //table.GetRow(4 + rowInx).GetCell(7).SetText(GetCheckCaption(m.CCRCheckResult));
+                    }
+                    else
+                    {
+                        Utils.rowMergeContinue(table.GetRow(4 + rowInx).GetCell(0));
+                        Utils.rowMergeContinue(table.GetRow(4 + rowInx).GetCell(2));
+                        Utils.rowMergeContinue(table.GetRow(4 + rowInx).GetCell(3));
+                    }
+
+                    //檢驗項目
+                    if (m.rowSpanStd1 > 0)
+                    {
+                        Utils.rowMergeStart(table.GetRow(4 + rowInx).GetCell(1));
+                        table.GetRow(4 + rowInx).GetCell(1).SetText(m.Stand1.Contains("_") ? m.StandardFilled(context) : m.Stand1);
+                    }
+                    else
+                        Utils.rowMergeContinue(table.GetRow(4 + rowInx).GetCell(1));
+
+                    rowInx++;
                 }
 
-                //檢驗項目
-                if (m.rowSpanStd1 > 0)
-                {
-                    Utils.rowMergeStart(table.GetRow(4 + rowInx).GetCell(1));
-                    table.GetRow(4 + rowInx).GetCell(1).SetText(m.Stand1);
-                }
-                else
-                    Utils.rowMergeContinue(table.GetRow(4 + rowInx).GetCell(1));
-
-                rowInx++;
             }
-            service.RenderConstCheckDoc(doc, recItem, addSignatureFile);
+
+            service.RenderConstCheckDoc(doc, recItem, addSignatureFile, addSignatureFileAlter);
             //addSignatureFile(doc.Tables[1].GetRow(0).GetCell(1), recItem.SupervisorUserSeq, service);
             //addSignatureFile(doc.Tables[1].GetRow(0).GetCell(3), recItem.SupervisorDirectorSeq, service);
             //
@@ -1202,6 +1261,7 @@ namespace EQC.Controllers
                 wordDocument.Close();
                 //結束 word
                 appWord.Quit();
+                return filePatdownloadhName;
             }
             else if (filetype == 3)
             {
@@ -1222,7 +1282,9 @@ namespace EQC.Controllers
                 wordDocument.Close();
                 //結束 word
                 appWord.Quit();
+                return filePatdownloadhName;
             }
+            return outFile;
 
         }
         //3-職業安全-抽查紀錄表下載
@@ -1270,16 +1332,20 @@ namespace EQC.Controllers
                 if (m.rowSpanStd1 > 0)
                 {
                     Utils.rowMergeStart(table.GetRow(4 + rowInx).GetCell(1));
-                    table.GetRow(4 + rowInx).GetCell(1).SetText(m.Stand1);
+                    using(var context = new EQC_NEW_Entities())
+                    {
+                        table.GetRow(4 + rowInx).GetCell(1).SetText(m.Stand1.Contains("_") ? m.StandardFilled(context) : m.Stand1);
+                    }
+
                 }
                 else
                     Utils.rowMergeContinue(table.GetRow(4 + rowInx).GetCell(1));
 
                 rowInx++;
             }
-
-            addSignatureFile(doc.Tables[1].GetRow(0).GetCell(1), recItem.SupervisorUserSeq, service);
-            addSignatureFile(doc.Tables[1].GetRow(0).GetCell(3), recItem.SupervisorDirectorSeq, service);
+            service.RenderConstCheckDoc(doc, recItem, addSignatureFile, addSignatureFileAlter);
+            //addSignatureFile(doc.Tables[1].GetRow(0).GetCell(1), recItem.SupervisorUserSeq, service);
+            //addSignatureFile(doc.Tables[1].GetRow(0).GetCell(3), recItem.SupervisorDirectorSeq, service);
             //
             List<ControlStVModel> Stitems = new List<ControlStVModel>();
             if (recItem.CCRCheckType1 > 0 && recItem.CCRCheckType1 < 5)
@@ -1385,7 +1451,7 @@ namespace EQC.Controllers
 
 
         //4-環境保育-抽查紀錄表
-        public void CheckSheet4(EngConstructionEngInfoVModel engItem, ConstCheckRecSheetModel recItem, string uuid, SignatureFileService service, int filetype)
+        public string CheckSheet4(EngConstructionEngInfoVModel engItem, ConstCheckRecSheetModel recItem, string uuid, SignatureFileService service, int filetype)
         {
             string tempFile = CopyTemplateFile("4-環境保育-抽查紀錄表.docx");
             string outFile = recItem.GetFilename(uuid);
@@ -1414,7 +1480,7 @@ namespace EQC.Controllers
 
                 rowInx++;
             }
-            service.RenderConstCheckDoc(doc, recItem, addSignatureFile);
+            service.RenderConstCheckDoc(doc, recItem, addSignatureFile, addSignatureFileAlter);
             //addSignatureFile(doc.Tables[1].GetRow(0).GetCell(1), recItem.SupervisorUserSeq, service);
             //addSignatureFile(doc.Tables[1].GetRow(0).GetCell(3), recItem.SupervisorDirectorSeq, service);
             //
@@ -1465,6 +1531,7 @@ namespace EQC.Controllers
                 wordDocument.Close();
                 //結束 word
                 appWord.Quit();
+                return filePatdownloadhName;
             }
             else if (filetype == 3)
             {
@@ -1485,7 +1552,9 @@ namespace EQC.Controllers
                 wordDocument.Close();
                 //結束 word
                 appWord.Quit();
+                return filePatdownloadhName;
             }
+            return outFile;
 
         }
         //4-環境保育-抽查紀錄表下載
@@ -1518,9 +1587,9 @@ namespace EQC.Controllers
 
                 rowInx++;
             }
-
-            addSignatureFile(doc.Tables[1].GetRow(0).GetCell(1), recItem.SupervisorUserSeq, service);
-            addSignatureFile(doc.Tables[1].GetRow(0).GetCell(3), recItem.SupervisorDirectorSeq, service);
+            service.RenderConstCheckDoc(doc, recItem, addSignatureFile, addSignatureFileAlter);
+            //addSignatureFile(doc.Tables[1].GetRow(0).GetCell(1), recItem.SupervisorUserSeq, service);
+            //addSignatureFile(doc.Tables[1].GetRow(0).GetCell(3), recItem.SupervisorDirectorSeq, service);
             //
             List<ControlStVModel> Stitems = new List<ControlStVModel>();
             if (recItem.CCRCheckType1 > 0 && recItem.CCRCheckType1 < 5)
@@ -1653,21 +1722,43 @@ namespace EQC.Controllers
                 img.Close();
             }
         }
-        private void addFile(XWPFTableCell cell, string filePath)
+        private void addSignatureFileAlter(
+            XWPFTableCell cell, string filePath,
+            NPOI.XWPF.UserModel.PictureType pictureType = NPOI.XWPF.UserModel.PictureType.JPEG
+            )
+        {
+
+
+            var widthPic = NPOI.Util.Units.ToEMU(36 * 2.8);// (int)((double)3000 / 587 * 38.4 * 9525);
+            var heightPic = NPOI.Util.Units.ToEMU(12 * 2.8);// (int)((double)900 / 587 * 38.4 * 9525);
+            if (System.IO.File.Exists(filePath))
+            {
+                FileStream img = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+                XWPFParagraph p = cell.AddParagraph();
+                XWPFRun run = p.CreateRun();
+                run.AddPicture(img, (int)pictureType, filePath, widthPic, heightPic);
+                //run.AddCarriageReturn();
+                //cell.AddParagraph().CreateRun().SetText("");
+                img.Close();
+            }
+        }
+        private void addFile(XWPFTableCell cell, string filePath, 
+            NPOI.XWPF.UserModel.PictureType pictureType = NPOI.XWPF.UserModel.PictureType.JPEG)
         {
             //if (!userSeq.HasValue) return;
             //string fileName = service.GetFileNameByUser(userSeq.Value);
             //if (fileName == null) return;
             //
             //string filePath = Utils.GetSignatureFile(fileName);
-            var widthPic = NPOI.Util.Units.ToEMU(96 * 2.8);// (int)((double)3000 / 587 * 38.4 * 9525);
-            var heightPic = NPOI.Util.Units.ToEMU(72 * 2.8);// (int)((double)900 / 587 * 38.4 * 9525);
+            var widthPic = NPOI.Util.Units.ToEMU(48 * 2.8);// (int)((double)3000 / 587 * 38.4 * 9525);
+            var heightPic = NPOI.Util.Units.ToEMU(36 * 2.8);// (int)((double)900 / 587 * 38.4 * 9525);
+            var p = cell.GetParagraphArray(0);
             if (System.IO.File.Exists(filePath))
             {
                 FileStream img = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-                XWPFParagraph p = cell.AddParagraph();
+
                 XWPFRun run = p.CreateRun();
-                run.AddPicture(img, (int)NPOI.XWPF.UserModel.PictureType.JPEG, filePath, widthPic, heightPic);
+                run.AddPicture(img, (int)pictureType, filePath, widthPic, heightPic);
                 //run.AddCarriageReturn();
                 //cell.AddParagraph().CreateRun().SetText("");
                 img.Close();
@@ -1856,6 +1947,80 @@ namespace EQC.Controllers
                 items = items
             });
         }
+ 
+        public JsonResult DeleteRecResultControlSt(int controlStSeq, int recSeq, int span, int CCRCheckType1)
+        {
+            //using(var context = new EQC_NEW_Entities())
+            //{
+            //    var  a = context.ConstCheckRecResult
+            //        .Where(r => r.ControllStSeq == controlStSeq && r.ConstCheckRec.Seq == recSeq).ToList();
+            //    context.ConstCheckRecResult.RemoveRange(
+            //    context.ConstCheckRecResult
+            //        .Where(r => r.ControllStSeq == controlStSeq && r.ConstCheckRec.Seq == recSeq)
+            //    );
+            //    context.SaveChanges();
+            //}
+
+            if(CCRCheckType1 == 1)
+                DeleteRecResultControlSt<ConstCheckControlSt>(controlStSeq, span, recSeq,
+                db => db.ConstCheckControlSt, item => item.ConstCheckListSeq);
+            if (CCRCheckType1 == 4)
+                DeleteRecResultControlSt<EnvirConsControlSt>(controlStSeq, span, recSeq,
+                db => db.EnvirConsControlSt, item => item.EnvirConsListSeq);
+            if (CCRCheckType1 == 2)
+                DeleteRecResultControlSt<EquOperControlSt>(controlStSeq, span, recSeq,
+                db => db.EquOperControlSt, item => item.EquOperTestStSeq);
+            if (CCRCheckType1 == 3)
+                DeleteRecResultControlSt<OccuSafeHealthControlSt>(controlStSeq, span, recSeq,
+                db => db.OccuSafeHealthControlSt, item => item.OccuSafeHealthListSeq);
+            return Json(true);
+        }
+        public static void DeleteRecResultControlSt<T>(
+            int controlStSeq,
+            int span,
+            int recSeq,
+            Func<EQC_NEW_Entities, DbSet<T>> setF,
+            Func<T, int?> itemSeqF
+            ) where T : class, ControlSt
+        {
+            using (var context = new EQC_NEW_Entities())
+            {
+
+                var compareArr =
+                    context.ConstCheckRecResult
+                    .Where(r => r.ConstCheckRec.Seq == recSeq)
+                    .ToList()
+                    .Join(setF.Invoke(context),
+                        r1 => r1.ControllStSeq,
+                        r2 => r2.Seq,
+                        (r1, r2) =>
+                        {
+                            r1.OrderNo = r2.OrderNo ?? 0;
+                            return r1;
+                        }
+                    )
+                    .OrderBy(r => r.OrderNo)
+                    .ToArray();
+                var a = compareArr
+                    .Where(r => r.ControllStSeq == controlStSeq)
+                    .FirstOrDefault();
+                var targetIndex = Array.IndexOf(
+                    compareArr, a
+                );
+
+
+                if (compareArr.Length > 0)
+                {
+                    context.ConstCheckRecResult.RemoveRange(
+                        compareArr.ToList().Skip(targetIndex).Take(span)
+
+                    );
+                }
+
+                context.SaveChanges();
+            }
+           
+        }
 
         //檢驗單明細
         public JsonResult GetRecResult(ConstCheckRecModel rec)
@@ -1878,6 +2043,9 @@ namespace EQC.Controllers
             {//環境保育清單
                 items = service.GetEnvirConsRecResult<ControlStVModel>(rec.Seq);
             }
+
+            service.GetRecResultStandard(items);
+            
             if (items.Count > 0) {
                 JoinCell(items);
                 foreach(ControlStVModel item in items)
@@ -1941,7 +2109,28 @@ namespace EQC.Controllers
         //更新檢驗單
         public JsonResult UpdateRec(ConstCheckRecModel recItem, List<ControlStVModel> items)
         {
-            if (constCheckRecService.Update(recItem, items))
+            var iSignatureFileService = new SignatureFileService();
+            //if(iSignatureFileService.GetFileNameByUser(recItem.SupervisorDirectorSeq ?? 0) != null)
+            //{
+            //    iSignatureFileService.UpdateSignatureFile(recItem.SupervisorDirectorSeq ?? 0, recItem.SupervisionDirectorSignaturePath);
+            //}
+            //else
+            //{
+            //    iSignatureFileService.AddSignatureFile(recItem.SupervisorDirectorSeq ?? 0, recItem.SupervisionDirectorSignaturePath);
+            //}
+            //if (iSignatureFileService.GetFileNameByUser(recItem.SupervisorUserSeq ?? 0) != null)
+            //{
+            //    iSignatureFileService.UpdateSignatureFile(recItem.SupervisorUserSeq ?? 0, recItem.SupervisionComSignaturePath);
+            //}
+            //else
+            //{
+            //    iSignatureFileService.AddSignatureFile(recItem.SupervisorUserSeq ?? 0, recItem.SupervisionComSignaturePath);
+            //}
+            constCheckRecService.UpdateRecResultStandard(items);
+            if (
+                constCheckRecService.Update(recItem, items) 
+
+            )
             {
                 return Json(new
                 {

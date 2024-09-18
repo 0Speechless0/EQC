@@ -1,4 +1,8 @@
 ﻿
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
 namespace EQC.ViewModel
 {
     public class EADPlaneWeaknessEngVModel
@@ -10,5 +14,16 @@ namespace EQC.ViewModel
         public decimal? BidAmount { get; set; }
         public string Location { get; set; }
         public string PlaneWeakness { get; set; }
+
+        public HashSet<int> PlaneWeaknessNumArr { 
+            get
+            {
+                return PlaneWeakness?.Split(',')
+                .Where(r => r.Length > 0)
+                .Select(r => Int32.Parse(r))
+                .ToHashSet() ?? new HashSet<int>();
+
+            }
+        }
     }
 }

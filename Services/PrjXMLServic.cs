@@ -14,7 +14,7 @@ namespace EQC.Services
         {
             Null2Empty(m);
             string sql = @"
-                insert into PrjXML(
+                insert into PrjXMLTmp(
                     TenderYear,
                     TenderNo,
                     TenderName,
@@ -277,19 +277,36 @@ namespace EQC.Services
         public List<T> GetTenderListByEng<T>(int engMainSeq)
         {
             string sql = @"
-                SELECT 
+          select * from ( SELECT 
+					1 code,
                     b.Seq,
                     b.TenderNo,
-                    b.TenderName,
-                    c.PrjXMLSeq
+                    b.TenderName,  
+                    c.PrjXMLSeq,
+					a.Seq EngSeq
                 FROM EngMain a
                 inner join PrjXML b ON(
                     b.TenderYear=a.EngYear
                     and b.ExecUnitName=(select c.Name from unit c where c.Seq=a.ExecUnitSeq )
                 )
-                left outer join EngMain c on(c.PrjXMLSeq=b.Seq)
-                where a.Seq=@Seq
-                order by b.TenderName";
+				left outer join EngMain c on(c.PrjXMLSeq=b.Seq)
+				union all
+                SELECT 
+					0 code,
+                    b2.Seq,
+                    b2.TenderNo,
+                    b2.TenderName,  
+                    c.PrjXMLSeq,
+					a.Seq EngSeq
+                FROM EngMain a
+                inner join PrjXMLTmp b2 ON(
+                    b2.TenderYear=a.EngYear
+                    and b2.ExecUnitName=(select c.Name from unit c where c.Seq=a.ExecUnitSeq )
+                )
+				left outer join EngMain c on(c.PrjXMLSeq= -b2.Seq) 
+				) z
+				where z.EngSeq = @Seq 
+				order by z.TenderName";
             SqlCommand cmd = db.GetCommand(sql);
             cmd.Parameters.AddWithValue("@Seq", engMainSeq);
             return db.GetDataTableWithClass<T>(cmd);

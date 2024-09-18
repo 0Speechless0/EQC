@@ -31,6 +31,8 @@ namespace EQC.Services
             public DateTime CreateTime { get; set; }
 
             public string bindingCode { get; set; }
+
+            public string passWd { get; set; }
         }
 
         public Token GetTokenData(string token)
@@ -40,7 +42,7 @@ namespace EQC.Services
                 .Where(t => t.Value == token).FirstOrDefault();
             return myToken;
         }
-            public bool checkTokenVaild(string token)
+        public bool checkTokenVaild(string token)
             {
 
             if (token == null)
@@ -95,7 +97,7 @@ namespace EQC.Services
         {
             using (var context = new EQC_NEW_Entities())
             {
-                var userSeq = context.UserMain.Where(r => r.UserNo == userNo).First().Seq;
+                var userSeq = context.UserMain.Where(r => r.UserNo == userNo && !r.IsDelete.Value && r.IsEnabled.Value ).FirstOrDefault()?.Seq;
                 var Lock = 
                     bindingCodeTableSelector
                     .Invoke(context)
@@ -114,7 +116,8 @@ namespace EQC.Services
                     .Add(new T
                     {
                         AppCode = clientBindingCode,
-                        UserMainSeq = userSeq
+                        UserMainSeq = userSeq ?? 0,
+                        CreateTime = DateTime.Now
 
                     });
                     context.SaveChanges();
@@ -161,6 +164,7 @@ namespace EQC.Services
                 IVHashing = IVHashing,
                 userNo = userNo,
                 Value = token,
+                passWd = pwd,
                 CreateTime = DateTime.Now
             };
             tokens.Add(userNo, newToken);

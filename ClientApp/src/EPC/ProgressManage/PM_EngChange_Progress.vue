@@ -14,8 +14,10 @@
                     <th style="text-align: center;">
                         <strong>變更歷程</strong>
                     </th>
+
                     <th v-if="fEngChangeCanAdd" style="text-align: center;">
-                        <button v-if="!fEngChangeAdd" @click="onEngChangeAddClick" type="button" class="btn btn-color11-3 btn-xs sharp mx-1" title="新增">
+
+                        <button v-if="!fEngChangeAdd  && !tenderItem.isContractBreaked" @click="onEngChangeAddClick" type="button" class="btn btn-color11-3 btn-xs sharp mx-1" title="新增">
                             <i class="fas fa-plus"></i>
                         </button>
                     </th>
@@ -27,7 +29,7 @@
                         <td></td>
                         <td></td>
                         <td>
-                            <b-input-group>
+                            <b-input-group style="z-index:100">
                                 <input v-bind:value="engMain.chsStartDate" ref="chsStartDate" @change="onDateChange(engMain.chsStartDate, $event, 'chsStartDate')" type="text" class="form-control mydatewidth" placeholder="yyy/mm/dd">
                                 <b-form-datepicker v-model="chsStartDate" :hide-header="true" button-only right size="sm" @context="onDatePicketChange($event, 'chsStartDate')">
                                 </b-form-datepicker>
@@ -211,7 +213,7 @@
             <template v-if="selEngItem.ChangeType==1">
                 <comm-pagination ref="pagination" :recordTotal="recordTotal" v-on:onPaginationChange="onPaginationChange"></comm-pagination>
 
-                <div class="table-responsive">
+                <div class="table-responsive tableFixHead">
                     <table class="table table-responsive-md table-hover VA-middle">
                         <thead class="insearch">
                             <tr>
@@ -642,6 +644,7 @@
             },
             onDatePicketChange(ctx, mode) {
                 //console.log(ctx);
+                console.log("onDatePicketChange");
                 if (ctx.selectedDate != null) {
                     var d = ctx.selectedDate;
                     var dd = (d.getFullYear() - 1911) + '/' + (d.getMonth() + 1) + '/' + d.getDate();
@@ -907,3 +910,24 @@
         },
     }
 </script>
+<style scoped>
+.tableFixHead          { overflow: auto; max-height: 500px;   }
+table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+.table {
+    margin : 0;
+}
+.tableFixHead thead  { position: sticky !important ; top: 0 !important ; z-index: 1 !important;     }
+th {
+    border : 0;
+    border-bottom: #ddd solid 1px !important; 
+    border-left : 0 !important;
+    border-right:0 !important;
+}
+/* td {
+    z-index: 0;
+    position: relative;
+} */
+</style>

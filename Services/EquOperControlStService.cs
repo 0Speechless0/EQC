@@ -305,18 +305,18 @@ namespace EQC.Services
             cmd.Parameters.Clear();
             cmd.Parameters.AddWithValue("@EquOperTestStSeq", EquOperTestStSeq);
             cmd.Parameters.AddWithValue("@ModifyUserSeq", getUserSeq());
-            cmd.Parameters.AddWithValue("@EPCheckItem1", m.EPCheckItem1);
-            cmd.Parameters.AddWithValue("@EPCheckItem2", m.EPCheckItem2);
-            cmd.Parameters.AddWithValue("@EPStand1", m.EPStand1);
-            cmd.Parameters.AddWithValue("@EPStand2", m.EPStand2);
-            cmd.Parameters.AddWithValue("@EPStand3", m.EPStand3);
-            cmd.Parameters.AddWithValue("@EPStand4", m.EPStand4);
-            cmd.Parameters.AddWithValue("@EPStand5", m.EPStand5);
-            cmd.Parameters.AddWithValue("@EPCheckTiming", m.EPCheckTiming);
-            cmd.Parameters.AddWithValue("@EPCheckMethod", m.EPCheckMethod);
-            cmd.Parameters.AddWithValue("@EPCheckFeq", m.EPCheckFeq);
-            cmd.Parameters.AddWithValue("@EPIncomp", m.EPIncomp);
-            cmd.Parameters.AddWithValue("@EPManageRec", m.EPManageRec);
+            cmd.Parameters.AddWithValue("@EPCheckItem1", m.EPCheckItem1 ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@EPCheckItem2", m.EPCheckItem2 ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@EPStand1", m.EPStand1 ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@EPStand2", m.EPStand2 ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@EPStand3", m.EPStand3 ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@EPStand4", m.EPStand4 ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@EPStand5", m.EPStand5 ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@EPCheckTiming", m.EPCheckTiming ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@EPCheckMethod", m.EPCheckMethod ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@EPCheckFeq", m.EPCheckFeq ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@EPIncomp", m.EPIncomp ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@EPManageRec", m.EPManageRec ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@EPType", this.NulltoDBNull(m.EPType));//s20230920
             cmd.Parameters.AddWithValue("@EPMemo", this.NulltoDBNull(m.EPMemo));//s20230920
             cmd.Parameters.AddWithValue("@EPCheckFields", this.NulltoDBNull(m.EPCheckFields));//s20230920

@@ -24,8 +24,8 @@
 
     <div v-show="type == 0 && !disableImport"  >
       
-      <ImportExcel :route="route" @afterSuccess="() => { type = 1; getLastUpdateTime() }" />
-      <ImportExcelSign :route="route" v-if="!noHint" />
+      <ImportExcel :route="route" @afterSuccess="afterImportSuccess" />
+      <ImportExcelSign :route="route" :additionDemandCols="additionDemandCols" v-if="!noHint" />
       <div v-else>
 
         <b-card style="font-size:25px; background-color:#FFF0F5;width: 99%;margin: auto;">
@@ -76,13 +76,13 @@
 
             </td>
             <td v-for=" (field, index) in fields" :key="index" v-show=" !(detail && detail[field.fieldName])">
-              <textarea class="form-control" v-model="addition[field.fieldName]" v-if="field.mutiLine" style="width:100%" row="5" />
-              <textarea class="form-control" v-model="addition[field.fieldName]" v-else />
+              <textarea class="form-control" v-model="addition[field.fieldName]" v-if="field.mutiLine" style="width:100%;max-width: 400px" row="5" />
+              <input class="form-control" v-model="addition[field.fieldName]" v-else  style="max-width: 400px"/>
             </td>
 
           </tr>
           <tr v-for="(item, index) in items" :key="index">
-            <td v-if="hasEdit || hasDelete || detail">
+            <td v-if="hasEdit || hasDelete || detail" class="align-middle">
               <div class="d-flex justify-content-center">
                 <strong>{{ index + 1 }}</strong>
               </div>
@@ -105,9 +105,9 @@
             <!-- <td>
 
             </td> -->
-            <td v-for=" (field, index) in fields" :key="'B' + index" v-show=" !(detail && detail[field.fieldName] )">
+            <td v-for=" (field, index) in fields" :key="'B' + index" v-show=" !(detail && detail[field.fieldName] ) " class="align-middle">
               <div >
-                <div v-if="item.Seq != isEdit  ">
+                <div v-if="item.Seq != isEdit  || disabledEdtiCols_.indexOf(field.fieldName)  > -1">
                   <strong v-if="typeof item[field.fieldName] == 'string'
                   && !isNaN(Number(item[field.fieldName]))
                   && item[field.fieldName].includes('0.')">
@@ -123,8 +123,8 @@
                   </strong>
                 </div>
                 <div v-else>
-                  <textarea v-model="item[field.fieldName]" v-if="field.mutiLine" style="width:100%" row="5" />
-                  <input class="form-control" v-model="item[field.fieldName]" v-else />
+                  <textarea v-model="item[field.fieldName]" v-if="field.mutiLine" style="width:100%; max-width: 400px" row="5" />
+                  <textarea class="form-control" v-model="item[field.fieldName]" v-else style="max-width: 400px"/>
 
                 </div>
               </div>
@@ -159,7 +159,7 @@ export default {
   watch: {
     searchCodition : {
       handler(value) {
-        if(!this.pollCodition) return;
+        if(!this.pollCodition ) return;
         
         this.getList(value)
 
@@ -167,7 +167,16 @@ export default {
       },
       deep : true,
       
-    }
+    },
+    disabledEdtiCols : {
+      handler(value)
+      {
+        console.log("disabledEdtiCols", value);
+        if(value) this.disabledEdtiCols_ = value;
+      },
+      immediate :true
+    },
+
 
   },
   emits :[
@@ -183,6 +192,7 @@ export default {
     "hasSearch",
     "searchSign",
     "searchField",
+    "exceptField",
     "searchCodition",
     "searchStrList",
     "FieldNameChange",
@@ -190,7 +200,10 @@ export default {
     "mutiLineFields",
     "detailFields",
     "disableImport",
-    "pollCodition"
+    "pollCodition",
+    "additionDemandCols",
+    "disabledEdtiCols",
+    "primaryKey" 
   ],
   components: {
     ImportExcel,
@@ -208,6 +221,7 @@ export default {
       strOption: "",
       staticItems:[],
       _detailFields : {},
+      disabledEdtiCols_ : [],
       addition: {
 
       },
@@ -266,11 +280,9 @@ export default {
     async Add() {
 
       let res = await window.myAjax.post(this.route + "/Add", this.addition);
-      if (res.data.status == "success") {
-        console.log("add success", res.data.newId);
-        this.addition.Seq = res.data.newId;
-        this.items.push(this.addition);
-        this.isEdit = -1;
+      if (res.data == true) {
+
+          this.items = [Object.assign({}, this.addition) ].concat(this.items);
       }
 
 
@@ -288,6 +300,10 @@ export default {
       })
         .then(resp => {
           console.log(this.route, resp.data);
+          resp.data.l.forEach(e => {
+            if(!e.Seq)
+              e.Seq= e[this.primaryKey]; 
+          })
           this.items = resp.data.l;
           this.recordTotal = resp.data.t;
           this.staticItems = this.items;
@@ -334,7 +350,13 @@ export default {
       fields =fields.filter((e ) => {
         return !this._detailFields[e.fieldName];
       })
-      this.fields = fields;
+        this.fields = fields.filter(e => this.exceptField ? this.exceptField.indexOf(e.fieldName) == -1 : true);
+    },
+    async afterImportSuccess()
+    {
+      console.log("afterImportSuccess")
+      this.type = 1;
+      this.getLastUpdateTime();
     },
     async getLastUpdateTime() {
 
@@ -358,12 +380,11 @@ export default {
   },
 
   async mounted() {
-    console.log(this.searchCodition);
     this._detailFields = this.detailFields ?? {};
     this.getList();
     this.getFields();
     this.disableImport ?? this.getLastUpdateTime();
-
+    
 
 
   },

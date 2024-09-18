@@ -127,24 +127,41 @@
                     <tr v-for="(item, index) in items" v-bind:key="item.Seq">
                         <td>{{index+1}}</td>
                         <td>{{item.execUnitName}}</td>
-                        <td class="text-right"><a href="" @click.prevent="openItemDetail(item)">{{item.engCnt}}</a></td>
-                        <td class="text-right">{{item.TotalBudget}}</td>
-                        <td class="text-right">{{item.CarbonDemandQuantity}}</td>
-                        <td class="text-right">{{item.ApprovedCarbonQuantity}}</td>
+                        <td class="text-right"><a href="" @click.prevent="openItemDetail(item)">{{numberComma(item.engCnt)}}</a></td>
+                        <td class="text-right">{{numberComma(item.TotalBudget)}}</td>
+                        <td class="text-right">{{numberComma(item.CarbonDemandQuantity)}}</td>
+                        <td class="text-right">{{numberComma(item.ApprovedCarbonQuantity) }}</td>
                         <td class="text-right"> 
                             <a href="" @click.prevent="openItemDetail(item, true)">
-                                {{item.awardCnt}}
+                                {{numberComma(item.awardCnt) }}
                             </a>
                         </td>
-                        <td class="text-right">{{item.Co2Total}}</td>
-                        <td class="text-right">{{item.GreenFunding}}</td>
+                        <td class="text-right">{{numberComma(item.Co2Total)}}</td>
+                        <td class="text-right">{{numberComma(item.GreenFunding) }}</td>
                         <td class="text-right">{{item.greenFundingRate}}</td>
-                        <td class="text-right">{{item.Tree02931Total}}</td>
-                        <td class="text-right">{{item.Tree02932Total}}</td>
-                        <td class="text-right">{{item.F1108Area}}</td>
-                        <td class="text-right">{{item.F1109Length}}</td>
+                        <td class="text-right">{{numberComma(item.Tree02931Total)}}</td>
+                        <td class="text-right">{{numberComma(item.Tree02932Total)}}</td>
+                        <td class="text-right">{{numberComma(item.F1108Area)}}</td>
+                        <td class="text-right">{{numberComma(item.F1109Length)}}</td>
                         <td class="text-right">{{item.co2TotalRate}}</td>
                         <td></td>
+                    </tr>
+                    <tr v-if="summary.length > 0 && selectUnit == -1"> 
+                        <td></td>
+                        <td>小計</td>
+                        <td  class="text-right" style="color:#007bff">{{numberComma(summary[0])}}</td>
+                        <td  class="text-right">{{numberComma(summary[1])}}</td>
+                        <td  class="text-right">{{numberComma(summary[2])}}</td>
+                        <td  class="text-right">{{numberComma(summary[3])}}</td>
+                        <td  class="text-right" style="color:#007bff">{{summary[4]}}</td>
+                        <td  class="text-right">{{numberComma(summary[5])}}</td>
+                        <td  class="text-right">{{numberComma(summary[6])}}</td>
+                        <td  class="text-right">{{summary[7]}}</td>
+                        <td  class="text-right">{{numberComma(summary[8])}}</td>
+                        <td class="text-right">{{numberComma(summary[9])}}</td>
+                        <td  class="text-right">{{numberComma(summary[10])}}</td>
+                        <td  class="text-right">{{numberComma(summary[11])}}</td>
+                        <td  class="text-right">{{summary[12]}}</td>
                     </tr>
                 </tbody>
             </table>
@@ -154,6 +171,7 @@
 <script>
     import FileModal from "../../components/FormalUploadModal.vue";
     import Modal from "../../components/Modal.vue";
+    import Com from "../../Common/Common2.js";
     export default {
         components : {
             FileModal : FileModal,
@@ -180,10 +198,15 @@
                 selectedUnit: '',
                 selectedSubUnit: '',
                 itemsDetail : [],
-                execUnitOfDetail : ""
+                execUnitOfDetail : "",
+                summary :[]
             };
         },
         methods: {
+            numberComma(num)
+            {
+                return Com.numberComma(num, 0);
+            },
             //工程年分
             //工程年分
             async openItemDetail(item , award)
@@ -244,6 +267,8 @@
                 //儲存到session
                 sessionStorage.removeItem('selectUnit');
                 window.sessionStorage.setItem("selectUnit", this.selectUnit);
+                console.log("FFF", unitSeq);
+
 
             },
             //
@@ -261,7 +286,8 @@
                 this.selectedYear = '';
                 this.selectedUnit = '';
                 this.selectedSubUnit = '';
-                window.myAjax.post('/CEFactor/GetCarbonReoprt'
+
+                await window.myAjax.post('/CEFactor/GetCarbonReoprt'
                     , {
                         year: this.selectYear,
                         unit: this.selectUnit,
@@ -273,6 +299,32 @@
                     .catch(err => {
                         console.log(err);
                     });
+                if(this.selectUnit== -1)
+                {
+                    this.summary = [];
+                    var co2TotalItemTotal =  this.items.reduce((a, c) => a + c.Co2TotalItem, 0) ;
+                    this.summary.push( this.items.reduce((a, c) => a + c.engCnt, 0) );
+                    this.summary.push( this.items.reduce((a, c) => a + c.TotalBudget, 0) );
+                    this.summary.push(this.items.reduce((a, c) => a + c.CarbonDemandQuantity, 0));
+                    this.summary.push(this.items.reduce((a, c) => a + c.ApprovedCarbonQuantity, 0) );
+                    this.summary.push(this.items.reduce((a, c) => a + c.awardCnt, 0) );
+                    this.summary.push(this.items.reduce((a, c) => a + c.Co2Total, 0).toFixed(3)  );
+                    this.summary.push(this.items.reduce((a, c) => a + c.GreenFunding, 0).toFixed(3)  );
+                    this.summary.push(
+                        (this.items.reduce((a, c) => a + c.GreenFunding, 0) /  
+                        this.items.reduce((a, c) => a + c.AwardTotalBudget, 0) *100000).toFixed(2)
+                        + "%"
+                        );
+                    this.summary.push(this.items.reduce((a, c) => a + c.Tree02931Total, 0) );
+                    this.summary.push(this.items.reduce((a, c) => a + c.Tree02932Total, 0) );
+                    this.summary.push(this.items.reduce((a, c) => a + c.F1108Area, 0) );
+                    this.summary.push(this.items.reduce((a, c) => a + c.F1109Length, 0) );
+                    //已發包的
+                    let co2TotalAllItemTotal = 0 ;
+                    this.items.forEach(e => co2TotalAllItemTotal += e.Co2TotalItemAll);
+                    this.summary.push(  
+                        co2TotalAllItemTotal > 0 ? (co2TotalItemTotal /co2TotalAllItemTotal*100).toFixed(2) + "%" : '0%');
+                }
             },
             dnGroup() {
                 window.comm.dnFile('/CEFactor/dnCReportG?year=' + this.selectYear + "&unit=" + this.selectUnit + "&subUnit=" + this.selectSubUnit);

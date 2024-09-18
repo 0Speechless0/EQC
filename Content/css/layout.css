@@ -330,7 +330,7 @@ body.index {
 .navbar {
     width: auto;
     height: auto;
-    background: url(../images/navbar-bg.png) no-repeat center center;
+    background: url(../images1/navbar-bg-5.png) no-repeat center center;
     background-size: cover;
     padding: .5rem 1rem;
     box-shadow: 0 0px 5px rgb(51 51 102 / 20%);
@@ -712,7 +712,29 @@ footer {
     margin-top: -3px;
     margin-right: 0;
 }
+/*-----gotop-----*/
+#gotop,
+#mobile-gotop {
+    cursor: pointer;
+    display: none;
+}
 
+#gotop {
+    position: fixed;
+    right: 10px;
+    bottom: 10px;
+    width: 45px;
+    height: 45px;
+    border-radius: 5px;
+    text-align: center;
+    line-height: 45px;
+}
+
+#gotop img {
+    width: 23px;
+    margin-top: -3px;
+    margin-right: 100px;
+}
 /* -----------------mb_list1 抽驗清單------------------ */
 
 .mb_list1 a{

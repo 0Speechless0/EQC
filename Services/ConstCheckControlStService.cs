@@ -306,32 +306,41 @@ namespace EQC.Services
 
             cmd.Parameters.Clear();
             cmd.Parameters.AddWithValue("@ConstCheckListSeq", ConstCheckListSeq);
-            cmd.Parameters.AddWithValue("@CCFlow1", m.CCFlow1);
-            cmd.Parameters.AddWithValue("@CCFlow2", m.CCFlow2);
-            cmd.Parameters.AddWithValue("@CCManageItem1", m.CCManageItem1);
-            cmd.Parameters.AddWithValue("@CCManageItem2", m.CCManageItem2);
-            cmd.Parameters.AddWithValue("@CCCheckStand1", m.CCCheckStand1);
-            cmd.Parameters.AddWithValue("@CCCheckStand2", m.CCCheckStand2);
-            cmd.Parameters.AddWithValue("@CCCheckTiming", m.CCCheckTiming);
-            cmd.Parameters.AddWithValue("@CCCheckMethod", m.CCCheckMethod);
-            cmd.Parameters.AddWithValue("@CCCheckFeq", m.CCCheckFeq);
-            cmd.Parameters.AddWithValue("@CCIncomp", m.CCIncomp);
-            cmd.Parameters.AddWithValue("@CCManageRec", m.CCManageRec);
+            cmd.Parameters.AddWithValue("@CCFlow1", m.CCFlow1 ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@CCFlow2", m.CCFlow2 ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@CCManageItem1", m.CCManageItem1 ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@CCManageItem2", m.CCManageItem2 ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@CCCheckStand1", m.CCCheckStand1 ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@CCCheckStand2", m.CCCheckStand2 ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@CCCheckTiming", m.CCCheckTiming ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@CCCheckMethod", m.CCCheckMethod ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@CCCheckFeq", m.CCCheckFeq ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@CCIncomp", m.CCIncomp ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@CCManageRec", m.CCManageRec ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@CCType", this.NulltoDBNull(m.CCType));//s20230912
-            cmd.Parameters.AddWithValue("@CCMemo", m.CCMemo);
-            cmd.Parameters.AddWithValue("@CCCheckFields", m.CCCheckFields);
-            cmd.Parameters.AddWithValue("@CCManageFields", m.CCManageFields);
+            cmd.Parameters.AddWithValue("@CCMemo", m.CCMemo );
+            cmd.Parameters.AddWithValue("@CCCheckFields", m.CCCheckFields ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@CCManageFields", m.CCManageFields ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@ModifyUserSeq", getUserSeq());
 
-            int result = db.ExecuteNonQuery(cmd);
-            if (result == 0) return 0;
+            try
+            {
+                int result = db.ExecuteNonQuery(cmd);
+                if (result == 0) return 0;
 
-            cmd.Parameters.Clear();
+                cmd.Parameters.Clear();
 
-            string sql1 = @"SELECT IDENT_CURRENT('ConstCheckControlSt') AS NewSeq";
-            cmd = db.GetCommand(sql1);
-            DataTable dt = db.GetDataTable(cmd);
-            return Convert.ToInt32(dt.Rows[0]["NewSeq"].ToString());
+                string sql1 = @"SELECT IDENT_CURRENT('ConstCheckControlSt') AS NewSeq";
+                cmd = db.GetCommand(sql1);
+                DataTable dt = db.GetDataTable(cmd);
+                return Convert.ToInt32(dt.Rows[0]["NewSeq"].ToString());
+            }
+            catch(Exception e)
+            {
+
+            }
+            return 0;
+
         }
         public int NewAdd(int ConstCheckListSeq)
         {

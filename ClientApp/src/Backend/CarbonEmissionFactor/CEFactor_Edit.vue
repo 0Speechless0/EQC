@@ -40,6 +40,7 @@
                             <th><strong>項次</strong></th>
                             <th><strong>編碼</strong></th>
                             <th><strong>工作項目</strong></th>
+                            <th><strong>綠色</strong></th>
                             <th><strong>碳排係數(kgCO2e)</strong></th>
                             <th><strong>單位</strong></th>
                             <th><strong>細目編碼</strong></th>
@@ -53,6 +54,9 @@
                             <template v-if="item.Seq != editSeq">
                                 <td v-html="checkCode(item)"></td>
                                 <td>{{item.Item}}</td>
+                                <td >
+                                    {{ item.Green ? "是" : "否" }}
+                                </td>
                                 <td>{{item.KgCo2e}}</td>
                                 <td>{{item.Unit}}</td>
                                 <td>{{item.SubCode}}</td>
@@ -68,6 +72,16 @@
                             <template v-if="item.Seq == editSeq">
                                 <td><input v-model.trim="editRecord.Code" maxlength="20" type="text" class="form-control"></td>
                                 <td><input v-model.trim="editRecord.Item" maxlength="50" type="text" class="form-control"></td>
+                                <td >
+                                    <span    class="form-check mr-4">
+                                        <input type="radio" class="form-check-input" :id="`a${index}`" :name="`a${index}`" v-model="editRecord.Green" :value="true">
+                                        <label class="form-check-label" :for="`a${index}`">是</label>
+                                    </span>
+                                    <span   class="form-check mr-4">
+                                        <input type="radio" class="form-check-input" :id="`b${index}`" :name="`a${index}`" v-model="editRecord.Green" :value="false">
+                                        <label class="form-check-label" :for="`b${index}`">否</label>
+                                    </span>
+                                </td>
                                 <td><input v-model="editRecord.KgCo2e" type="text" class="form-control"></td>
                                 <td><input v-model.trim="editRecord.Unit" maxlength="10" type="text" class="form-control"></td>
                                 <td><input v-model.trim="editRecord.SubCode" maxlength="20" type="text" class="form-control"></td>

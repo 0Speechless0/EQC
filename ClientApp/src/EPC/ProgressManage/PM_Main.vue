@@ -1,18 +1,29 @@
  <template>
      <div>
          <h5 class="insearch mt-0 py-2">
-             <div class="form-row mb-1">
-                 <div class="col-8 my-1">
-                     工程：{{tenderItem.EngName}}({{tenderItem.EngNo}})&nbsp;預定進度:{{tenderItem.SchProgress}}<br>
-                     標案：{{tenderItem.TenderName}}({{tenderItem.TenderNo}})&nbsp;實際進度:{{tenderItem.AcualProgress}}<br />
-                     {{tenderItem.DurationCategory}}：{{tenderItem.EngPeriod}}天、{{tenderItem.StartDateStr}} ~ {{tenderItem.SchCompDateStr}}
+             <div class="form-row mb-1" v-if="tenderItem">
+                 <div class="col-10 my-1" >
+                     編號：{{tenderItem.EngNo}} <br>
+                     名稱：{{tenderItem.EngName}}<br>
+                     預定進度:{{tenderItem.SchProgress}}
+                     &nbsp;實際進度:{{tenderItem.AcualProgress}}<br>
+                     {{tenderItem.DurationCategory}}：{{tenderItem.EngPeriod}}天、{{ Com.ToROCDate(tenderItem.schOrgStartDate) ?? tenderItem.StartDateStr}}
+                     <span style="color:purple" v-if="$refs.SchProgress && $refs.SchProgress.SchDateIsChange "> ({{ tenderItem.prjSchStartDateStr }} )</span> ~ {{Com.ToROCDate(tenderItem.schOrgEndDate) ?? tenderItem.SchCompDateStr}}
+                     <span style="color:purple" v-if="$refs.SchProgress && $refs.SchProgress.SchDateIsChange "> ({{ tenderItem.prjSchCompDateStr }} )</span>
+                     <div   v-if="tenderItem.ProgressDoneEarly">
+                        <span style="color:purple">已提前完工(<span style="color:orange"> {{ Com.ToROCDate(tenderItem.ProgressDoneEarly) }} </span>)</span>
+                    </div>
                      <button v-if="sepHeader.PccesXMLDateStr != null && sepHeader.PccesXMLDateStr != ''" @click="downloadPcces(sepHeader)" class="btn btn-color11-1 btn-xs mx-1">
                          <i class="fas fa-download"></i> Pcces下載({{sepHeader.PccesXMLDateStr}})
                      </button>
+
                  </div>
-                 <div class="col-4 my-1 text-center p-4" style="
+
+
+
+                 <div class="col-2 my-1 text-center p-4" style="
                     "> 
-                    <a title="上傳" href="./EQC_Extension/Diagram" target="_blank" class="m-1 btn  btn-color11-3 btn-lg mx-1"><i class="fas fa-share-alt-square"></i>&nbsp;&nbsp;進度網狀圖</a>
+
                     <a  href="./CarbonReductionCal/Index"  class="btn btn-color11-2 btn-lg mx-1">
                                             <i  class="fas fa-wrench"></i>&nbsp;&nbsp;施工減碳
                                         </a>    
@@ -22,12 +33,12 @@
                          前置作業
                      </button>
                  </div>
-                 <div class="col-12 col-sm-4 col-md-2 mb-1">
+                 <div class="col-12 col-sm-4 col-md-2 mb-1" >
                      <button v-on:click.stop="selectTab='ScheProgress'" v-bind:disabled="this.targetId == null || this.sepHeader.SPState<1" v-bind:class="{'btn-color3':!isActiveState('ScheProgress'), 'btn-color11-1':isActiveState('ScheProgress')}" class="btn btn-block font-weight-bold">
                          預定進度
                      </button>
                  </div>
-                 <div class="col-12 col-sm-4 col-md-2 mb-1">
+                 <div class="col-12 col-sm-4 col-md-2 mb-1" v-if="!tenderItem.IsSupervision">
                      <button v-on:click="selectTab='Construction'" v-bind:disabled="isNotWork()" v-bind:class="{'btn-color3':!isActiveState('Construction'), 'btn-color11-2':isActiveState('Construction')}" class="btn btn-block font-weight-bold">
                          施工日誌
                      </button>
@@ -53,9 +64,24 @@
          </h5>
          <div>
              <ScheEng v-if="selectTab=='ScheEngProgress'" v-bind:tenderItem="tenderItem" v-bind:sepHeader="sepHeader" v-on:reload="reload"></ScheEng>
-             <ScheProgress v-if="selectTab=='ScheProgress'" v-bind:tenderItem="tenderItem" v-bind:spHeader="spHeader" v-on:reload="reload"></ScheProgress>
-             <Construction v-if="selectTab=='Construction'" v-bind:tenderItem="tenderItem" v-bind:canEditUser="canEditConstruction"></Construction>
-             <Supervision v-if="selectTab=='Supervision'" v-bind:tenderItem="tenderItem" v-bind:canEditUser="canEditSupervision" v-on:reload="reload"></Supervision>
+             <ScheProgress v-if="tenderItem && spHeader" v-show="selectTab=='ScheProgress'" ref="SchProgress"  v-bind:tenderItem="tenderItem" v-bind:spHeader="spHeader" v-on:reload="reload">
+
+
+             </ScheProgress>
+             <Construction v-if="selectTab=='Construction'" v-bind:tenderItem="tenderItem" v-bind:canEditUser="canEditConstruction">
+                <template #constructionDaysSetting>
+                    <button v-if="  tenderItem.currentDate "  @click="constructionDoneEarly"  type="button" class="btn btn-color11-3 btn-block btn-sm mb-1"  >
+                        提前完工 ({{ Com.ToROCDate(tenderItem.currentDate.Date)}})</button>
+                </template>
+
+             </Construction>
+             <Supervision v-if="selectTab=='Supervision'" v-bind:tenderItem="tenderItem" v-bind:canEditUser="canEditSupervision" v-on:reload="reload">
+                <template #constructionBtn>
+                    <button v-if="tenderItem.IsSupervision" v-on:click="selectTab='Construction'" v-bind:disabled="isNotWork()" v-bind:class="{'btn-color3':!isActiveState('Construction'), 'btn-color11-2':isActiveState('Construction')}" class="btn btn-color11-2 btn-sm mb-2">
+                         查看施工日誌
+                     </button>
+                </template>
+             </Supervision>
              <AskPayment v-if="selectTab=='AskPayment'" v-bind:tenderItem="tenderItem"></AskPayment>
              <PriceAdjustment v-if="selectTab=='PriceAdjustment'" v-bind:tenderItem="tenderItem" v-bind:spHeader="spHeader"></PriceAdjustment>
          </div>
@@ -63,18 +89,21 @@
      </div>
 </template>
 <script>
+import Com from "../../Common/Common2";
     export default {
         data: function () {
             return {
                 targetId: null,
-                tenderItem: {},
+                tenderItem: null,
                 selectTab: '',
-                spHeader: {},
+                spHeader: null,
                 sepHeader: {}, //s20230329
                 canEditConstruction: false,
                 canEditSupervision: false,
+                Com :Com
             };
         },
+
         components: {
             ScheEng: require('./PM_SchEng.vue').default,
             ScheProgress: require('./PM_ScheProgress.vue').default,
@@ -84,7 +113,24 @@
             PriceAdjustment: require('./PM_PriceAdjustment.vue').default,
         },
         methods: {
+            constructionDoneEarly()
+            {
+                window.myAjax.post("EPCProgressManage/constructionDoneEarly", { id: this.targetId, tarDate: this.tenderItem.currentDate.Date })
+                .then(resp => {
+                    if(resp.data == true)
+                    {
+                        alert("完成");
+                        this.getItem();
+                        this.selectTab ='';
+                    }
+                    else{
+                        alert(resp.data);
+                    }
+                      
+                })
+            },
             isNotWork() {
+                if(!this.spHeader) return true;
                 if (this.targetId == null || this.sepHeader.SPState < 1 || this.spHeader.SPState != 1)
                 return true;
             },
@@ -181,8 +227,12 @@
                     .then(resp => {
                         if (resp.data.result == 0) {
                             this.tenderItem = resp.data.item;
+                            this.tenderItem.schOrgStartDate =  resp.data.schOrgStartDate;
+                            this.tenderItem.schOrgEndDate = resp.data.item.ProgressDoneEarly ?? resp.data.schOrgEndDate;
                             this.canEditConstruction = resp.data.editConstruction;
                             this.canEditSupervision = resp.data.editSupervision;
+                            this.tenderItem.ProgressDiagramAceessCode = resp.data.ProgressDiagramAceessCode
+                            this.tenderItem.IsSupervision = resp.data.IsSupervision;
                             this.getSEPHeader();//s20230329
                             this.getCEHeader();
                         } else

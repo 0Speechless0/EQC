@@ -151,11 +151,11 @@ namespace EQC.Controllers
         }
         public JsonResult insertTreeMain(TreePlantMain m, int engSeq)
         {
-            //if (m.EngCreatType == 2)
-            //{
-            //    var TownCity = service.GetTender(m.EngSeq ?? 0, 2).execUnitName;
-            //    service.setExecUnitSeq(m, TownCity);
-            //}
+            if (m.EngCreatType == 2)
+            {
+                var TownCity = service.GetTender(m.EngSeq ?? 0, 2).execUnitName;
+                service.setExecUnitSeq(m, TownCity);
+            }
             int insertSeq = service.insertTreeMain(m, engSeq);
 
             return Json(new { insertSeq = insertSeq});
@@ -596,8 +596,8 @@ namespace EQC.Controllers
                         e.Select(r => r.TPEngTypeName)
                         , 3);
                     processer.insertOneCol(
-                        e.Select(r => r._row.ScheduledPlantTotalArea)
-                        , 4);
+                        e.Select(r => service.getTreeSchArea(r._row.Seq, year))
+                    , 4);
                     processer.insertOneCol(
                         e.Select(r => r.ScheduledPlantDateStr)
                         , 5);
@@ -605,7 +605,7 @@ namespace EQC.Controllers
                         e.Select(r => r.ScheduledCompletionDateStr)
                         , 6);
                     processer.insertOneCol(
-                        e.Select(r => service.getTreeAclArea(r._row.Seq, year))
+                        e.Select(r => service.getTreeAclArea(r._row.Seq, year).ToString() )
                         , 7);
                     var treePlantsSchMonthsSum = e.Select(treeMain =>
                         service.getTreePlantSchMonthsAreaSum(treeMain._row.Seq, year));
@@ -757,7 +757,7 @@ namespace EQC.Controllers
                     treePlantTypeNum[j] = service
                         .getTreePlantTypeSchNum(i._row.Seq);
                     treeNumExport[j] = service.getTreeNumExport(i._row.Seq);
-                    NonNormalTreeNumExport[j] = service.getNonNormalTreeNumExport(i._row.Seq);
+                    //NonNormalTreeNumExport[j] = service.getNonNormalTreeNumExport(i._row.Seq);
                     j++;
 
                 }
@@ -792,20 +792,22 @@ namespace EQC.Controllers
                 processer.insertOneCol(
                     e.Select(r => r._row.PlantExpenses / 1000)
                     , 6);
-
                 processer.insertOneCol(
-                    e.Select(r => r._row.ScheduledPlantTotalArea)
-                    , 7);
+                    e.Select(r => service.getTreeSchArea(r._row.Seq, year))
+                , 7);
+                //processer.insertOneCol(
+                //    e.Select(r => r._row.ScheduledPlantTotalArea)
+                //    , 7);
                 processer.insertOneCol(
-                    treeNumExport.Select(r => r.ContainsKey("02931") ? r["02931"] : "")
+                    treeNumExport.Select(r => r.ContainsKey("喬木") ? r["喬木"] : "")
                     , 8);
                 processer.insertOneCol(
-                    treePlantTypeNum.Select(row => row.ContainsKey("02931") ? row["02931"] : 0), 9);
+                    treePlantTypeNum.Select(row => row.ContainsKey("喬木") ? row["喬木"] : 0), 9);
                 processer.insertOneCol(
-                    treeNumExport.Select(r => r.ContainsKey("02932") ? r["02932"] : "")
+                    treeNumExport.Select(r => r.ContainsKey("灌木") ? r["灌木"] : "")
                     , 10);
                 processer.insertOneCol(
-                    treePlantTypeNum.Select(row => row.ContainsKey("02932") ? row["02932"] : 0), 11);
+                    treePlantTypeNum.Select(row => row.ContainsKey("灌木") ? row["灌木"] : 0), 11);
 
                 processer.insertOneCol(
                     e.Select(r => r.BidAwardDateStr)
@@ -820,23 +822,26 @@ namespace EQC.Controllers
                     e.Select(r => r.ScheduledCompletionDateStr)
                     , 15);
                 processer.insertOneCol(
-                    e.Select(r => service.getTreePlantComplateArea(r._row.Seq, year)), 16);
+                    e.Select(r => r.ActualCompletionDateStr)
+                    , 16);
                 processer.insertOneCol(
-                    treePlantTypeAclNum.Select(types => types.ContainsKey("02931") ? types["02931"] : 0), 17);
+                    e.Select(r => service.getTreePlantComplateArea(r._row.Seq, year)), 17);
                 processer.insertOneCol(
-                    treePlantTypeAclNum.Select(types => types.ContainsKey("02932") ? types["02932"] : 0), 18);
+                    treePlantTypeAclNum.Select(types => types.ContainsKey("喬木") ? types["喬木"] : 0), 18);
                 processer.insertOneCol(
-                    e.Select(r => r._row.Contractor)
-                    , 19);
+                    treePlantTypeAclNum.Select(types => types.ContainsKey("灌木") ? types["灌木"] : 0), 19);
                 processer.insertOneCol(
-                    e.Select(r => r._row.PlantContractor)
+                    e.Select(r => r.ContractorNameResult)
                     , 20);
                 processer.insertOneCol(
-                    NonNormalTreeNumExport
+                    e.Select(r => r._row.PlantContractor)
                     , 21);
+                //processer.insertOneCol(
+                //    NonNormalTreeNumExport
+                //    , 21);
                 processer.insertOneCol(
                     e.Select(r => r._row.ExecutionStatusDescription)
-                    , 22);
+                    , 23);
 
                 processer.fowardStartRow(groupRowIndex);
 
@@ -851,9 +856,9 @@ namespace EQC.Controllers
                 sumRow[7] = processer.getSumFormula(lastSumRow + 1, groupRowIndex, "H");
                 sumRow[9] = processer.getSumFormula(lastSumRow + 1, groupRowIndex, "J");
                 sumRow[11] = processer.getSumFormula(lastSumRow + 1, groupRowIndex, "L");
-                sumRow[16] = processer.getSumFormula(lastSumRow + 1, groupRowIndex, "Q");
                 sumRow[17] = processer.getSumFormula(lastSumRow + 1, groupRowIndex, "R");
                 sumRow[18] = processer.getSumFormula(lastSumRow + 1, groupRowIndex, "S");
+                sumRow[19] = processer.getSumFormula(lastSumRow + 1, groupRowIndex, "T");
 
                 processer.insertRowContent(
                     sumRow,
@@ -881,7 +886,7 @@ namespace EQC.Controllers
                     col = 3;
                     summaryCurrentRow = SummarySheet.GetRow(summaryCurrentRowIndex + ii);
 
-                    new string[] { "F", "G", "H", "Q", "J", "R", "L", "S" }
+                    new string[] { "F", "G", "H", "R", "J", "S", "L", "T" }
                     .ToList()
                     .ForEach(colChar =>
                     {
@@ -977,9 +982,9 @@ namespace EQC.Controllers
             totalRow[7] = processer.getPlusFormula(sumRowIndex, "H");
             totalRow[9] = processer.getPlusFormula(sumRowIndex, "J");
             totalRow[11] = processer.getPlusFormula(sumRowIndex, "L");
-            totalRow[16] = processer.getPlusFormula(sumRowIndex, "Q");
             totalRow[17] = processer.getPlusFormula(sumRowIndex, "R");
             totalRow[18] = processer.getPlusFormula(sumRowIndex, "S");
+            totalRow[19] = processer.getPlusFormula(sumRowIndex, "T");
             processer.copyOutSideRowStyle(2, 0, 1);
             processer.insertRowContent(
                 totalRow

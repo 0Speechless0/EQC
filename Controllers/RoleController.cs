@@ -12,13 +12,22 @@ using EQC.ViewModel.Common;
 namespace EQC.Controllers
 {
     [SessionFilter]
-    public class RoleController : Controller
+    public class RoleController : MyController
     {
         private RoleService roleService = new RoleService();
         // GET: Role
         public ActionResult Index()
         {
             return View();
+        }
+        public void GetAll()
+        {
+            using( var context = new  EDMXModel.EQC_NEW_Entities(false))
+            {
+                var list = context.Role.Where(r => r.IsDelete == false && r.IsEnabled == true).ToList();
+
+                ResponseJson(new { l = list });
+            }
         }
 
         /// <summary> 取得角色列表 </summary>
@@ -44,6 +53,20 @@ namespace EQC.Controllers
                 l = list,
                 t = rows,
             }, JsonRequestBehavior.AllowGet); ;
+        }
+
+        public void Insert(EDMXModel.Role role)
+        {
+            using(var context = new EDMXModel.EQC_NEW_Entities() )
+            {
+                role.IsDefault = false;
+                role.IsEnabled = true;
+                role.IsDelete = false;
+                role.CreateTime = DateTime.Now;
+                context.Role.Add(role);
+                context.SaveChanges();
+                ResponseJson(true);
+            }
         }
 
         /// <summary> 儲存人員資料 </summary>

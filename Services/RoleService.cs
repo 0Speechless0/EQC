@@ -184,7 +184,8 @@ namespace EQC.Services
         {
             string sql = @"
 				SELECT Cast(Seq as varchar(10)) as Value, 
-				Name as Text FROM Role
+				Name as Text ,
+                IsDefault as IsSelected  FROM Role
 				WHERE IsDelete = 0 AND IsEnabled = 1";
             SqlCommand cmd = db.GetCommand(sql);
             return db.GetDataTableWithClass<SelectVM>(cmd);

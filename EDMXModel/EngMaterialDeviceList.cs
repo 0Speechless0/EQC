@@ -20,6 +20,7 @@ namespace EQC.EDMXModel
             this.EngMaterialDeviceList1 = new HashSet<EngMaterialDeviceList>();
             this.EngMaterialDeviceSummary = new HashSet<EngMaterialDeviceSummary>();
             this.EngMaterialDeviceTestSummary = new HashSet<EngMaterialDeviceTestSummary>();
+            this.EngMaterialDeviceControlSt = new HashSet<EngMaterialDeviceControlSt>();
         }
     
         public int Seq { get; set; }
@@ -51,5 +52,7 @@ namespace EQC.EDMXModel
         public virtual ICollection<EngMaterialDeviceSummary> EngMaterialDeviceSummary { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<EngMaterialDeviceTestSummary> EngMaterialDeviceTestSummary { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<EngMaterialDeviceControlSt> EngMaterialDeviceControlSt { get; set; }
     }
 }

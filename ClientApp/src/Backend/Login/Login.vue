@@ -42,7 +42,11 @@
                         <a href="##" @click.stop="onLogin1()">重新發送驗證碼</a>
                     </div>
                 </div>
+                <div class="row"><div class="col-12 mb-3">
+                    點擊「登入」即表示您同意「工程數位轉型系統」的 <a href="../TemplateFile/隱私權及個人資料保護政策.pdf" target="_blank">隱私權及個人資料保護政策</a>
+                </div></div>
                 <div class="mt-5"><small class="t-center">經濟部水利署 Copyright © 2022 All Rights Reserved </small></div>
+
             </div>
         </div>
         <!-- div class="login">
@@ -122,10 +126,11 @@
                 }
                 this.onLogin1();
             },
-            onLogin1() {
+            onLogin1(token) {
                 this.checkLevel = 0;
                 this.emailMsg = '';
-                axios.post('/Login/CheckUserLevel1', { userNo: this.userNo, passWd: this.passWd })
+
+                axios.post('/Login/CheckUserLevel1', { userNo: this.userNo, passWd: this.passWd , token : token})
                     .then(async(config) => {
                         console.log(config);
                         if (config.data.result == 1) {
@@ -229,6 +234,11 @@
             },
         },
         mounted() {
+            let urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('token')) {
+                var token = urlParams.get('token') ;
+                this.onLogin1(token); 
+            }
             this.refreshCode();
             //DO TO 測試用 開發完成要拿掉
             //this.userNo = 'guest';

@@ -6,6 +6,8 @@ using System.Linq;
 using System.Web;
 using System.Text;
 using EQC.Common;
+using EQC.EDMXModel;
+
 namespace EQC.Services
 {
     public class APIUserService : BaseService
@@ -62,18 +64,43 @@ namespace EQC.Services
         internal void register(string name, string actionList, string authCode)
         {
             if (checkAuthCodeExist(authCode)) throw new Exception("密碼已經註冊");
+
+            string selectSql = @"
+                select top 1 Origin from APIUser where Origin = '{0}'
+            ";
             string sql = @"
                 insert into APIUser(Origin, Name, ActionList, AuthCode)
                     values (@Origin, @Name, @ActionList, @AuthCode)    
         
             
             ";
-            var cmd = db.GetCommand(sql);
-            cmd.Parameters.AddWithValue("@Origin", HttpContext.Current.Request.UserHostAddress);
-            cmd.Parameters.AddWithValue("@Name", name);
-            cmd.Parameters.AddWithValue("@ActionList", actionList);
-            cmd.Parameters.AddWithValue("@AuthCode", authCode);
-            db.ExecuteNonQuery(cmd);
+
+            string sqlUpdate = @"
+                update APIUser set AuthCode = '{0}', ActionList ='{1}'
+                where Origin = '{2}'
+
+            ";
+            var result = db.ExecuteScalar(db.GetCommand(String.Format(selectSql, HttpContext.Current.Request.UserHostAddress)));
+            
+            if(result == null)
+            {
+                var cmd = db.GetCommand(sql);
+                cmd.Parameters.AddWithValue("@Origin", HttpContext.Current.Request.UserHostAddress);
+                cmd.Parameters.AddWithValue("@Name", name);
+                cmd.Parameters.AddWithValue("@ActionList", actionList);
+                cmd.Parameters.AddWithValue("@AuthCode", authCode);
+                db.ExecuteNonQuery(cmd);
+            }
+            else
+            {
+                db.ExecuteNonQuery(db.GetCommand(String.Format(
+                    sqlUpdate, 
+                    authCode,
+                    actionList,
+                    HttpContext.Current.Request.UserHostAddress
+                    )));
+            }
+
         }
     }
 }

@@ -13,6 +13,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
+using EQC.Detection;
 
 namespace EQC.Controllers
 {
@@ -26,6 +27,117 @@ namespace EQC.Controllers
             //ViewBag.Title = "監造計畫";
             Utils.setUserClass(this);
             return View("SupervisionPlanList");
+        }
+
+        public ActionResult MergeItemsChapter5Summary(string items )
+        {
+            using(var context = new EQC_NEW_Entities() )
+            {
+                var itemsList = items.Split(',')
+                    .Select(e =>  Int32.Parse(e.Trim()) )
+                    .ToList();
+                if(itemsList.Count > 1)
+                {
+                    var targetItem  = context.EngMaterialDeviceList.Find(itemsList[0]);
+                    if (targetItem == null) return Json("第1個項次不存在");
+                    if(targetItem.EngMaterialDeviceTestSummary.Count > 0) return Json("第1個項已處在品質查證階段，無法合併");
+                    var targetItemSummary = targetItem.EngMaterialDeviceSummary.FirstOrDefault();
+                    itemsList = itemsList
+                        .Skip(1)
+                        .ToList();
+                    int i = 1;
+                    targetItem.IsAuditVendor = targetItem.IsAuditVendor ?? false;
+                    targetItem.IsAuditCatalog = targetItem.IsAuditCatalog ?? false;
+                    targetItem.IsAuditReport = targetItem.IsAuditReport ?? false;
+                    targetItem.IsAuditSample = targetItem.IsAuditSample ?? false;
+
+                    if(targetItemSummary != null)
+                    {
+                        targetItemSummary.IsSampleTest = targetItemSummary.IsSampleTest ?? false;
+                        targetItemSummary.IsFactoryInsp = targetItemSummary.IsFactoryInsp ?? false;
+                    }
+                  
+
+                    foreach (var itemSeq in itemsList)
+                    {
+                        var item = context.EngMaterialDeviceList.Find(itemSeq);
+                        if(item == null)
+                        {
+                            return Json($"第{++i}項次不存在");
+                        }
+                        if (item.EngMaterialDeviceTestSummary.Count > 0) return Json($"第{i}個項已處在品質查證階段，無法合併");
+                        var itemSummary = item.EngMaterialDeviceSummary.FirstOrDefault();
+
+
+                        item.IsAuditVendor = item.IsAuditVendor ?? false;
+                        item.IsAuditCatalog = item.IsAuditCatalog ?? false;
+                        item.IsAuditReport = item.IsAuditReport ?? false;
+                        item.IsAuditSample = item.IsAuditSample ?? false;
+
+                        if (itemSummary != null)
+                        {
+                            itemSummary.IsSampleTest = itemSummary.IsSampleTest ?? false;
+                            itemSummary.IsFactoryInsp = itemSummary.IsFactoryInsp ?? false;
+                        }
+
+
+                        if (targetItemSummary?.ContactUnit != itemSummary?.ContactUnit)
+                        {
+                            return Json("單位不一樣無法合併");
+                        }
+                        if (targetItemSummary?.IsSampleTest != itemSummary?.IsSampleTest)
+                        {
+                            return Json("是否取樣條件不一致");
+                        }
+                        if (targetItemSummary?.IsFactoryInsp != itemSummary?.IsFactoryInsp)
+                        {
+                            return Json("是否驗廠條件不一致");
+                        }
+
+                        if (targetItem .IsAuditVendor != item.IsAuditVendor)
+                        {
+                            return Json("協力廠商勾選不一致");
+                        }
+                        if (targetItem .IsAuditCatalog != item.IsAuditCatalog)
+                        {
+                            return Json("型錄勾選不一致");
+                        }
+                        if (targetItem .IsAuditReport != item.IsAuditReport)
+                        {
+                            return Json("相關報告勾選不一致");
+                        }
+                        if (targetItem .IsAuditSample != item.IsAuditSample)
+                        {
+                            return Json("樣品勾選不一致");
+                        }
+
+                        targetItem.ItemNo = targetItem.ItemNo.Trim() + ";" + item.ItemNo.Trim();
+                        targetItemSummary.ItemNo = targetItemSummary.ItemNo.Trim() + ";" + itemSummary.ItemNo.Trim();
+                        targetItem.MDName = targetItem.MDName.Trim() + ";" + item.MDName.Trim();
+                        targetItemSummary.MDName = targetItemSummary.MDName.Trim() + ";" + itemSummary.MDName.Trim();
+                        item.EngMaterialDeviceControlSt.ToList()
+                            .ForEach(itemCtr =>
+                            {
+                                targetItem.EngMaterialDeviceControlSt.Add(itemCtr);
+
+                            });
+                        if (targetItem.EngMaterialDeviceControlSt.Count > 1)
+                            return Json("欲合併項目中的管理標準加總數量不得超過一個");
+                        if(item.OtherAudit?.Trim() != null && item.OtherAudit.Length > 0)
+                            targetItem.OtherAudit = targetItem.OtherAudit?.Trim() + ";" + item.OtherAudit?.Trim();
+                        targetItem.ModifyTime = DateTime.Now;
+
+                        targetItemSummary.ContactQty += itemSummary.ContactQty;
+                        targetItemSummary.ModifyTime = DateTime.Now;
+                        item.EngMaterialDeviceSummary.Remove(itemSummary);
+                        context.EngMaterialDeviceList.Remove(item);
+
+                    }
+                    context.SaveChanges();
+                }
+              
+            }
+            return Json("成功");
         }
         public ActionResult GetUserUnit()
         {
@@ -395,15 +507,15 @@ namespace EQC.Controllers
             });
         }
         //監造計畫書 下載
-        public ActionResult PlanDownload(int seq, int type)
+        public ActionResult PlanDownload(int seq, int type, DownloadArgExtension downloadArg = null)
         {
             try
             {
                 switch (type)
                 {
-                    case 1: return PlanDownloadExt(seq, "pdf");
-                    case 2: return PlanDownloadExt(seq, "odt");
-                    default: return PlanDownloadExt(seq, "docx");
+                    case 1: return PlanDownloadExt(seq, "pdf", downloadArg);
+                    case 2: return PlanDownloadExt(seq, "odt", downloadArg);
+                    default: return PlanDownloadExt(seq, "docx", downloadArg);
                 }
             }
             catch(Exception e)
@@ -413,7 +525,7 @@ namespace EQC.Controllers
             return null;
         
         }
-        public ActionResult PlanDownloadExt(int seq, string ext)
+        public ActionResult PlanDownloadExt(int seq, string ext, DownloadArgExtension downloadArg = null)
         {
             List<EngMainEditVModel> items = engMainService.GetItemBySeq<EngMainEditVModel>(seq);
             if (items.Count == 0)
@@ -460,14 +572,14 @@ namespace EQC.Controllers
                     message = "無檔案資料"
                 }, JsonRequestBehavior.AllowGet);
             }
-            Stream iStream;
+            FileStream iStream;
             switch(ext)
             {
                 case "pdf": iStream = fileName.getFileStreamWithConvert(fileName.CreatePDF, ext);break;
                 case "odt": iStream = fileName.getFileStreamWithConvert(fileName.CreateODT, ext);break;
                 default : iStream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read);break;
             }
-
+            downloadArg?.targetPathSetting(iStream.Name);
             return File(iStream, "application/blob", items[0].EngNo + "_監造計畫書."+ext);
         }
 
@@ -482,7 +594,8 @@ namespace EQC.Controllers
                 return Json(new
                 {
                     result = 0,
-                    item = items[0]
+                    item = items[0],
+                    Progress = ProgressSessionStorage.GetProgress(id)
                 });
             }
             else
@@ -556,7 +669,7 @@ namespace EQC.Controllers
         {
             //System.Diagnostics.Debug.WriteLine("op1: " + item.MDTestItem);
             EngMaterialDeviceListService service = new EngMaterialDeviceListService();
-            if (service.Update(item))
+            if (service.Update(item, false))
             {
                 //List<EngMaterialDeviceListVModel> items = service.GetItemBySeq<EngMaterialDeviceListVModel>(item.Seq);
                 return Json(new
@@ -568,10 +681,11 @@ namespace EQC.Controllers
             }
             else
             {
+
                 return Json(new
                 {
                     result = -1,
-                    message = "資料儲存失敗，或資料不可變更"
+                    message = "資料儲存失敗"
                 });
             }
         }
@@ -984,19 +1098,22 @@ namespace EQC.Controllers
         public JsonResult Chapter6Save(EquOperTestListVModel item)
         {
             //System.Diagnostics.Debug.WriteLine("op1: " + item.MDTestItem);
-
+            EquOperTestListService service = new EquOperTestListService();
             using (var context = new EQC_NEW_Entities())
             {
                 if (context.ConstCheckRec.Where(rec => rec.ItemSeq == item.Seq && rec.CCRCheckType1 == 2).Count() > 0)
                 {
+                    item.DataKeep = true;
+                    service.Update(item.Seq, item.OrderNo.Value, item.EPKind.Value, item.ItemName, item.DataKeep);
                     return Json(new
                     {
+                        DataKeep = item.DataKeep,
                         result = -1,
-                        message = "已有抽查，無法刪除",
+                        message = "資料儲存完成",
                     });
                 }
             }
-                        EquOperTestListService service = new EquOperTestListService();
+                      
             if (service.Update(item.Seq, item.OrderNo.Value, item.EPKind.Value, item.ItemName, item.DataKeep) == 0)
             {
                 return Json(new
@@ -1394,19 +1511,22 @@ namespace EQC.Controllers
         public JsonResult Chapter701Save(ConstCheckListVModel item)
         {
             //System.Diagnostics.Debug.WriteLine("op1: " + item.MDTestItem);
-
+            ConstCheckListService service = new ConstCheckListService();
             using (var context = new EQC_NEW_Entities())
             {
                 if(context.ConstCheckRec.Where(rec => rec.ItemSeq == item.Seq && rec.CCRCheckType1 == 1).Count() > 0)
                 {
+                    item.DataKeep = true;
+                    service.Update(item.Seq, item.OrderNo.Value, item.ItemName, item.DataKeep);
                     return Json(new
                     {
+                        DataKeep = item.DataKeep,
                         result = -1,
-                        message = "已有抽查，無法刪除",
+                        message = "資料儲存完成",
                     });
                 }
             }
-            ConstCheckListService service = new ConstCheckListService();
+
 
             if (service.Update(item.Seq, item.OrderNo.Value, item.ItemName, item.DataKeep) == 0)
             {
@@ -1648,7 +1768,7 @@ namespace EQC.Controllers
             });
         }
         //抽查紀錄表
-        public ActionResult Chapter701DownloadCheckSheet(int engMain, int seq)
+        public ActionResult Chapter701DownloadCheckSheet(int engMain, int seq, DownloadArgExtension downloadArg = null)
         {
             List<ConstCheckControlStModel> items = new ConstCheckControlStService().GetList<ConstCheckControlStModel>(seq);
 
@@ -1718,6 +1838,7 @@ namespace EQC.Controllers
             fs.Close();
 
             Stream iStream = new FileStream(outFile, FileMode.Open, FileAccess.Read, FileShare.Read);
+            downloadArg?.targetPathSetting(outFile, $"{masterItems[0].ItemName}紀錄表.docx");
             return File(iStream, "application/blob", $"{masterItems[0].ItemName}紀錄表.docx");
         }
 
@@ -1810,18 +1931,22 @@ namespace EQC.Controllers
         public JsonResult Chapter702Save(EnvirConsListVModel item)
         {
             //System.Diagnostics.Debug.WriteLine("op1: " + item.MDTestItem);
+            EnvirConsListService service = new EnvirConsListService();
             using (var context = new EQC_NEW_Entities())
             {
                 if (context.ConstCheckRec.Where(rec => rec.ItemSeq == item.Seq && rec.CCRCheckType1 == 4).Count() > 0)
                 {
+                    item.DataKeep = true;
+                    service.Update(item.Seq, item.OrderNo.Value, item.ItemName, item.DataKeep);
                     return Json(new
                     {
+                        DataKeep = item.DataKeep,
                         result = -1,
-                        message = "已有抽查，無法刪除",
+                        message = "資料儲存完成",
                     });
                 }
             }
-            EnvirConsListService service = new EnvirConsListService();
+          
             if (service.Update(item.Seq, item.OrderNo.Value, item.ItemName, item.DataKeep) == 0)
             {
                 return Json(new
@@ -2058,7 +2183,7 @@ namespace EQC.Controllers
             });
         }
         //抽查紀錄表
-        public ActionResult Chapter702DownloadCheckSheet(int engMain, int seq)
+        public ActionResult Chapter702DownloadCheckSheet(int engMain, int seq, DownloadArgExtension downloadArg = null)
         {
             List<EnvirConsControlStModel> items = new EnvirConsControlStService().GetList<EnvirConsControlStModel>(seq);
 
@@ -2149,6 +2274,7 @@ namespace EQC.Controllers
             fs.Close();
 
             Stream iStream = new FileStream(outFile, FileMode.Open, FileAccess.Read, FileShare.Read);
+            downloadArg?.targetPathSetting(outFile, $"{masterItems[0].ItemName}紀錄表.docx");
             return File(iStream, "application/blob", $"{masterItems[0].ItemName}紀錄表.docx");
         }
 
@@ -2240,18 +2366,22 @@ namespace EQC.Controllers
         public JsonResult Chapter703Save(OccuSafeHealthListVModel item)
         {
             //System.Diagnostics.Debug.WriteLine("op1: " + item.MDTestItem);
+            OccuSafeHealthListService service = new OccuSafeHealthListService();
             using (var context = new EQC_NEW_Entities())
             {
                 if (context.ConstCheckRec.Where(rec => rec.ItemSeq == item.Seq && rec.CCRCheckType1 == 3).Count() > 0)
                 {
+                    service.Update(item.Seq, item.OrderNo.Value, item.ItemName, item.DataKeep);
+                    item.DataKeep = true;
                     return Json(new
                     {
+                        DataKeep = item.DataKeep,
                         result = -1,
-                        message = "已有抽查，無法刪除",
+                        message = "資料儲存完成",
                     });
                 }
             }
-            OccuSafeHealthListService service = new OccuSafeHealthListService();
+
             if (service.Update(item.Seq, item.OrderNo.Value, item.ItemName, item.DataKeep) == 0)
             {
                 return Json(new
@@ -2487,7 +2617,7 @@ namespace EQC.Controllers
             });
         }
         //抽查紀錄表
-        public ActionResult Chapter703DownloadCheckSheet(int engMain, int seq)
+        public ActionResult Chapter703DownloadCheckSheet(int engMain, int seq, DownloadArgExtension downloadArg = null)
         {
             List<OSHCTpModel> items = new OccuSafeHealthControlStService().GetList<OSHCTpModel>(seq);
 
@@ -2547,6 +2677,7 @@ namespace EQC.Controllers
             fs.Close();
 
             Stream iStream = new FileStream(outFile, FileMode.Open, FileAccess.Read, FileShare.Read);
+            downloadArg?.targetPathSetting(outFile, $"{masterItems[0].ItemName}紀錄表.docx");
             return File(iStream, "application/blob", $"{masterItems[0].ItemName}紀錄表.docx");
         }
 
@@ -2578,7 +2709,7 @@ namespace EQC.Controllers
             string filePath = Utils.GetEcologicalCheckRemoteFolder(engMain, "FileUploads/EcologicalCheck"); //施工階段
             string filePath2 = Utils.GetEcologicalCheckRemoteFolder(engMain, "FileUploads/EcologicalCheck2"); //設計階段
             string successMessage = "計畫書背景產製中，預估需要2 - 5分鐘，請可繼續操作...";
-
+            var user = Utils.getUserInfo();
 
             if (!System.IO.File.Exists(Path.Combine(filePath, EcologicalItem.SelfEvalFilename ?? "")) &&
                 !System.IO.File.Exists(Path.Combine(filePath, EcologicalItem.ConservMeasFilename ?? "")) &&
@@ -2607,7 +2738,10 @@ namespace EQC.Controllers
             SupervisionProjectListService service = new SupervisionProjectListService();
             if (service.UpdateDocState(engMain, SupervisionProjectListService.docstate_PlanMaking) == 1)
             {
-                Task.Run( async() => await Export.ExportWord(items[0].Seq, HttpContext));
+                DownloadTaskDetection.AddTaskQueneToRun(() => {
+                    new Export().ExportWord(items[0].Seq, HttpContext);
+                }, user.Seq);
+                //Task.Run( async() => await Export.ExportWord(items[0].Seq, HttpContext));
 
 
                 return Json(new

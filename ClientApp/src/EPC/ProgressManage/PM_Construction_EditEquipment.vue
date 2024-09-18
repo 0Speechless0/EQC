@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div ref="myself">
         <div class="table-responsive">
             <table class="table table-responsive-md table-hover table2">
                 <thead class="insearch">
@@ -234,7 +234,8 @@
             }
         },
         mounted() {
-            console.log('mounted() 機具管理');
+            console.log('mounted() 機具管理' );
+
             this.getEquipmentOptions();
             this.getResords();
             this.onNewRecord();

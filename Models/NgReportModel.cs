@@ -9,11 +9,13 @@ namespace EQC.Models
     {//不符合事項報告        
         public byte CCRCheckType1 { get; set; }
         public string CCRPosDesc { get; set; }
+
+        public DateTime? CCRCheckDate { get; set; } //檢查日期
         public int? SupervisorUserSeq { get; set; }
         public int? SupervisorDirectorSeq { get; set; }
         public string CCRRealCheckCond { get; set; }//實際抽查情形
         
-        public DateTime? CCRCheckDate { get; set;  } //檢查日期
+
 
         //取得 照片群組清單
         public List<NgReportPhotoGroupModel> photoGroups = new List<NgReportPhotoGroupModel>();

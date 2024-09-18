@@ -21,9 +21,35 @@ namespace EQC.Services
 
     public class ChapterItemModel
     {
+        static Dictionary<int, int> CCRCheckType1Dic = new Dictionary<int, int>() { { 701, 1 }, { 702, 4 }, { 703, 3 }, { 6, 2 } };
         public int Seq { get; set; }
         public string ItemName { get; set; }
         public int chapter { get; set; }
+
+        public byte CCRCheckType
+        {
+            get
+            {
+                if (CCRCheckType1Dic.ContainsKey(chapter))
+                    return (byte)CCRCheckType1Dic[chapter];
+                return 0;
+            }
+        }
+    }
+
+    public class MobileEngMainModel
+    {
+        public int Seq { get; set; }
+        public string EngNo { get; set; }
+        public string EngName { get; set; }
+
+        public string ExecUnitName { get; set; }
+
+        public int ExecType { get; set; }
+
+        public bool? recSignNeeded { get; set; }
+
+        public bool IsConstCheckOwn { get; set; }
     }
     public class ChapterControlModel
     {
@@ -31,6 +57,8 @@ namespace EQC.Services
         public string ItemName { get; set; }
         public string ControlInfo { get; set; }
         public int Stage { get; set; }
+
+        public int StandardCount { get; set; }
     }
     public class UploadCheckJsonModel
     {
@@ -49,21 +77,63 @@ namespace EQC.Services
 
         public int projectType { get; set; }
 
-        public Dictionary<int, object[]> standardResult {get;set;}
+        public Dictionary<int, object[]> standardResult { get; set; }
 
         public string[][][] imageData { get; set; }
 
         public constCheckSignatures[] signature { get; set; }
 
+
+
     }
 
     public class MobileAPIService : BaseService
     {
-       private readonly EQC_NEW_Entities context;
-        ConstCheckRecService constCheckRecService ;
+        static Dictionary<byte?, string>  statusDic = new Dictionary<byte?, string>() { { 1, "施工前" }, { 2, "施工中" }, { 3, "施工後" } };
+        static Func<byte?, string> FlowFuc = (flow) => {
+            if (statusDic.TryGetValue(flow, out string value))
+                return value;
+            return "";
+        };
+
+        private readonly EQC_NEW_Entities context;
+
+        public void SignSuper(int recSeq, string userNo)
+        {
+            using(var context = new EQC_NEW_Entities())
+            {
+                var engSeq = context.ConstCheckRec.Find(recSeq).EngConstruction.EngMain.Seq;
+                var user = context.UserMain.Where(r => r.UserNo == userNo).FirstOrDefault();
+                var signature = new constCheckSignatures
+                {
+                    SignatureImgeBase64 = "",
+                    SignatureRole = 3,
+                    EngSeq = engSeq,
+                    ConstCheckSeq =recSeq,
+                    CreateTime = DateTime.Now,
+                    Token = "x",
+                    SignatureVal = user?.DisplayName
+                };
+                if(context.constCheckSignatures.Where(r => r.SignatureRole == 3 && r.ConstCheckSeq ==  recSeq).Count() ==  0)
+                {
+                    context.constCheckSignatures.Add(
+                        signature
+                    );
+                }
+
+                context.SaveChanges();
+                //UpdateUserSignFile(signature);
+            }
+
+
+        }
+
+        ConstCheckRecService constCheckRecService;
+        UserService userService;
         public MobileAPIService()
         {
             context = new EQC_NEW_Entities();
+            userService = new UserService();
             constCheckRecService = new ConstCheckRecService();
         }
 
@@ -72,10 +142,62 @@ namespace EQC.Services
             context.Dispose();
         }
 
+        //public void UpdateUserSignFile(constCheckSignatures signature)
+        //{
+        //    string signatureBase64 = signature.SignatureImgeBase64.Split(',')[1];
+        //    int? userSeq = context.UserMain.Where(row => row.DisplayName == signature.SignatureVal).FirstOrDefault()?.Seq;
+        //    if (userSeq != null)
+        //    {
+        //        string uniqueName = UploadFilesProcesser.GetUniqueFileName();
+        //        $"SignatureFiles/{userSeq}/{uniqueName}.png".SaveImageByBase64(signatureBase64.Replace(@"\", ""), 1);
+        //        SignatureFile signatureFile = context.SignatureFile.Where(r => r.UserMainSeq == userSeq).FirstOrDefault();
+        //        if (signatureFile != null)
+        //        {
+        //            context.SignatureFile.Remove(signatureFile);
+        //            $@"SignatureFiles\{userSeq}\{signatureFile.FileName}".removeFile();
+
+        //        }
+        //        context.SignatureFile.Add(new SignatureFile
+        //        {
+        //            UserMainSeq = userSeq,
+        //            FilePath = $@"\FileUploads\SignatureFiles\{userSeq}",
+        //            FileName = $"{uniqueName}.jpg",
+        //            DisplayFileName = "簽名.jpg"
+        //        });
+        //    }
+        //}
+
+
+        public List<object> GetEngRecSuperUnSigin(string engNo)
+        {
+            using (var context = new EQC_NEW_Entities())
+            {
+                
+                var list = GetEngChapterItems(engNo);
+                var recs = context.ConstCheckRec
+                    .ToList()
+                    .Join(list, r => r.CCRCheckType1, r2 => r2.CCRCheckType, (r1, r2) => r1)
+                    .Join(list, r => r.ItemSeq, r2 => r2.Seq, (r1, r2) => r1)
+                    ;
+
+                return recs.Except(
+                    recs.Join(context.constCheckSignatures.Where(r => r.SignatureRole == 3), 
+                        r1 => r1.Seq, r2 => r2.ConstCheckSeq, (r1, r2) => r1)
+                    )
+                .Select(r => new
+                    {
+                        Name = $"{r.EngConstruction.ItemName}-{Utils.ChsDate(r.CCRCheckDate)}-{r.CCRPosDesc}-{FlowFuc(r.CCRCheckFlow)}",
+                        RecSeq = r.Seq
+                    }
+                ).ToList<object>();
+            }
+        }
         public List<T> GetEngSeqByEngNo<T>(string engNo)
         {
             string sql = @"
-                SELECT e.Seq, e.EngName, e.EngNo, e.EngYear, u.Name execUnitName, e.BuildContractorContact, e.SupervisorDirector FROM EngMain e
+                SELECT e.Seq, e.EngName, e.EngNo, e.EngYear, u.Name execUnitName, e.BuildContractorContact, e.SupervisorDirector 
+                ,e.SupervisorExecType, e.ExecType
+                FROM EngMain e
                 inner join Unit u on u.Seq = e.ExecUnitSeq
                 where e.EngNo=@engNo";
             SqlCommand cmd = db.GetCommand(sql);
@@ -115,7 +237,7 @@ namespace EQC.Services
                 new ConstCheckControlStService()
                     .GetList<ConstCheckControlStModel>(seq)
                     .Where(row => stages?.Contains(row.CCFlow1 ?? 0) ?? true)
-                    .GroupBy(row => row.CCManageItem1)
+                    .GroupBy(row => row.CCManageItem1 ?? "")
                     .ToList()
                     .ForEach(group => {
                         string standardStr = group.Aggregate($"", (acc, cur) => acc += cur.CCCheckStand1+"  ");
@@ -136,7 +258,7 @@ namespace EQC.Services
             {
                 new OccuSafeHealthControlStService()
                     .GetList<OccuSafeHealthControlStModel>(seq)
-                    .GroupBy(row => row.OSCheckItem1)
+                    .GroupBy(row => row.OSCheckItem1 ?? "")
                     .ToList()
                     .ForEach(group => {
                         string standardStr = group.Aggregate($"", (acc, cur) => acc += cur.OSStand1 + "  ");
@@ -158,7 +280,7 @@ namespace EQC.Services
                 new EnvirConsControlStService()
                     .GetList<EnvirConsControlStModel>(seq)
                     .Where(row => stages?.Contains(row.ECCFlow1 ?? 0) ?? true)
-                    .GroupBy(row => row.ECCCheckItem1)
+                    .GroupBy(row => row.ECCCheckItem1 ?? "")
                     .ToList()
                     .ForEach(group => {
                         string standardStr = group.Aggregate($"", (acc, cur) => acc += cur.ECCStand1 + "  ");
@@ -174,10 +296,19 @@ namespace EQC.Services
 
                     });
             }
+            controlList.ForEach(e =>
+            {
+                e.ControlInfo.Split('_').Aggregate("_", (a, c) =>
+                {
+                    if (a != c && c== "" )
+                        e.StandardCount++;
+                    return c;
+                });
+            });
             return controlList;
         }
 
-        public List<object> GetEngListByUser(string userNo, int engYear = 0, string str = null)
+        public List<MobileEngMainModel> GetEngListByUser(string userNo, int engYear = 0, string str = null)
         {
             string getRole = @" Select distinct ur.RoleSeq from UserRole ur
                 inner join UserUnitPosition uu on uu.Seq = ur.UserUnitPositionSeq
@@ -193,42 +324,36 @@ namespace EQC.Services
                 from
 
 	                (select 
-	                ROW_NUMBER() OVER(PARTITION BY p.PrjXMLSeq ORDER BY p.CreateTime desc) rowNumber,
+	                ROW_NUMBER() OVER(PARTITION BY e.EngNo ORDER BY p.CreateTime desc) rowNumber,
                     e.Seq, 
                     e.EngNo,  
                     e.EngName,
+                    e.SupervisorExecType ExecType,
                     cast(  (select Name from Unit where Unit.Seq = e.ExecUnitSeq ) as varchar(20)) as ExecUnitName  
                     from EngMain e
-                    inner join ProgressData p on p.PrjXMLSeq = e.PrjXMLSeq
+                    left join ProgressData p on p.PrjXMLSeq = e.PrjXMLSeq
                     left join ConstCheckUser c on c.EngSeq = e.Seq
                     left join UserMain u on u.Seq = c.UserSeq
                     where 
                 
-                    p.PDExecState = '施工中' and
+                    (p.PDExecState = '施工中'  or e.EngNo Like '111%99') and
             
-                    ((e.PrjXMLSeq is not null " + Utils.getAuthoritySql("e.", userNo) + @")
+                    (( 1= 1" + Utils.getAuthoritySql("e.", userNo) + @")
                     or u.userNo= @UserNo)
-                    and (e.EngYear = @Year or @Year = 0)
+                    and (e.EngYear = @Year or @Year = 0 )
                     and ( e.EngName Like '%'+ @Str+'%' or e.EngNo Like '%'+@Str+'%' or @Str is null)
-
+        
 	                ) c　where c.rowNumber = 1
 
 
 
             ";
-
             cmd = db.GetCommand(sql);
             cmd.Parameters.AddWithValue("@userNo", userNo);
             cmd.Parameters.AddWithValue("@Year", engYear);
             cmd.Parameters.AddWithValue("@Str", (object)str ?? DBNull.Value);
 
-            return db.GetDataTable(cmd).Rows.Cast<DataRow>().Select(row => new
-            {
-                Seq = row.Field<object>("Seq"),
-                EngNo = row.Field<string>("EngNo"),
-                EngName = row.Field<string>("EngName"),
-                ExecUnitName = row.Field<string>("ExecUnitName")
-            }).ToList<object>();
+            return db.GetDataTableWithClass<MobileEngMainModel>(cmd);
 
         }
         public List<ChapterItemModel> GetEngChapterItems(string engNo)
@@ -283,7 +408,9 @@ namespace EQC.Services
                 SignatureRole = r.SignatureRole,
                 EngSeq = r.EngSeq,
                 ConstCheckSeq = r.ConstCheckSeq,
-                SignatureVal = r.SignatureVal
+                SignatureVal = r.SignatureVal,
+                ModifyTimeString = Utils.ToChsDateTime(r.ModifyTime),
+                CreateTimeString = Utils.ToChsDateTime(r.CreateTime)
             }).ToList();
             return list;
         }
@@ -291,10 +418,10 @@ namespace EQC.Services
         {
             string host = Utils.getHost();
 
-            return  $"MobileConstCheckDocuments/{engSeq}"
+            return  $"MobileConstCheckDocuments1/{engSeq}"
                 .GetFiles()
                 .Select(filePath => new {
-                    DownLoadLink = $"{host}/FileUploads/MobileConstCheckDocuments/{engSeq}/{Path.GetFileName(filePath).getEscapeDataString()}",
+                    DownLoadLink = $"{host}/FileUploads/MobileConstCheckDocuments1/{engSeq}/{Path.GetFileName(filePath).getEscapeDataString()}",
                     Description = Path.GetFileName(filePath)
 
                 }
@@ -350,68 +477,71 @@ namespace EQC.Services
             var engNo = new EngMainService().GetItemBySeq<EDMXModel.EngMain>(uploadObject.engSeq).FirstOrDefault()?.EngNo;
             Dictionary<string, ChapterControlModel> controlDic = new Dictionary<string, ChapterControlModel>();
             var exceptControlSeqs = new List<int>();
-            if (uploadObject.chapter == 6)
-            {
-                controlDic = new EquOperTestListService()
-                    .GetList<EquOperControlStModel>(engNo)
-                    .GroupBy(row => (row.EPCheckItem1.Replace("\r\n", "") + " " + row.EPCheckItem2.Replace("\r\n", "")).Trim())
-                    .Select(group => {
-                        if (group.Count() > 1) exceptControlSeqs.AddRange(group.Skip(1).Select(r => r.Seq));
-                        return new ChapterControlModel
-                        {
-                            Seq = group.First().Seq,
-                            ItemName = group.Key
-                        };
-                    })
-                    .ToDictionary(row => row.ItemName);
-                
-            }
-            if (uploadObject.chapter == 701)
-            {
-                controlDic = new ConstCheckControlStService()
-                    .GetList<ConstCheckControlStModel>(uploadObject.constCheckSeq)
-                    .GroupBy(row => row.CCManageItem1.Replace("\r\n", "").Trim() )
-                    .Select(group => {
-                        if (group.Count() > 1) exceptControlSeqs.AddRange(group.Skip(1).Select(r => r.Seq));
-                        return new ChapterControlModel
-                        {
-                            Seq = group.First().Seq,
-                            ItemName = group.Key
-                        };
-                    })
-                    .ToDictionary(row => row.ItemName);
-            }
-            if (uploadObject.chapter == 702)
-            {
-                controlDic = new OccuSafeHealthControlStService()
-                    .GetList<OccuSafeHealthControlStModel>(uploadObject.constCheckSeq)
-                    .GroupBy(row => row.OSCheckItem1.Replace("\r\n", "").Trim())
-                    .Select(group => {
-                        if (group.Count() > 1) exceptControlSeqs.AddRange(group.Skip(1).Select(r => r.Seq));
-                        return new ChapterControlModel
-                        {
-                            Seq = group.First().Seq,
-                            ItemName = group.Key
-                        };
-                    })
-                    .ToDictionary(row => row.ItemName);
 
-            }
-            if (uploadObject.chapter == 703)
-            {
-                controlDic = new EnvirConsControlStService()
-                    .GetList<EnvirConsControlStModel>(uploadObject.constCheckSeq)
-                    .GroupBy(row => row.ECCCheckItem1.Replace("\r\n", "").Trim())
-                    .Select(group => {
-                        if (group.Count() > 1) exceptControlSeqs.AddRange(group.Skip(1).Select(r => r.Seq));
-                        return new ChapterControlModel
-                        {
-                            Seq = group.First().Seq,
-                            ItemName = group.Key
-                        };
-                    })
-                    .ToDictionary(row => row.ItemName);
-            }
+            controlDic =  GetChapterControl(uploadObject.constCheckSeq, uploadObject.chapter, new int[] { uploadObject.projectType })
+                .ToDictionary(row => row.ItemName); 
+            //if (uploadObject.chapter == 6)
+            //{
+            //    controlDic = new EquOperTestListService()
+            //        .GetList<EquOperControlStModel>(engNo)
+            //        .GroupBy(row => (row.EPCheckItem1.Replace("\r\n", "") + " " + row.EPCheckItem2.Replace("\r\n", "")).Trim())
+            //        .Select(group => {
+            //            if (group.Count() > 1) exceptControlSeqs.AddRange(group.Skip(1).Select(r => r.Seq));
+            //            return new ChapterControlModel
+            //            {
+            //                Seq = group.First().Seq,
+            //                ItemName = group.Key
+            //            };
+            //        })
+            //        .ToDictionary(row => row.ItemName);
+                
+            //}
+            //if (uploadObject.chapter == 701)
+            //{
+            //    controlDic = new ConstCheckControlStService()
+            //        .GetList<ConstCheckControlStModel>(uploadObject.constCheckSeq)
+            //        .GroupBy(row => row.CCManageItem1.Replace("\r\n", "").Trim() )
+            //        .Select(group => {
+            //            if (group.Count() > 1) exceptControlSeqs.AddRange(group.Skip(1).Select(r => r.Seq));
+            //            return new ChapterControlModel
+            //            {
+            //                Seq = group.First().Seq,
+            //                ItemName = group.Key
+            //            };
+            //        })
+            //        .ToDictionary(row => row.ItemName);
+            //}
+            //if (uploadObject.chapter == 702)
+            //{
+            //    controlDic = new OccuSafeHealthControlStService()
+            //        .GetList<OccuSafeHealthControlStModel>(uploadObject.constCheckSeq)
+            //        .GroupBy(row => row.OSCheckItem1.Replace("\r\n", "").Trim())
+            //        .Select(group => {
+            //            if (group.Count() > 1) exceptControlSeqs.AddRange(group.Skip(1).Select(r => r.Seq));
+            //            return new ChapterControlModel
+            //            {
+            //                Seq = group.First().Seq,
+            //                ItemName = group.Key
+            //            };
+            //        })
+            //        .ToDictionary(row => row.ItemName);
+
+            //}
+            //if (uploadObject.chapter == 703)
+            //{
+            //    controlDic = new EnvirConsControlStService()
+            //        .GetList<EnvirConsControlStModel>(uploadObject.constCheckSeq)
+            //        .GroupBy(row => row.ECCCheckItem1.Replace("\r\n", "").Trim())
+            //        .Select(group => {
+            //            if (group.Count() > 1) exceptControlSeqs.AddRange(group.Skip(1).Select(r => r.Seq));
+            //            return new ChapterControlModel
+            //            {
+            //                Seq = group.First().Seq,
+            //                ItemName = group.Key
+            //            };
+            //        })
+            //        .ToDictionary(row => row.ItemName);
+            //}
 
             var constructionSeqDic = new EngConstructionService()
                 .GetListAllByEngMainSeq<ConstCheckListVModel>(uploadObject.engSeq)
@@ -433,6 +563,7 @@ namespace EQC.Services
                     EngConstructionSeq = constructionSeqDic[uploadObject.subItem],
                     CCRCheckDate = uploadObject.checkDate,
                     CCRPosDesc = uploadObject.checkLocation,
+                    IsFromMobile = true
 
                 };
                 context.ConstCheckRec.Add(constCheck);
@@ -457,12 +588,19 @@ namespace EQC.Services
                     controlArr = uploadObject.imageData[i1][1][0].Split(',').Select(str => str.Replace("  ", "").Trim()).ToArray();
                 }
 
-
+               
                 for (int j = 0; j < imageArr.Length; j++)
                 {
 
                     string uniqueName = UploadFilesProcesser.GetUniqueFileName();
-                    $"Eng/{uploadObject.engSeq}/{uniqueName}.jpg".SaveImageByBase64(imageArr[j].Replace(@"\", ""));
+                    try
+                    {
+                        $"Eng/{uploadObject.engSeq}/{uniqueName}.jpg".SaveImageByBase64(imageArr[j].Replace(@"\", ""));
+                    }
+                    catch
+                    {
+                        break;
+                    }
                     foreach(var controlStr in controlArr)
                     {
                         try
@@ -489,18 +627,49 @@ namespace EQC.Services
 
             }
 
+            var controlDicBySeq = controlDic.Select(r => r.Value)
+               .ToDictionary(r => r.Seq, r => r);
 
             //新增抽查結果
 
             foreach (var pair in uploadObject.standardResult)
             {
-                context.ConstCheckRecResult.Add(new ConstCheckRecResult
+                var newConstRecResult = new ConstCheckRecResult
                 {
                     ConstCheckRecSeq = constCheck.Seq,
                     ControllStSeq = pair.Key,
                     CCRRealCheckCond = Convert.ToString(pair.Value[0]),
                     CCRCheckResult = (byte?)Convert.ToInt32(pair.Value[1])
-                });
+                    
+                };
+                context.ConstCheckRecResult.Add(newConstRecResult);
+                if(pair.Value.Count() > 2)
+                {
+                    string controlInfoOrg = controlDicBySeq[pair.Key].ControlInfo.Trim();
+                    string controlInfoFilled = pair.Value[2].ToString();
+
+                    controlInfoOrg.Split('_')
+                        .Where(r => r != "")
+                        .ToList()
+                        .ForEach(e =>
+                        {
+                            controlInfoFilled = controlInfoFilled.Replace(e, "_");
+
+                        });
+                     controlInfoFilled.Split('_')
+                    .Where(r => r != "")
+                    .ToList()
+                    .ForEach(e => {
+                        newConstRecResult.ConstCheckRecResultStandard.Add(new ConstCheckRecResultStandard
+                        {
+                          Value = e
+                            
+                        });
+                    });
+
+                    
+
+                }
             }
             foreach (var seq in exceptControlSeqs)
             {
@@ -514,13 +683,16 @@ namespace EQC.Services
             }
             context.SaveChanges();
 
+
+            //線上簽名的時候建立的資料
             var updateSignatureDic =
                 context.constCheckSignatures.Where(row => row.Token == token && row.ConstCheckSeq == 0)
                 .GroupBy(r => r.SignatureRole)
                 .ToDictionary(r => r.Key, r=> r.OrderBy(rr => rr.CreateTime).First() );
 
 
-            
+
+            //如果有上傳離線簽名，新增或更新constCheckSignature
             if (uploadObject.signature != null)
             {
                 uploadObject.signature.ToList()
@@ -551,6 +723,8 @@ namespace EQC.Services
 
                 });
             }
+
+            //將線上簽名的base64轉存為使用者個人簽名檔
             if (updateSignatureDic.Count() > 0)
             {
                 var updateSignature = updateSignatureDic.Select(r => r.Value)
@@ -671,9 +845,11 @@ namespace EQC.Services
 
             string path = Path.Combine(Path.GetTempPath(), uuid) + "pdf";
             string pdfFilePath = Directory.GetFiles(path).First();
-            string distPath = Path.Combine(UploadFilesProcesser.RootPath, $"MobileConstCheckDocuments/{model.engSeq}");
+            string distPath = Path.Combine(UploadFilesProcesser.RootPath, $"MobileConstCheckDocuments1/{model.engSeq}");
             if (!Directory.Exists(distPath)) Directory.CreateDirectory(distPath);
-            File.Move(pdfFilePath, Path.Combine(distPath, Path.GetFileName(pdfFilePath)));
+
+            File.Copy(pdfFilePath, Path.Combine(distPath, Path.GetFileName(pdfFilePath)));
+            Directory.Delete(path, true);
             //using (var context = new EQC_NEW_Entities())
             //{
             //    context.ToolPackage.Add(new ToolPackage
@@ -697,32 +873,92 @@ namespace EQC.Services
         {
             var eng = GetEngSeqByEngNo<EngMainEditVModel>(engNo).FirstOrDefault();
             int engSeq = eng?.Seq ?? 0;
-            var userList =
-                new EngMainService()
-                .SupervisorUserList<EngSupervisorVModel>(engSeq)
-                .Where(r => r.UserKind < 2)
-                .Select(r => new EngSupervisorVModel { 
-                    UserKind = (byte) (r.UserKind +2),
-                    UserName = r.UserName
-                    
-                })
-                .ToList();
-            if (eng.BuildContractorContact != null)
+
+            //UserKind : 監造現場主任 0 ; 監造人員1
+            //角色  : 施工 : 4 ; 監造 : 5 ; 設計 :6
+            var userList = new List<EngSupervisorVModel>();
+
+            userList.Add(new EngSupervisorVModel
             {
-                userList.Add(new EngSupervisorVModel
-                {
-                    UserName = eng.BuildContractorContact,
-                    UserKind = 4
-                });
+                UserKind = 4,
+                UserName = "無"
+
+            });
+            userList.Add(new EngSupervisorVModel
+            {
+                UserKind = 3,
+                UserName = "無"
+
+            });
+            userList.Add(new EngSupervisorVModel
+            {
+                UserKind = 2,
+                UserName = "無"
+
+            });
+
+
+            if (eng.SupervisorExecType == 1)
+            {
+                userList.AddRange(
+                    new EngMainService()
+                    .SupervisorUserList<EngSupervisorVModel>(engSeq)
+                    .Where(r => r.UserKind < 2)
+                    .Select(r => new EngSupervisorVModel
+                    {
+                        UserKind = (byte)(r.UserKind + 2),
+                        UserName = r.UserName
+
+                    })
+                    .ToList()
+                );
             }
 
-            if (eng.SupervisorDirector != null)
+            if (eng.BuildContractorContact != null)
             {
-                userList.Add(new EngSupervisorVModel
+                var user = userService.GetUserByAccountKeyWord("C" + engNo, 4)
+                    .Select(r => new EngSupervisorVModel
+                    {
+                        UserKind = 4,
+                        UserName = r.DisplayName
+
+                    }).FirstOrDefault();
+                if (user != null)
+                    userList.Add(user);
+
+            }
+
+            if (eng.SupervisorDirector != null && eng.SupervisorExecType == 2)
+            {
+                var user = userService.GetUserByAccountKeyWord("S" + engNo, 5)
+                    .Select(r => new EngSupervisorVModel
+                    {
+                        Seq = r.Seq,
+                        UserKind = 2,
+                        UserName = r.DisplayName
+
+                    }).FirstOrDefault();
+
+
+                if (user != null)
                 {
-                    UserName = eng.SupervisorDirector,
-                    UserKind = 2
-                });
+                    userList.Add(user);
+                    var userBelong = userService.GetUserByAccountKeyWord("S" + engNo, 5)
+                    .Where(r => r.Seq != user.Seq)
+                    .Select(r => new EngSupervisorVModel
+                    {
+                        UserKind = 3,
+                        UserName = r.DisplayName
+
+                    });
+                    if (userBelong.Count() > 0)
+                    {
+                        userList.AddRange(userBelong);
+                    }
+                }
+             
+
+
             }
 
             var constCheckUser = context.ConstCheckUser.Where(r => r.EngSeq == engSeq).FirstOrDefault()?.UserMain.DisplayName;
@@ -743,6 +979,7 @@ namespace EQC.Services
                     UserKind = 1
                 });
             }
+
             return userList.Select(r => new SignatureOption
             {
                 SignatureRole = r.UserKind == 2 ? 3 : (r.UserKind == 3 ? 2 : r.UserKind),

@@ -270,15 +270,15 @@ namespace EQC.Services
 
             cmd.Parameters.Clear();
             cmd.Parameters.AddWithValue("@EngMaterialDeviceListSeq", EngMaterialDeviceListSeq);
-            cmd.Parameters.AddWithValue("@MDTestItem", m.MDTestItem);
-            cmd.Parameters.AddWithValue("@MDTestStand1", m.MDTestStand1);
-            cmd.Parameters.AddWithValue("@MDTestStand2", m.MDTestStand2);
-            cmd.Parameters.AddWithValue("MDTestTime", m.MDTestTime);
-            cmd.Parameters.AddWithValue("@MDTestMethod", m.MDTestMethod);
-            cmd.Parameters.AddWithValue("@MDTestFeq", m.MDTestFeq);
-            cmd.Parameters.AddWithValue("@MDIncomp", m.MDIncomp);
-            cmd.Parameters.AddWithValue("@MDManageRec", m.MDManageRec);
-            cmd.Parameters.AddWithValue("@MDMemo", m.MDMemo);
+            cmd.Parameters.AddWithValue("@MDTestItem", m.MDTestItem ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@MDTestStand1", m.MDTestStand1 ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@MDTestStand2", m.MDTestStand2 ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("MDTestTime", m.MDTestTime ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@MDTestMethod", m.MDTestMethod ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@MDTestFeq", m.MDTestFeq ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@MDIncomp", m.MDIncomp ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@MDManageRec", m.MDManageRec ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@MDMemo", m.MDMemo ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@ModifyUserSeq", getUserSeq());
 
             int result = db.ExecuteNonQuery(cmd);

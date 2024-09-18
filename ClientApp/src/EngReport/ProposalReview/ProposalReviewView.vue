@@ -1,6 +1,9 @@
 ﻿<template>
     <div>
         <div>
+            識別碼: ({{ engReport.Seq }})
+        </div>
+        <div>
             <h5>需求評估</h5>
             <div class="table-responsive">
                 <table border="0" class="table table1 min910">
@@ -41,7 +44,7 @@
                         <tr>
                             <th class="insearch" style="width: 200px; text-align:left;"><span class="small-red">*</span>提案範圍用地概述</th>
                             <td colspan="5">
-                                <textarea v-model.trim="engReport.ProposalScopeLand" rows="7" class="form-control" v-bind:disabled="true" placeholder="1.是否涉及都市計畫變更□否：□是：預計何時完成都變2.是否已將計畫範圍內公私有地情形，提供工務課□否：原因□是：3.其他："></textarea>
+                                <textarea v-model.trim="engReport.ProposalScopeLand" rows="7" class="form-control" v-bind:disabled="true" placeholder="1.是否涉及都市計畫變更□否：□是：預計何時完成都變2.是否已將計畫範圍內公私有地情形，工務科□否：原因□是：3.其他："></textarea>
                             </td>
                             <td style="width: 150px;">
                                 {{engReport.ProposalScopeLandUserName}}<br>{{engReport.ProposalScopeLandTWDT}}<br>
@@ -220,44 +223,62 @@
                             <table class="table table-responsive-md table-hover">
                                 <tbody>
                                     <tr>
-                                        <td class="text-left" style="text-align: left !important;"><strong>D-01規劃設計階段生態背景資料表</strong></td>
+                                        <td class="text-left" style="text-align: left !important;"><strong>公共工程生態檢核自評表</strong></td>
                                         <td style="width: 400px;">{{engReport.D01FileName}}</td>
                                         <td style="display: flex; width: 140px;">
-                                            <button v-if="engReport.D01FileName!=''" v-on:click.stop="download(engReport.Seq,'D1')" role="button" class="btn btn-color11-1 btn-x sharp mx-1"><i class="fas fa-download"></i></button>
+                                            <label class="btn btn-shadow btn-color11-3" >
+                                                <input  v-on:change="fileChange($event,'D1')" id="inputFile" type="file" name="file" multiple="" style="display:none;"><i class="fas fa-upload"></i>
+                                            </label>
+                                            <button v-if="engReport.D01FileName!='' " v-on:click.stop="download(engReport.Seq,'D1')" role="button" class="btn btn-color11-1 btn-x sharp mx-1"><i class="fas fa-download"></i></button>
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td class="text-left" style="text-align: left !important;"><strong>D-02規劃設計階段現場勘查紀錄表</strong></td>
+                                        <td class="text-left" style="text-align: left !important;"><strong>P-01 提案階段工程生態背景資料表</strong></td>
                                         <td>{{engReport.D02FileName}}</td>
                                         <td style="display: flex;">
+                                            <label class="btn btn-shadow btn-color11-3" >
+                                                <input v-on:change="fileChange($event,'D2')" id="inputFile" type="file" name="file" multiple="" style="display:none;"><i class="fas fa-upload"></i>
+                                            </label>
                                             <button v-if="engReport.D02FileName!=''" v-on:click.stop="download(engReport.Seq,'D2')" role="button" class="btn btn-color11-1 btn-x sharp mx-1"><i class="fas fa-download"></i></button>
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td class="text-left" style="text-align: left !important;"><strong>D-03規劃設計階段民眾參與紀錄表</strong></td>
+                                        <td class="text-left" style="text-align: left !important;"><strong>P-02 提案階段現場勘查紀錄表</strong></td>
                                         <td>{{engReport.D03FileName}}</td>
                                         <td style="display: flex;">
+                                            <label class="btn btn-shadow btn-color11-3 ">
+                                                <input v-on:change="fileChange($event,'D3')" id="inputFile" type="file" name="file" multiple="" style="display:none;"><i class="fas fa-upload"></i>
+                                            </label>
                                             <button v-if="engReport.D03FileName!=''" v-on:click.stop="download(engReport.Seq,'D3')" role="button" class="btn btn-color11-1 btn-x sharp mx-1"><i class="fas fa-download"></i></button>
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td class="text-left" style="text-align: left !important;"><strong>D-04規劃設計階段生態保育原則研擬紀錄表</strong></td>
+                                        <td class="text-left" style="text-align: left !important;"><strong>P-03 提案階段民眾參與紀錄表</strong></td>
                                         <td>{{engReport.D04FileName}}</td>
                                         <td style="display: flex;">
+                                            <label class="btn btn-shadow btn-color11-3" >
+                                                <input v-on:change="fileChange($event,'D4')" id="inputFile" type="file" name="file" multiple="" style="display:none;"><i class="fas fa-upload"></i>
+                                            </label>
                                             <button v-if="engReport.D04FileName!=''" v-on:click.stop="download(engReport.Seq,'D4')" role="button" class="btn btn-color11-1 btn-x sharp mx-1"><i class="fas fa-download"></i></button>
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td class="text-left" style="text-align: left !important;"><strong>D-05規劃設計階段生態檢核作業事項確認表</strong></td>
+                                        <td class="text-left" style="text-align: left !important;"><strong>P-04 提案階段生態保育原則研擬紀錄表</strong></td>
                                         <td>{{engReport.D05FileName}}</td>
                                         <td style="display: flex;">
+                                            <label class="btn btn-shadow btn-color11-3" >
+                                                <input v-on:change="fileChange($event,'D5')" id="inputFile" type="file" name="file" multiple="" style="display:none;"><i class="fas fa-upload"></i>
+                                            </label>
                                             <button v-if="engReport.D05FileName!=''" v-on:click.stop="download(engReport.Seq,'D5')" role="button" class="btn btn-color11-1 btn-x sharp mx-1"><i class="fas fa-download"></i></button>
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td class="text-left" style="text-align: left !important;"><strong>D-06工程範圍生物名錄</strong></td>
+                                        <td class="text-left" style="text-align: left !important;"><strong>P-05 提案工程生態檢核作業事項確認表</strong></td>
                                         <td>{{engReport.D06FileName}}</td>
                                         <td style="display: flex;">
+                                            <label class="btn btn-shadow btn-color11-3">
+                                                <input v-on:change="fileChange($event,'D6')" id="inputFile" type="file" name="file" multiple="" style="display:none;"><i class="fas fa-upload"></i>
+                                            </label>
                                             <button v-if="engReport.D06FileName!=''" v-on:click.stop="download(engReport.Seq,'D6')" role="button" class="btn btn-color11-1 btn-x sharp mx-1"><i class="fas fa-download"></i></button>
                                         </td>
                                     </tr>
@@ -388,7 +409,7 @@
             </div>
             <h5>附件上傳</h5>
             <a href="#" title="說明" target="_blank" data-toggle="modal" data-target="#prepare_edit01">說明&nbsp;</a>
-            <p style="color: red; padding-top: 20px;">*請上傳 jpg、png、pdf格式</p>
+            <p style="color: red; padding-top: 20px;">*請上傳 jpg、png 格式</p>
             <p style="color: red;">屬「用地先期作業」及「用地取得」者<br>以下僅需檢附位置圖、空拍圖、現場照片、基地地籍圖，其餘免填</p>
             <!-- 小視窗 編輯人員 -->
             <div class="modal fade" id="prepare_edit01">
@@ -685,6 +706,26 @@ import { ref } from "vue";
                 uploadfiles.append("fileType", type);
                 this.upload(uploadfiles, files[0].name,type);
             },
+                        //上傳
+            upload(uploadfiles,fileName,type) {
+                window.myAjax.post('/ERProposalReview/UploadAttachment', uploadfiles,
+                    {
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                    }).then(resp => {
+                        if (resp.data.result == 0) {
+                            if (type == 'D1') this.engReport.D01FileName = fileName;
+                            if (type == 'D2') this.engReport.D02FileName = fileName;
+                            if (type == 'D3') this.engReport.D03FileName = fileName;
+                            if (type == 'D4') this.engReport.D04FileName = fileName;
+                            if (type == 'D5') this.engReport.D05FileName = fileName;
+                            if (type == 'D6') this.engReport.D06FileName = fileName;
+                            //this.getItem();
+                        }
+                        //alert(resp.data.message);
+                    }).catch(error => {
+                        console.log(error);
+                    });
+            },
             strEmpty(str) {
                 return window.comm.stringEmpty(str);
             },
@@ -867,10 +908,10 @@ import { ref } from "vue";
                     this.getSubList(this.targetId, 3);
                     this.getSubList(this.targetId, 4);
                     if (this.selectRiverAOptions.length == 0) this.getRiverAOption();
-                    this.onNewRecord(this.targetId, 1);
-                    this.onNewRecord(this.targetId, 2);
-                    this.onNewRecord(this.targetId, 3);
-                    this.onNewRecord(this.targetId, 4);
+                    // this.onNewRecord(this.targetId, 1);
+                    // this.onNewRecord(this.targetId, 2);
+                    // this.onNewRecord(this.targetId, 3);
+                    // this.onNewRecord(this.targetId, 4);
                     return;
                 }
             }

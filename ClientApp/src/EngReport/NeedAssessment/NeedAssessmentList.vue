@@ -4,6 +4,9 @@
             <div class="form-row">
                 <div class="col-1 mt-3">
                     <select v-model="selectYear" @change="onYearChange($event)" class="form-control">
+                        <option :value="-1">
+                            全部
+                        </option>
                         <option v-for="option in selectYearOptions" v-bind:value="option.Value" v-bind:key="option.Value">
                             {{ option.Text }}
                         </option>
@@ -11,6 +14,9 @@
                 </div>
                 <div class="col-12 col-sm-3 mt-3">
                     <select v-model="selectUnit" @change="onUnitChange(selectUnit)" class="form-control">
+                        <option :value="-1">
+                            全部
+                        </option>
                         <option v-for="option in selectUnitOptions" v-bind:value="option.Value"
                                 v-bind:key="option.Value">
                             {{ option.Text }}
@@ -18,14 +24,14 @@
                     </select>
                 </div>
                 <div class="col-12 col-sm-2 mt-3">
-                    <select v-model="selectSubUnit" @change="onSubUnitChange($event)" class="form-control">
+                    <select v-model="selectSubUnit" @change="onSubUnitChange($event)" class="form-control" >
                         <option v-for="option in selectSubUnitOptions" v-bind:value="option.Value"
                                 v-bind:key="option.Value">
                             {{ option.Text }}
                         </option>
                     </select>
                 </div>
-                <div class="col-1 col-sm-2 mt-3">
+                <!-- <div class="col-1 col-sm-2 mt-3">
                     <select v-model="selectRptType" @change="onRptTypeChange($event)" class="form-control">
                         <option v-for="option in selectRptTypeOptions" v-bind:value="option.Value"
                                 v-bind:key="option.Value">
@@ -33,6 +39,19 @@
                         </option>
                     </select>
                 </div>
+                <div class="col-1 col-sm-2 mt-3 d-flex">
+                    <input class="form-control" v-model="keyWord" placeholder="可輸入關鍵字查詢工程名稱"/> 
+                    <button class="btn btn-color11-3 btn-xs sharp mx-1 mt-2" @click.prevent="getList">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+                </div> -->
+                <div class="col-1 col-sm-2 mt-3 d-flex">
+                    <input class="form-control" v-model="keyWord" /> 
+                    <button class="btn btn-color11-3 btn-xs sharp mx-1 mt-2" @click.prevent="getList">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div> 
                 <div class="ml-auto bd-highlight align-self-center" style="padding-right: 15px;">
                     <!--<a href="./files/提案需求評估表.docx" download="提案需求評估表.docx">-->
                     <button @click.prevent="onDownloadNeedAssessment" class="btn btn-color11-1 btn-block">
@@ -51,6 +70,10 @@
                 <thead class="insearch">
                     <tr>
                         <th class="sort">項次</th>
+                        <th >
+                            <label class="form-check-label" >全部</label>
+                            <input  type="checkbox" class="form-control" v-model="isAllChecked" />
+                        </th>
                         <th class="number text-center">年度</th>
                         <th>案由</th>
                         <th>執行機關</th>
@@ -65,10 +88,12 @@
                     </tr>
                 </thead>
                 <tbody>
+
                     <tr v-if="fAddItem">
                         <td></td>
+                        <td></td>
                         <td><input v-model.trim="newItem.RptYear" maxlength="3" type="text" class="form-control"></td>
-                        <td><input v-model.trim="newItem.RptName" maxlength="50" type="text" class="form-control"></td>
+                        <td><input v-model.trim="newItem.RptName" maxlength="100" type="text" class="form-control"></td>
                         <th><input type="text" class="form-control" v-model="newItem.ExecUnit" disabled="disabled"></th>
                         <th>
                             <!--<input type="text" class="form-control" v-model="newItem.ExecSubUnit" disabled="disabled">-->
@@ -92,7 +117,20 @@
                     </tr>
                     <tr v-for="(item, index) in items" v-bind:key="item.Seq">
                         <td>{{pageRecordCount*(pageIndex-1)+index+1}}</td>
-                        <td>{{item.RptYear}}</td>
+                        <td class="align-middle">
+                            <input type="checkbox" class="form-control" v-model="item.formSelected"/>
+                        </td>
+                        <td class="align-middle" v-if="!item.yearEdit" :style="{color : item.redTag ? 'red' : 'inherit' }">{{item.RptYear}}
+                            <button  v-if="userInfo.RoleSeq == 1" type="button" class="btn btn-color11-3 btn-xs sharp mx-1" @click="items = Comm.setPropertyInArr(items, item, 'yearEdit', true)">  
+                                <i class="fas fa-pencil-alt"> </i> 
+                            </button>
+                        </td>
+                        <td v-else class="d-flex">
+                            <input class="form-control" type="number" v-model="item.RptYear">
+                            <button  type="button" class="btn btn-color11-2 btn-xs sharp mx-1 m-1" @click="updateRptYear(item)">  
+                                <i class="fas fa-save"> </i> 
+                            </button>
+                        </td>
                         <td><a href="#" :title="item.RptName" v-on:click.stop="onViewEng(item)">{{item.RptName}}</a></td>
                         <td>{{item.ExecUnit}}</td>
                         <td>{{item.ExecSubUnit}}</td>
@@ -136,7 +174,10 @@
                 <tbody>
                     <tr v-for="(item, index) in itemsB" v-bind:key="item.Seq">
                         <td>{{pageRecordCountB*(pageIndexB-1)+index+1}}</td>
-                        <td>{{item.RptYear}}</td>
+                        <td>
+                            {{item.RptYear}}
+
+                        </td>
                         <td><a href="#" :title="item.RptName" v-on:click.stop="onViewEng(item)">{{item.RptName}}</a></td>
                         <td>{{item.ExecUnit}}</td>
                         <td>{{item.ExecSubUnit}}</td>
@@ -159,9 +200,12 @@
     </div>
 </template>
 <script>
+    import Comm from "../../Common/Common2";
     export default {
         data: function () {
             return {
+                isAllChecked : false,
+                keyWord : "",
                 //使用者單位資訊
                 userUnit: null,
                 userUnitSub: '',
@@ -190,7 +234,7 @@
                 selectUnit: '',
                 selectUnitOptions: [],
                 //機關單位
-                selectSubUnit: -1,
+                selectSubUnit: 0,
                 selectSubUnitOptions: [],
                 //狀態
                 selectRptType: '',
@@ -202,9 +246,43 @@
                 units2: [],
                 // 使用者下拉
                 users3: [],
+                userInfo :{},
+                Comm : Comm
             };
         },
+        watch:{
+            isAllChecked :{
+                handler(value)
+                {
+                    console.log("changeBoxAll");
+                    this.items =
+                    this.items.map(e => {
+                        e.formSelected = value;
+                        return e;
+                    })
+                }
+            }
+        },
         methods: {
+
+            getListOnChange()
+            {
+                this.getList();
+                this.getListB();
+            },
+            async updateRptYear(item)
+            {
+                this.items =  Comm.setPropertyInArr(this.items, item, 'yearEdit', false)
+
+                let {data :res} = await window.myAjax.post("EngReport/UpdateRptYear", {seq : item.Seq, rptYear: item.RptYear })
+                console.log("res", res);
+                if(res == true)
+                {
+                    this.items =  Comm.setPropertyInArr(this.items, item, 'redTag', true)
+                    alert("更新成功");
+                }
+
+            },
             //取得使用者單位資訊
             getUserUnit() {
                 window.myAjax.post('/EngReport/GetUserUnit')
@@ -240,6 +318,7 @@
                 }
             },
             async onYearChange(event) {
+
                 this.items = [];
                 //工程機關
                 this.selectUnit = '';
@@ -255,9 +334,10 @@
 
                 sessionStorage.removeItem('selectERYear');
                 window.sessionStorage.setItem("selectERYear", this.selectYear);
+                
             },
             async onUnitChange(unitSeq) {
-                if (this.selectUnitOptions.length == 0) return;
+                if (this.selectUnitOptions.length == 0 ) return;
 
                 this.items = [];
                 this.selectSubUnit = -1
@@ -276,12 +356,12 @@
                 //儲存到session
                 sessionStorage.removeItem('selectERUnit');
                 window.sessionStorage.setItem("selectERUnit", this.selectUnit);
+                this.getListOnChange();
             },
             onSubUnitChange(event) {
                 this.pageIndex = 1;
                 if (this.selectRptType == '') this.getSelectRptTypeOption(1);
-                this.getList();
-                this.getListB();
+                this.getListOnChange();
                 sessionStorage.removeItem('selectERSubUnit');
                 window.sessionStorage.setItem("selectERSubUnit", this.selectSubUnit);
 
@@ -383,11 +463,13 @@
                         subUnit: this.selectSubUnit,
                         rptType: this.selectRptType,
                         pageRecordCount: this.pageRecordCount,
-                        pageIndex: this.pageIndex
+                        pageIndex: this.pageIndex,
+                        keyWord : this.keyWord
                     })
                     .then(resp => {
                         this.items = resp.data.items;
                         this.recordTotal = resp.data.pTotal;
+                        this.items.forEach(e => e.yearEdit = false);
                     })
                     .catch(err => {
                         console.log(err);
@@ -399,12 +481,12 @@
                 if (this.selectSubUnit == null || this.selectUnit == '') this.selectSubUnit = -1;
                 window.myAjax.post('/ERNeedAssessment/GetListB'
                     , {
-                        year: this.selectYear,
                         unit: this.selectUnit,
                         subUnit: this.selectSubUnit,
                         rptType: this.selectRptType,
                         pageRecordCount: this.pageRecordCount,
-                        pageIndex: this.pageIndex
+                        pageIndex: this.pageIndex,
+                        keyWord : this.keyWord
                     })
                     .then(resp => {
                         this.itemsB = resp.data.items;
@@ -419,8 +501,9 @@
                 window.myAjax.post('/ERNeedAssessment/DelEngReport', { id: item.Seq })
                     .then(resp => {
                         if (resp.data.result == 0) {
-                            this.getSelectYearOption();
-                            this.onNewRecord();
+                            this.getList();
+                            // this.getSelectYearOption();
+                            // this.onNewRecord();
                             //this.getList();// this.engSupervisor = resp.data.items;
                         } else {
                             alert(resp.data.msg);
@@ -454,7 +537,16 @@
             },
             //下載
             onDownloadNeedAssessment() {
-                window.comm.dnFile('/EngReport/DownloadNeedAssessmentVF?year=' + this.selectYear + '&unit=' + this.selectUnit + '&subUnit=' + this.selectSubUnit + '&rptType=' + this.selectRptType);
+                var list = this
+                    .items
+                    .filter(a => a.formSelected)
+                    .reduce((a, c) => a + "," + c.Seq , "")
+                window.comm.dnFile(encodeURI('/EngReport/DownloadNeedAssessmentVF?year=' 
+                    + this.selectYear + '&unit=' 
+                    + this.selectUnit + '&subUnit=' 
+                    + this.selectSubUnit + '&rptType=' 
+                    + this.selectRptType 
+                    + (list.length > 0 ? '&seqs=' +list.slice(1) : '' ) ));
             },
             // 取得執行單位下拉選單2
             getUnitList2(unitSeq = 0) {
@@ -491,6 +583,12 @@
                         });
                 }
             },
+            async getUserInfo()
+            {
+                let {data :res }  = await window.myAjax.post("Users/GetUserInfo");
+                this.userInfo = res.userInfo;
+
+            }
         },
         async mounted() {
             console.log('mounted() 需求評估');
@@ -498,6 +596,7 @@
                 await this.getSelectYearOption();
             }
             this.onNewRecord();
+            this.getUserInfo();
         }
     }
 </script>

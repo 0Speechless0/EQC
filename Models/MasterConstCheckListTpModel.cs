@@ -32,11 +32,19 @@ namespace EQC.Models
                     {
                         if (item.RefItemCode != null && item.RefItemCode.Length >= 5)
                         {
-                            if (this.ExcelNo == item.RefItemCode.Substring(0, len))
+                            try
                             {
-                                fSave = true;
-                                break;
+                                if (this.ExcelNo == item.RefItemCode.Substring(0, len))
+                                {
+                                    fSave = true;
+                                    break;
+                                }
                             }
+                            catch(Exception e)
+                            {
+
+                            }
+
                         }
                     }
                 }

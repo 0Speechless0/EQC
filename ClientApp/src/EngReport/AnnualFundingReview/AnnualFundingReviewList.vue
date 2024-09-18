@@ -4,21 +4,24 @@
             <div class="form-row">
                 <div class="col-1 mt-3">
                     <select v-model="selectYear" @change="onYearChange($event)" class="form-control">
-                        <option selected="selected" :value="-1"> 全部</option>
+                        <option :value="-1">
+                            全部
+                        </option>
                         <option v-for="option in selectYearOptions" v-bind:value="option.Value" v-bind:key="option.Value">
                             {{ option.Text }}
                         </option>
                     </select>
                 </div>
                 <div class="col-12 col-sm-3 mt-3">
-                    <select v-model="selectUnit" @change="onUnitChange(selectUnit)" class="form-control">
+                    <select v-model="selectUnit" @change="(e) =>  onUnitChange(e.target.value)" class="form-control">
+                        <option selected="selected" :value="-1"> 全部</option>
                         <option v-for="option in selectUnitOptions" v-bind:value="option.Value"
                                 v-bind:key="option.Value">
                             {{ option.Text }}
                         </option>
                     </select>
                 </div>
-                <div class="col-12 col-sm-2 mt-3">
+                <div class="col-12 col-sm-2 mt-3" v-if="selectUnit >0">
                     <select v-model="selectSubUnit" @change="onSubUnitChange($event)" class="form-control">
                         <option v-for="option in selectSubUnitOptions" v-bind:value="option.Value"
                                 v-bind:key="option.Value">
@@ -26,13 +29,19 @@
                         </option>
                     </select>
                 </div>
-                <div class="col-1 col-sm-2 mt-3">
+                <div class="col-1 col-sm-2 mt-3" >
                     <select v-model="selectRptType" @change="onRptTypeChange($event)" class="form-control">
                         <option v-for="option in selectRptTypeOptions" v-bind:value="option.Value"
                                 v-bind:key="option.Value">
                             {{ option.Text }}
                         </option>
                     </select>
+                </div>
+                <div class="col-1 col-sm-2 mt-3 d-flex">
+                    <input class="form-control" v-model="keyWord" placeholder="可輸入關鍵字查詢工程名稱"/> 
+                    <button class="btn btn-color11-3 btn-xs sharp mx-1 mt-2" @click.prevent="getList">
+                        <i class="fas fa-search"></i>
+                    </button>
                 </div>
             </div>
             <p style="color: red; padding-top: 15px;">狀態分為：需求評估、需求提案核可、需求重新評估、提案審查填報、提案審查核可、提案審查暫緩、經費核可、已核定案件</p>
@@ -59,7 +68,7 @@
                         <tr>
                             <td>{{pageRecordCount*(pageIndex-1)+index+1}}</td>
                             <td>{{item.RptYear}}</td>
-                            <td><a href="#" title="{{item.RptName}}" v-on:click.stop="onViewEng(item)">{{item.RptName}}</a></td>
+                            <td><a href="#" :title="item.RptName" v-on:click.stop="onViewEng(item)">{{item.RptName}}</a></td>
                             <td>{{item.ExecUnit}}</td>
                             <td>{{item.ExecSubUnit}}</td>
                             <td>{{item.ExecUser}}</td>
@@ -74,18 +83,18 @@
                     </tbody>
                 </table>
             </div>
-            <div v-if="item.IsShow" class="tab-content" id="searchResult-{{item.Seq}}">
+            <div v-if="item.IsShow" class="tab-content" :id="`searchResult-${item.Seq}`">
                 <div class="tab-pane active">
                     <div class="table-responsive">
                         <table class="table table1" id="addnew998">
                             <thead class="insearch">
                                 <tr>
                                     <th style="width: 100px;"><strong>年度</strong></th>
-                                    <th style="width: 200px;"><strong>核定經費(元)</strong></th>
+                                    <th style="width: 200px;"><strong>核定經費(千元)</strong></th>
                                     <th style="width: 200px;"><strong>需球碳排量(tCO2e)</strong></th>
                                     <th style="width: 200px;"><strong>核定碳排量(tCO2e)</strong></th>
                                     <th style="width: 200px;"><strong>參考碳排量</strong></th>
-                                    <th style="width: 200px;"><strong>當年度支用經費(元)</strong></th>
+                                    <th style="width: 200px;"><strong>當年度支用經費(千元)</strong></th>
                                     <th style="width: 200px;"><strong>審核意見</strong></th>
                                 </tr>
                             </thead>
@@ -94,14 +103,14 @@
                                     <td style="text-align: center;">{{item.RptYear}}</td>
                                     <td style="text-align: center;">
                                         <div v-if="!item.edit">{{item.ApprovedFund}}</div>
-                                        <input v-if="item.edit" type="text" v-model.trim="item.ApprovedFund" class="form-control" @click="setRefCarbonEmission(item,index)" v-on:keyup="setRefCarbonEmission(item,index)" style="text-align: right;" />
+                                        <input v-if="item.edit" type="text" v-model.trim="item.ApprovedFund" class="form-control"  style="text-align: right;" />
                                     </td>
-                                    <td style="text-align: center;">{{item.DemandCarbonEmissions}}頓</td>
+                                    <td style="text-align: center;">{{item.DemandCarbonEmissions.toFixed(0)}}</td>
                                     <td style="text-align: center;">
-                                        <div v-if="!item.edit">{{item.ApprovedCarbonEmissions}}</div>
+                                        <div v-if="!item.edit">{{item.ApprovedCarbonEmissions.toFixed(0)}}</div>
                                         <input v-if="item.edit" type="text" v-model.trim="item.ApprovedCarbonEmissions" class="form-control" style="text-align: right;" />
                                     </td>
-                                    <td style="text-align: center;">{{item.RefCarbonEmission}}</td>
+                                    <td style="text-align: center;">{{ item.RefCarbonEmission ? item.RefCarbonEmission.toFixed(0) : 0}}</td>
                                     <td style="text-align: center;">
                                         <div v-if="!item.edit">{{item.Expenditure}}</div>
                                         <input v-if="item.edit" type="text" v-model.trim="item.Expenditure" class="form-control" style="text-align: right;" />
@@ -133,13 +142,13 @@
                                 <tr>
                                     <td>
                                         <div v-if="!item.edit">{{item.Resolution}}</div>
-                                        <textarea v-if="item.edit" class="col-12 form-control" v-model="item.Resolution" style="min-width: auto;">同意辦理，本案可視需求於契約訂定擴充條款，惟啟動契約擴充前需先行函報本署籌措財源。</textarea>
+                                        <textarea v-if="item.edit" class="col-12 form-control" v-model="item.Resolution" style="min-width: auto;"></textarea>
                                     </td>
                                     <td>
                                         <div class="d-flex justify-content-center">
-                                            <a href="#" v-if="!item.edit" v-on:click.stop="item.edit=!item.edit" class="btn btn-color11-3 btn-xs mx-1" title="編輯"><i class="fas fa-pencil-alt"></i> 編輯</a>
-                                            <a href="#" v-if="item.edit" v-on:click.stop="onSaveRecord(item)" class="btn btn-color11-2 btn-xs mx-1"><i class="fas fa-save"></i> 儲存</a>
-                                            <a href="#" v-if="item.edit" v-on:click.stop="item.edit=false" class="btn btn-color9-1 btn-xs mx-1" title="取消"><i class="fas fa-times"></i> 取消</a>
+                                            <a href="#" v-if="!item.edit" v-on:click.prevent="item.edit=!item.edit" class="btn btn-color11-3 btn-xs mx-1" title="編輯"><i class="fas fa-pencil-alt"></i> 編輯</a>
+                                            <a href="#" v-if="item.edit" v-on:click.prevent="onSaveRecord(item)" class="btn btn-color11-2 btn-xs mx-1"><i class="fas fa-save"></i> 儲存</a>
+                                            <a href="#" v-if="item.edit" v-on:click.prevent="item.edit=false" class="btn btn-color9-1 btn-xs mx-1" title="取消"><i class="fas fa-times"></i> 取消</a>
                                         </div>
                                     </td>
                                 </tr>
@@ -157,6 +166,7 @@
     export default {
         data: function () {
             return {
+                keyWord : "",
                 //使用者單位資訊
                 userUnit: null,
                 userUnitSub: '',
@@ -239,6 +249,7 @@
 
                 sessionStorage.removeItem('selectERYear');
                 window.sessionStorage.setItem("selectERYear", this.selectYear);
+                this.onUnitChange(this.selectUnit);
             },
             async onUnitChange(unitSeq) {
                 if (this.selectUnitOptions.length == 0) return;
@@ -324,10 +335,18 @@
                         subUnit: this.selectSubUnit,
                         rptType: this.selectRptType,
                         pageRecordCount: this.pageRecordCount,
-                        pageIndex: this.pageIndex
+                        pageIndex: this.pageIndex,
+                        keyWord : this.keyWord
                     })
                     .then(resp => {
+
                         this.items = resp.data.items;
+                        this.items.forEach(item => {
+                            item.ApprovedFund /= 1000;
+                            item.Expenditure /= 1000;
+                            item.Resolution = `1.同意辦理\n2.本案為既有海堤改善併辦環境營造，工程名稱修正為「雲林縣台子村海堤防護工程」並調整至附表3`;
+                            // item.ApprovedCarbonEmissions  = item._ApprovedCarbonEmissions 
+                        })
                         this.recordTotal = resp.data.pTotal;
                     })
                     .catch(err => {
@@ -361,12 +380,14 @@
                 }
                 window.myAjax.post('/ERAnnualFundingReview/UpdateEngReport', { m: uItem })
                     .then(resp => {
-                        if (resp.data.result == 0) {
+                        if (resp.data.result != -1) {
                             uItem.edit = false;
                             if (uItem.ResolutionAuditOpinion == '1')
                                 uItem.ResolutionAuditOpinionName = '核可';
                             else
                                 uItem.ResolutionAuditOpinionName = '暫緩';
+                            uItem.RefCarbonEmission  = resp.data.result.RefCarbonEmission ;
+                            uItem.ApprovedCarbonEmissions = resp.data.result.ApprovedCarbonEmissions;
                             //this.getList();
                         } else
                             alert(resp.data.msg);
@@ -384,7 +405,7 @@
                 console.log(((item.ApprovedFund * 0.0001) * item.RegressionCurve));
                 console.log((((item.ApprovedFund * 0.0001) * item.RegressionCurve) * item.PriceAdjustmentIndex).toFixed(2));
                 let refCarbonEmission = (((item.ApprovedFund * 0.0001) * item.RegressionCurve) * item.PriceAdjustmentIndex).toFixed(2);
-                console.log(refCarbonEmission);
+                console.log(refCarbonEmission, item.RegressionCurve, item.PriceAdjustmentIndex);
                 console.log('---B---');
                 this.items[index].RefCarbonEmission = refCarbonEmission;
             },

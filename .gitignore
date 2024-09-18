@@ -1,6 +1,5 @@
 /obj/Debug
 /obj/Release
-/obj
 /packages
 /LogFiles
 /Content/dist
@@ -19,6 +18,3 @@ Properties/PublishProfiles/FolderProfile.pubxml.user
 /FileUploads
 /Content/dist/css/app.css
 /Content/dist/css/app.css
-
-*.zip
-*.bak

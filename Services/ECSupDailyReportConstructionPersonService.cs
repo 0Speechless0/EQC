@@ -59,7 +59,7 @@ namespace EQC.Services
                 --@AccQuantity,
                 GetDate(),
                 @ModifyUserSeq,
-                GetDate(),
+                0,
                 @ModifyUserSeq
             )";
 

@@ -3,7 +3,8 @@
          <h5 class="insearch mt-0 py-2">
              <div class="form-row justify-content-between mb-1">
                  <div class="col-12 my-1">
-                     工程：{{tenderItem.EngName}}({{tenderItem.EngNo}})<br>標案：{{tenderItem.TenderName}}({{tenderItem.TenderNo}})
+                    編號：{{tenderItem.EngNo}} <br>
+                    名稱：{{tenderItem.EngName}}<br>
                  </div>
                  <div class="col-12 col-sm-4 col-md-2 mb-1">
                      <button v-on:click.stop="selectTab='EMDAudit'" v-bind:disabled="isNotWork()" v-bind:class="{'btn-color3':!isActiveState('EMDAudit'), 'btn-color11-1':isActiveState('EMDAudit')}" class="btn btn-block font-weight-bold">
@@ -17,7 +18,7 @@
                  </div>
                  <div class="col-12 col-sm-4 col-md-2 mb-1">
                      <button v-on:click.stop="onSIRImprove" v-bind:disabled="isNotWork()" v-bind:class="{'btn-color3':!isActiveState('SIRImprove'), 'btn-color11-3':isActiveState('SIRImprove')}" class="btn btn-block font-weight-bold">
-                         缺失改善
+                        缺失改善
                      </button>
                  </div>
                  <div class="col-12 col-sm-4 col-md-2 mb-1">

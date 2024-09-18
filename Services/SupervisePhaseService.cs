@@ -48,8 +48,8 @@ namespace EQC.Services
                 cmd.Parameters.Clear();
                 cmd.Parameters.AddWithValue("@SuperviseEngSeq", superviseEngSeq);
                 cmd.Parameters.AddWithValue("@OrderNo", 1);
-                cmd.Parameters.AddWithValue("@ActivityTime", 50);
-                cmd.Parameters.AddWithValue("@Summary", "領隊及單位主管致詞(5分鐘)\n主辦單位簡報(10分鐘)\n監造單位簡報(10分鐘)\n施工單位簡報(15分鐘)\n簡報答詢(10分鐘)");
+                cmd.Parameters.AddWithValue("@ActivityTime", 45);
+                cmd.Parameters.AddWithValue("@Summary", "領隊及單位主管致詞(5分鐘)\n主辦單位簡報(10分鐘)\n監造單位簡報(10分鐘)\n施工單位簡報(10分鐘)\n簡報答詢(10分鐘)");
                 db.ExecuteNonQuery(cmd);
 
                 cmd = db.GetCommand(sql);
@@ -94,6 +94,70 @@ namespace EQC.Services
                 return false;
             }
         }
+
+        internal int SyncSuperviseEngWeakness(int prjSeq, int pharseSeq)
+        {
+            string sql = @"
+                update SuperviseEng
+                SET 
+	                W1 = vs.W1,
+                     W2 = vs.W2,
+                     W3 = vs.W3,
+                     W4 = vs.W4,
+                     W5 = vs.W5,
+                     W6 = vs.W6,
+                     W7 = vs.W7,
+                     W8 = vs.W8,
+                     W9 = vs.W9,
+                     W10 = vs.W10,
+                     W11 = vs.W11,
+                     W12 = vs.W12,
+                     W13 = vs.W13,
+                     W14 = vs.W14
+
+                from SuperviseEng s
+                inner join viewPrjXMLPlaneWeakness vs on vs.PrjXMLSeq = s.PrjXMLSeq 
+                where s.PrjXMLSeq  = @PrjXMLSeq and
+                    s.SupervisePhaseSeq = @SupervisePhaseSeq 
+
+
+            ";
+            var cmd = db.GetCommand(sql);
+            cmd.Parameters.AddWithValue("@PrjXMLSeq", prjSeq);
+            cmd.Parameters.AddWithValue("@SupervisePhaseSeq", pharseSeq);
+            return db.ExecuteNonQuery(cmd);
+        }
+
+        internal string GetWeaknessDescription(int prjSeq)
+        {
+            string sql = @"
+                select
+                    (
+                        IIF(e.W1=1,'1重大(或重點防汛)，','')
+                        +IIF(e.W2=1,'2進度落後，','')
+                        +IIF(e.W3=1,'3決標比偏低，','')
+                        +IIF(e.W4=1,'4施工廠商近年查核成績不佳，','')
+                        +IIF(e.W5=1,'5曾發生重大職安事件之標案，','')
+                        +IIF(e.W6=1,'6履約計分偏低標案，','')
+                        +IIF(e.W7=1,'7近三年曾遭停權之施工廠商，','')
+                        +IIF(e.W8=1,'8施工廠商近期承攬能量偏高，','')
+                        +IIF(e.W9=1,'9施工廠商跨區域承攬，','')
+                        +IIF(e.W10=1,'10施工量能偏低，','')
+                        +IIF(e.W11=1,'11委外監造之工程，','')
+                        +IIF(e.W12=1,'12成績不佳的委外監造廠商，','')
+                        +IIF(e.W13=1,'13高敏感區域工程，','')
+                        +IIF(e.W14=1,'14全民督工','')
+                    )
+                from PrjXML a
+                left outer join viewPrjXMLPlaneWeakness e on(e.PrjXMLSeq=a.Seq)
+                where a.Seq=@PrjXMLSeq
+
+            ";
+            var cmd = db.GetCommand(sql);
+            cmd.Parameters.AddWithValue("@PrjXMLSeq", prjSeq);
+            return db.ExecuteScalar(cmd).ToString();
+        }
+
         //水利署列管計畫
         public List<SelectOptionModel> GetControlPlanNoList()
         {
@@ -258,19 +322,18 @@ namespace EQC.Services
                 SELECT
                     c.PhaseCode,
                     a.OrganizerName,
+                    a.ExecUnitName, 
                     b.BelongPrj,
                     a.TenderName,
                     a.Location,
                     a1.SuperviseDate,
                     a1.SuperviseEndDate, --s20230316
-                    a.BidAmount,
+                    ISNULL(b.DesignChangeContractAmount, a.BidAmount) BidAmount,
                     a.ScheCompletionDate,
                     d.PDAccuActualProgress ActualProgress,
                     (d.PDAccuActualProgress-d.PDAccuScheProgress) DiffProgress,
                     (
-                    	select za.DisplayName+','+zc.Name from UserMain za
-                        left outer join UserUnitPosition zb on(zb.UserMainSeq=za.Seq)
-                        left outer join Position zc on(zc.Seq=zb.PositionSeq)
+                    	select za.DisplayName from UserMain za
                         where za.Seq = a1.LeaderSeq
                     ) LeaderName,
                     (
@@ -615,13 +678,16 @@ namespace EQC.Services
         }
         public int DelInsideCommitte(int seq)
         {
-            string sql = @"delete from InsideCommittee where Seq=@Seq";
+            string sql = @"
+                delete from SuperviseFillInsideCommittee where InsideCommitteeSeq = @Seq;
+                delete from InsideCommittee where Seq=@Seq";
             try
             {
                 SqlCommand cmd = db.GetCommand(sql);
                 cmd.Parameters.AddWithValue("@Seq", seq);
 
-                return db.ExecuteNonQuery(cmd);
+                db.ExecuteNonQuery(cmd);
+                return 1;
             }
             catch (Exception e)
             {
@@ -719,15 +785,18 @@ namespace EQC.Services
 }
         public int DelOutCommitte(int seq)
         {
-            string sql = @"delete from OutCommittee where Seq=@Seq";
+            string sql = @"
+                delete from SuperviseFillOutCommittee where OutCommitteeSeq = @Seq;
+                delete from OutCommittee where Seq=@Seq;";
             try
             {
                 SqlCommand cmd = db.GetCommand(sql);
                 cmd.Parameters.AddWithValue("@Seq", seq);
 
-                return db.ExecuteNonQuery(cmd);
+                db.ExecuteNonQuery(cmd);
+                return 1;
             }
-            catch (Exception e)
+            catch (Exception    e)
             {
                 db.TransactionRollback();
                 log.Info("SupervisePhaseService.DelOutCommitte: " + e.Message);
@@ -943,8 +1012,37 @@ namespace EQC.Services
                 return -1;
             }
         }
-        //取得工程 行程安排
-        public List<T> GetEngForShcedule<T>(int seq)
+
+        //更新期別
+        public int SaveChangePhaseForPrework(SuperviseEngPreWordVModel m, int PhaseSeq)
+        {
+            Null2Empty(m);
+            string sql = @"
+                update SuperviseEng set
+                    SupervisePhaseSeq = @SupervisePhaseSeq,
+                    ModifyTime=GetDate(),
+                    ModifyUser=@ModifyUserSeq
+                where Seq=@Seq
+				";
+            try
+            {
+                SqlCommand cmd = db.GetCommand(sql);
+                cmd.Parameters.AddWithValue("@SupervisePhaseSeq", PhaseSeq);
+                cmd.Parameters.AddWithValue("@Seq", m.Seq);
+                cmd.Parameters.AddWithValue("@ModifyUserSeq", getUserSeq());
+                db.ExecuteNonQuery(cmd);
+                return 1;
+            }
+            catch (Exception e)
+            {
+                db.TransactionRollback();
+                log.Info("SupervisePhaseService.SaveChangePhaseForPrework: " + e.Message);
+                log.Info(sql);
+                return -1;
+            }
+        }
+            //取得工程 行程安排
+            public List<T> GetEngForShcedule<T>(int seq)
         {
             string sql = @"SELECT
                     b.Seq,
@@ -1197,7 +1295,7 @@ namespace EQC.Services
             return db.GetDataTableWithClass<SuperviseEngTHSRVModel>(cmd);
         }
         //年度督導期別
-        public List<SupervisePhaseModel> GetPhaseOptions(int chsYear)
+        public List<SupervisePhaseModel> GetPhaseOptions(string chsYear)
         {
             string sql = @"
                 SELECT Seq, PhaseCode FROM SupervisePhase
@@ -1211,7 +1309,7 @@ namespace EQC.Services
         {
             string sql = @"
                 SELECT Seq, PhaseCode FROM SupervisePhase
-                where PhaseCode=@PhaseCode ";
+                where PhaseCode Like @PhaseCode + '%' ";
             SqlCommand cmd = db.GetCommand(sql);
             cmd.Parameters.AddWithValue("@PhaseCode", phaseCode);
             return db.GetDataTableWithClass<SupervisePhaseModel>(cmd);
@@ -1333,20 +1431,20 @@ namespace EQC.Services
                 select
                     @SupervisePhaseSeq,
                     a.Seq,
-                    e.W1 W1,
-                    e.W2 W2,
-                    e.W3 W3,
-                    e.W4 W4,
-                    e.W5 W5,
-                    e.W6 W6,
-                    e.W7 W7,
-                    e.W8 W8,
-                    e.W9 W9,
-                    e.W10 W10,
-                    e.W11 W11,
-                    e.W12 W12,
-                    e.W13 W13,
-                    e.W14 W14,
+                    ISNULL(e.W1,0) W1,
+                    ISNULL(e.W2,0) W2,
+                    ISNULL(e.W3,0) W3,
+                    ISNULL(e.W4,0) W4,
+                    ISNULL(e.W5,0) W5,
+                    ISNULL(e.W6,0) W6,
+                    ISNULL(e.W7,0) W7,
+                    ISNULL(e.W8,0) W8,
+                    ISNULL(e.W9,0) W9,
+                    ISNULL(e.W10,0) W10,
+                    ISNULL(e.W11,0) W11,
+                    ISNULL(e.W12,0) W12,
+                    ISNULL(e.W13,0) W13,
+                    ISNULL(e.W14,0) W14,
                     '10:00:00',
                     (
                         IIF(e.W1=1,'1重大(或重點防汛)，','')
@@ -1773,8 +1871,10 @@ namespace EQC.Services
                         ) z
                         order by z.RecDate
                         FOR XML PATH('')) ,1,1,'')
-                    ) AS RecDate
+                    ) AS RecDate,
+                    a2.PhaseCode 
                 FROM SuperviseEng a1
+                left join SupervisePhase a2 on a1.SupervisePhaseSeq = a2.Seq
                 inner join PrjXML a on(a.Seq=a1.PrjXMLSeq)
                 where a1.SupervisePhaseSeq=@SupervisePhaseSeq"
                 + Utils.getAuthoritySqlForTender1("a.")
@@ -1791,7 +1891,7 @@ namespace EQC.Services
                     count(a1.Seq) total
                 FROM SuperviseEng a1
                 inner join PrjXML a on(a.Seq=a1.PrjXMLSeq)
-                --inner join Unit b on(b.Seq=a.ExecUnitSeq)
+                left outer join viewPrjXMLPlaneWeakness b on(b.PrjXMLSeq=a.Seq)
                 where a1.SupervisePhaseSeq=@SupervisePhaseSeq "
                 ;
             SqlCommand cmd = db.GetCommand(sql);
@@ -1814,10 +1914,26 @@ namespace EQC.Services
                     NULLIF(
                         (select top 1 b.PDExecState from ProgressData b
                         where PrjXMLSeq=a.Seq
-                        order by b.PDYear DESC, b.PDMonth DESC), '') ExecState -- 執行進度
+                        order by b.PDYear DESC, b.PDMonth DESC), '') ExecState, -- 執行進度
+                    cast(IIF(
+                        (IIF(a1.W1 <> ISNULL(b.w1,0),1,0)+
+                        IIF(a1.W2 <> ISNULL(b.w2,0),1,0)+
+                        IIF(a1.W3 <> ISNULL(b.w3,0),1,0)+
+                        IIF(a1.W4 <> ISNULL(b.w4,0),1,0)+
+                        IIF(a1.W5 <> ISNULL(b.w5,0),1,0)+
+                        IIF(a1.W6 <> ISNULL(b.w6,0),1,0)+
+                        IIF(a1.W7 <> ISNULL(b.w7,0),1,0)+
+                        IIF(a1.W8 <> ISNULL(b.w8,0),1,0)+
+                        IIF(a1.W9 <> ISNULL(b.w9,0),1,0)+
+                        IIF(a1.W10 <> ISNULL(b.w10,0),1,0)+
+                        IIF(a1.W11 <> ISNULL(b.w11,0),1,0)+
+                        IIF(a1.W12 <> ISNULL(b.w12,0),1,0)+
+                        IIF(a1.W13 <> ISNULL(b.w13,0),1,0)+
+                        IIF(a1.W14 <> ISNULL(b.w14,0),1,0)
+                    )>0, 1, 0) as bit) Updated
                 FROM SuperviseEng a1
                 inner join PrjXML a on(a.Seq=a1.PrjXMLSeq)
-                --inner join Unit b on(b.Seq=a.ExecUnitSeq)
+                left outer join viewPrjXMLPlaneWeakness b on(b.PrjXMLSeq=a.Seq)
                 where a1.SupervisePhaseSeq=@SupervisePhaseSeq
                 order by a.TenderNo Desc
 				OFFSET @pageIndex ROWS

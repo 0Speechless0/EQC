@@ -17,6 +17,7 @@ namespace EQC.Services
                 CROSS APPLY dbo.fPrjXMLProgress(a.Seq) d
                 where a.TenderYear>106 and ISNULL(b.ActualCompletionDate,'')=''
                 and ISNULL(d.PDAccuActualProgress,0)<100 and d.PDExecState<>'已結案' and d.PDExecState<>'驗收完成'
+                order by EngYear desc
                 ";
             
             SqlCommand cmd = db.GetCommand(sql);

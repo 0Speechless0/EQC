@@ -61,6 +61,29 @@ namespace EQC.Services
         /// <summary> 取得MENU權限列表 </summary>
         /// <param name="systemTypeSeq"></param>
         /// <returns> MenuRoleVM </returns>
+        public List<Menu> GetListV2(int systemTypeSeq)
+        {
+
+            using(var context = new EDMXModel.EQC_NEW_Entities())
+            {
+                return context.Menu
+                    .Where(r => r.SystemTypeSeq == systemTypeSeq && r.ParentSeq != 0)
+                    .Select(r => new Menu
+                    {
+                        Seq = r.Seq,
+                        Name = r.Name,
+                        OrderNo =r.OrderNo,
+                        RoleSeqs = r.MenuRole.Select(rr => rr.RoleSeq).ToList()
+                    })
+                    .OrderBy(r => r.OrderNo).ToList();
+      
+            }
+        }
+
+
+        /// <summary> 取得MENU權限列表 </summary>
+        /// <param name="systemTypeSeq"></param>
+        /// <returns> MenuRoleVM </returns>
         public List<MenuRoleVM> GetList(int systemTypeSeq)
         {
             //shioulo 20220516 add [menuOrder]
@@ -73,7 +96,7 @@ namespace EQC.Services
                 Case When Role5 is null Then CAST(0 AS BIT) Else CAST(1 AS BIT) END as Role5,
                 Case When Role6 is null Then CAST(0 AS BIT) Else CAST(1 AS BIT) END as Role6, --shioulo 20220513
                 Case When Role7 is null Then CAST(0 AS BIT) Else CAST(1 AS BIT) END as Role7, --shioulo 20220513
-                 Case When Role20 is null Then CAST(0 AS BIT) Else CAST(1 AS BIT) END as Role20 --shioulo 20220513
+                 Case When Role20 is null Then CAST(0 AS BIT) Else CAST(1 AS BIT) END as Role20 
                 from (
                 select MenuSeq, menuOrder,[1] as Role1,[2] as Role2 ,[3]as Role3,[4]as Role4,[5]as Role5,[6]as Role6,[7]as Role7,  
                 [20] as Role20 from

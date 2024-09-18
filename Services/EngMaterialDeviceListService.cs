@@ -68,6 +68,12 @@ namespace EQC.Services
                 ) stdCount
                 FROM EngMaterialDeviceList a
                 left outer join EngMaterialDeviceSummary b on(b.EngMaterialDeviceListSeq=a.Seq)
+				inner join
+				(
+					select Min(Seq) Seq  from EngMaterialDeviceSummary
+					group by EngMaterialDeviceListSeq
+				)
+				c on( c.Seq=b.Seq)
                 where EngMainSeq=@EngMainSeq
                 order by a.DataKeep desc, a.OrderNo
                 OFFSET @pageIndex ROWS
@@ -108,7 +114,7 @@ namespace EQC.Services
 
             return db.GetDataTableWithClass<T>(cmd);
         }
-        public bool Update(EngMaterialDeviceListVModel m)
+        public bool Update(EngMaterialDeviceListVModel m, bool check = true)
         {
             Null2Empty(m);
             string sql = @"";
@@ -116,7 +122,7 @@ namespace EQC.Services
             db.BeginTransaction();
             try
             {
-                sql = @"
+                sql =  check ? @"
                 update EngMaterialDeviceList set
                     OrderNo = @OrderNo,
                     ItemNo = @ItemNo,
@@ -132,7 +138,21 @@ namespace EQC.Services
                     from EngMaterialDeviceList　cc
                     left join EngMaterialDeviceTestSummary em on cc.Seq = em.EngMaterialDeviceListSeq
 
-                where cc.Seq=@Seq and em.Seq is null";
+                where cc.Seq=@Seq and em.Seq is null" : @"
+
+                update EngMaterialDeviceList set
+                    OrderNo = @OrderNo,
+                    ItemNo = @ItemNo,
+                    MDName = @MDName,
+                    DataKeep = @DataKeep,
+                    IsAuditVendor = @IsAuditVendor,
+                    IsAuditCatalog = @IsAuditCatalog,
+                    IsAuditReport = @IsAuditReport,
+                    IsAuditSample = @IsAuditSample,
+                    OtherAudit = @OtherAudit,
+                    ModifyTime = GETDATE(),
+                    ModifyUserSeq = @ModifyUserSeq where Seq = @Seq";
+
                 
                 cmd = db.GetCommand(sql);
                 cmd.Parameters.Clear();
@@ -147,7 +167,11 @@ namespace EQC.Services
                 cmd.Parameters.AddWithValue("@OtherAudit", m.OtherAudit); //s20230327
                 cmd.Parameters.AddWithValue("@ModifyUserSeq", getUserSeq());
                 cmd.Parameters.AddWithValue("@Seq", m.Seq);
-                if(db.ExecuteNonQuery(cmd) == 0 ) return false;
+                if (db.ExecuteNonQuery(cmd) == 0)
+                {
+                    db.TransactionRollback(); 
+                    return false;
+                }
 
                 sql = @"
                 update EngMaterialDeviceSummary set

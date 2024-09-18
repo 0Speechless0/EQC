@@ -1,8 +1,11 @@
 <template>
-    <div>
+    <div >
         <table>
-            <tr><td colspan="7">避免網路速度影響，僅提供下載、上傳30天日誌(報表)</td></tr>
-            <tr>
+            <tr><td colspan="7">避免網路速度影響，僅提供下載、上傳31天日誌(報表)</td></tr>
+            <tr><td colspan="7" v-if="tenderItem.IsSupervision" style="color:red">
+                ( 此頁面為施工日誌，請誤填錯，如需填寫監造報表，請點選上方監造報表按鈕)    
+            </td></tr>
+            <tr v-if="!tenderItem.IsSupervision">
                 <td style="width: 80px; background: #f2f2f2; text-align:center;">日期範圍</td>
                 <td class="pl-2">
                     <input v-model.trim="filterStartDate" type="date" class="form-control">
@@ -11,8 +14,8 @@
                 <td>
                     <input v-model.trim="filterEndDate" type="date" class="form-control">
                 </td>
-                <td>
-                    <button @click="downloadMultiDate" type="button" class="btn btn-outline-secondary btn-sm" title="Excel範本下載">下載多日Excel範本&nbsp;<i class="fas fa-download"></i></button>
+                <td >
+                    <button :disabled="downloadTaskStore.isDownloading" @click="downloadMultiDate" type="button" class="btn btn-outline-secondary btn-sm" title="Excel範本下載">下載多日Excel範本&nbsp;<i class="fas fa-download"></i></button>
                 </td>
                 <td>
                     <label class="btn btn-block btn-outline-secondary btn-sm" style="margin-top: 6px">
@@ -20,32 +23,47 @@
                         上傳多日工作量(excel)&nbsp;<i class="fas fa-upload"></i>
                     </label>
                 </td>
-                <td>
+
+				<td >
                     <!-- button @click="downloadMultiDateReport" type="button" class="btn btn-outline-secondary btn-sm" title="施工日報下載">下載多日施工日報<i class="fas fa-download"></i></!button -->
-                    <button @click="dnClickEvent = 1" data-target="#refExportModal" title="下載多日施工日報" class="btn btn-outline-secondary btn-sm"
+
+                    <button  :disabled="downloadTaskStore.isDownloading" @click="dnClickEvent = 1" data-target="#refExportModal" title="下載多日施工日報" class="btn btn-outline-secondary btn-sm"
                               role="button" data-toggle="modal" >下載多日施工日報<i class="fas fa-download"></i>
                     </button>
+
+                </td>
+                <td style="color:red" v-if="downloadTaskStore.isDownloading" class="pl-2">
+                    因資源超負荷使用，請等候....
                 </td>
             </tr>
         </table>
         <CalendarSetting ref="calendar" v-bind:tenderItem="tenderItem" v-bind:attrs="attrs"
                          v-on:onDayClickEvent="onCalDayClick"
                          v-on:onFromPageEvent="onCalFromPage"
-                         v-on:onDataChangeEvent="onCalDataChange"></CalendarSetting>
+                        :readOnly="tenderItem.IsSupervision"
+                         v-on:onDataChangeEvent="onCalDataChange">
+        <template #constructionDaysSetting>
+        
+            <slot name="constructionDaysSetting">
+
+            </slot>
+        </template>
+
+        </CalendarSetting>
         <h5>日誌日期:{{selectDay}}</h5>
         <div>
             <ul v-show="supDailyItem != null" class="nav nav-tabs" role="tablist">
                 <li class="nav-item">
-                    <a v-on:click="selectTab=''" id="tabMenu01" class="nav-link active" data-toggle="tab" href="#menu01">一、依施工計畫執行按圖施工概況</a>
+                    <a v-on:click="selectTab=''"  id="tabMenu01" :class="`nav-link ${selectTab == ''? 'active' : ''}`" data-toggle="tab" href="#menu01">一、依施工計畫執行按圖施工概況</a>
                 </li>
                 <li v-show="supDailyItem != null && supDailyItem.Seq != -1" class="nav-item">
-                    <a v-on:click="selectTab='menu02'" id="tabMenu02" class="nav-link" data-toggle="tab" href="#menu02">二、其它</a>
+                    <a v-on:click="selectTab='menu02'"  id="tabMenu02" :class="`nav-link ${selectTab == 'menu02'? 'active' : ''}`" data-toggle="tab" href="#menu02">二、其它</a>
                 </li>
             </ul>
             <!-- Tab panes -->
             <div class="tab-content">
                 <!-- 一 -->
-                <div id="menu01" class="tab-pane">
+                <div id="menu01" v-if="selectTab=='' && planItems.length > 0">
                     <h5>一、依施工計畫執行按圖施工概況(含約定之重要施工項目及完成數量等)</h5>
                     <div class="form-row" role="toolbar">
                         <div class="col-12 col-sm-6 col-md-auto mb-3 mb-sm-0 mt-sm-2 mt-md-0">
@@ -84,7 +102,7 @@
                         </div>
                     </div>
                     <comm-pagination ref="pagination" :recordTotal="planItems.length" v-on:onPaginationChange="onPaginationChange"></comm-pagination>
-                    <div class="table-responsive">
+                    <div class="table-responsive tableFixHead">
                         <table class="table table-responsive-md table-hover">
                             <thead class="insearch">
                                 <tr>
@@ -125,23 +143,23 @@
                         </table>
                     </div>
                 </div>
-                <div id="menu02" v-if="supDailyItem != null && supDailyItem.Seq != -1" class="tab-pane">
+                <div id="menu02" v-if="selectTab == 'menu02' && supDailyItem != null && supDailyItem.Seq != -1">
                     <div v-show="!isDisabledAndCompleted" class="col-12 col-sm-6 col-md-auto mb-3 mb-sm-0 mt-sm-2 mt-md-0">
-                        <button @click="copyMiscData" v-bind:disabled="isDisabled" type="button" class="btn btn-outline-secondary btn-sm" title="複製前日材料,人員,機具資料">複製前日材料,人員,機具資料&nbsp;<i class="fas fa-copy"></i></button>
+                        <button @click="copyMiscData" v-bind:disabled="isDisabled || tenderItem.IsSupervision" type="button" class="btn btn-outline-secondary btn-sm" title="複製前日材料,人員,機具資料">複製前日材料,人員,機具資料&nbsp;<i class="fas fa-copy"></i></button>
                     </div>
                     <h5>二、工地材料管理概況<small>(含約定之重要材料使用狀況及數量等)</small></h5>
-                    <EditMaterial ref="editMaterial" v-bind:supDailyItem="supDailyItem" v-bind:canEditUser="canEditUser"></EditMaterial>
+                    <EditMaterial ref="editMaterial" v-bind:supDailyItem="supDailyItem" v-bind:canEditUser="canEditUser && !tenderItem.IsSupervision"></EditMaterial>
                     <h5>三、工地人員及機具管理(含約定之出工人數及機具使用情形及數量)</h5>
-                    <EditPerson ref="editPerson" v-bind:supDailyItem="supDailyItem" v-bind:canEditUser="canEditUser"></EditPerson>
-                    <EditEquipment ref="editEquipment" v-bind:supDailyItem="supDailyItem" v-bind:canEditUser="canEditUser"></EditEquipment>
+                    <EditPerson ref="editPerson" v-bind:supDailyItem="supDailyItem" v-bind:canEditUser="canEditUser && !tenderItem.IsSupervision"></EditPerson>
+                    <EditEquipment ref="editEquipment" v-bind:supDailyItem="supDailyItem" v-bind:canEditUser="canEditUser && !tenderItem.IsSupervision"></EditEquipment>
                     <h5>四、本日施工項目是否有須依「營造業專業工程特定施工項目應置之技術士總類、比率或人數標準表」規定應置之技術士之專業工程</h5>
                     <div class="form-group my-2">
                         <div class="custom-control custom-radio">
-                            <input v-model="miscItem.IsFollowSkill" type="radio" value="true" id="customRadio1" name="customRadioA" class="custom-control-input">
+                            <input v-model="miscItem.IsFollowSkill" @click="e => Com.setRadioBoxToNullIfSetted(miscItem, 'IsFollowSkill' ,e.target.value)" type="radio" value="true" id="customRadio1" name="customRadioA" class="custom-control-input">
                             <label class="custom-control-label" for="customRadio1">是(此項如勾選，則應另外填寫「公共工程施工日誌之技術士簽章表」)</label>
                         </div>
                         <div class="custom-control custom-radio">
-                            <input v-model="miscItem.IsFollowSkill" type="radio" value="false" id="customRadio2" name="customRadioA" class="custom-control-input">
+                            <input v-model="miscItem.IsFollowSkill" @click="e => Com.setRadioBoxToNullIfSetted(miscItem, 'IsFollowSkill' ,e.target.value)" type="radio" value="false" id="customRadio2" name="customRadioA" class="custom-control-input">
                             <label class="custom-control-label" for="customRadio2">否</label>
                         </div>
                     </div>
@@ -154,13 +172,13 @@
                             </tr>
                             <tr>
                                 <td class="pl-4">
-                                    <div class="row pl-4">
-                                        <div class="custom-control custom-radio">
-                                            <input v-model="miscItem.SafetyHygieneMatters01" type="radio" value="true" id="customRadio1SafetyHygieneMatters01" name="customRadioSafetyHygieneMatters01" class="custom-control-input">
+                                    <div class="row pl-4" >
+                                        <div class="custom-control custom-radio" >
+                                            <input v-model="miscItem.SafetyHygieneMatters01" type="radio" value="true" @click="e => Com.setRadioBoxToNullIfSetted(miscItem, 'SafetyHygieneMatters01' ,e.target.value)" id="customRadio1SafetyHygieneMatters01" name="customRadioSafetyHygieneMatters01" class="custom-control-input">
                                             <label class="custom-control-label" for="customRadio1SafetyHygieneMatters01">有</label>
                                         </div>
                                         <div class="custom-control custom-radio" style="padding-left: 2.5rem;">
-                                            <input v-model="miscItem.SafetyHygieneMatters01" type="radio" value="false" id="customRadio2SafetyHygieneMatters01" name="customRadioSafetyHygieneMatters01" class="custom-control-input">
+                                            <input v-model="miscItem.SafetyHygieneMatters01" type="radio" value="false" @click="e => Com.setRadioBoxToNullIfSetted(miscItem, 'SafetyHygieneMatters01' ,e.target.value)" id="customRadio2SafetyHygieneMatters01" name="customRadioSafetyHygieneMatters01" class="custom-control-input">
                                             <label class="custom-control-label" for="customRadio2SafetyHygieneMatters01">無</label>
                                         </div>
                                     </div>
@@ -173,15 +191,15 @@
                                 <td class="pl-4">
                                     <div class="row pl-4">
                                         <div class="custom-control custom-radio">
-                                            <input v-model="miscItem.SafetyHygieneMatters02" type="radio" value="1" id="customRadio1SafetyHygieneMatters02" name="customRadioSafetyHygieneMatters02" class="custom-control-input">
+                                            <input v-model="miscItem.SafetyHygieneMatters02" type="radio" value="1" @click="e => Com.setRadioBoxToNullIfSetted(miscItem, 'SafetyHygieneMatters02' ,e.target.value)" id="customRadio1SafetyHygieneMatters02" name="customRadioSafetyHygieneMatters02" class="custom-control-input">
                                             <label class="custom-control-label" for="customRadio1SafetyHygieneMatters02">有</label>
                                         </div>
                                         <div class="custom-control custom-radio" style="padding-left: 2.5rem;">
-                                            <input v-model="miscItem.SafetyHygieneMatters02" type="radio" value="0" id="customRadio2SafetyHygieneMatters02" name="customRadioSafetyHygieneMatters02" class="custom-control-input">
+                                            <input v-model="miscItem.SafetyHygieneMatters02" type="radio" value="0" @click="e => Com.setRadioBoxToNullIfSetted(miscItem, 'SafetyHygieneMatters02' ,e.target.value)" id="customRadio2SafetyHygieneMatters02" name="customRadioSafetyHygieneMatters02" class="custom-control-input">
                                             <label class="custom-control-label" for="customRadio2SafetyHygieneMatters02">無</label>
                                         </div>
                                         <div class="custom-control custom-radio" style="padding-left: 2.5rem;">
-                                            <input v-model="miscItem.SafetyHygieneMatters02" type="radio" value="2" id="customRadio3SafetyHygieneMatters02" name="customRadioSafetyHygieneMatters02" class="custom-control-input">
+                                            <input v-model="miscItem.SafetyHygieneMatters02" type="radio" value="2" @click="e => Com.setRadioBoxToNullIfSetted(miscItem, 'SafetyHygieneMatters02' ,e.target.value)" id="customRadio3SafetyHygieneMatters02" name="customRadioSafetyHygieneMatters02" class="custom-control-input">
                                             <label class="custom-control-label" for="customRadio3SafetyHygieneMatters02">無新進勞工</label>
                                         </div>
                                     </div>
@@ -194,11 +212,11 @@
                                 <td class="pl-4">
                                     <div class="row pl-4">
                                         <div class="custom-control custom-radio">
-                                            <input v-model="miscItem.SafetyHygieneMatters03" type="radio" value="true" id="customRadio1SafetyHygieneMatters03" name="customRadioSafetyHygieneMatters03" class="custom-control-input">
+                                            <input v-model="miscItem.SafetyHygieneMatters03" type="radio" value="true" @click="e => Com.setRadioBoxToNullIfSetted(miscItem, 'SafetyHygieneMatters03' ,e.target.value)" id="customRadio1SafetyHygieneMatters03" name="customRadioSafetyHygieneMatters03" class="custom-control-input">
                                             <label class="custom-control-label" for="customRadio1SafetyHygieneMatters03">有</label>
                                         </div>
                                         <div class="custom-control custom-radio" style="padding-left: 2.5rem;">
-                                            <input v-model="miscItem.SafetyHygieneMatters03" type="radio" value="false" id="customRadio2SafetyHygieneMatters03" name="customRadioSafetyHygieneMatters03" class="custom-control-input">
+                                            <input v-model="miscItem.SafetyHygieneMatters03" type="radio" value="false" @click="e => Com.setRadioBoxToNullIfSetted(miscItem, 'SafetyHygieneMatters03' ,e.target.value)" id="customRadio2SafetyHygieneMatters03" name="customRadioSafetyHygieneMatters03" class="custom-control-input">
                                             <label class="custom-control-label" for="customRadio2SafetyHygieneMatters03">無</label>
                                         </div>
                                     </div>
@@ -216,15 +234,15 @@
                     <textarea v-model.trim="miscItem.ImportantNotes" maxlength="400" rows="5" class="form-control"></textarea>
                 </div>
             </div>
-            <div v-if="supDailyItem != null" class="card-footer">
+            <div v-if="supDailyItem != null && !tenderItem.IsSupervision" class="card-footer">
                 <div class="row justify-content-center">
                     <div v-if="canEditUser" class="col-12 col-sm-4 col-xl-2 my-2">
                         <button v-on:click="getConstructionItem(selectDay)" role="button" class="btn btn-shadow btn-color3 btn-block"> 取消修改 </button>
                     </div>
-                    <div v-if="canEditUser" class="col-12 col-sm-4 col-xl-2 my-2">
+                    <div v-if="canEditUser " class="col-12 col-sm-4 col-xl-2 my-2">
                         <button v-on:click="onSaveClick" role="button" class="btn btn-shadow btn-block btn-color11-4"> 儲存 <i class="fas fa-save"></i></button>
                     </div>
-                    <div class="col-12 col-sm-4 col-xl-2 my-2 pt-1">
+                    <div class="col-12 col-sm-4 col-xl-2 my-2 pt-1" >
                         <!-- button @click="downloadDaily" v-bind:disabled="supDailyItem.Seq==-1" type="button" class="btn btn-outline-secondary btn-sm">施工日報 <i class="fas fa-download"></i></button -->
                         <button @click="dnClickEvent = 0" v-bind:disabled="supDailyItem.Seq==-1" data-target="#refExportModal" title="施工日報" class="btn btn-outline-secondary btn-sm"
                                 role="button" data-toggle="modal">
@@ -256,6 +274,7 @@
                                     <input v-model="dnDailyMode" name="dnDailyMode" value="1" type="radio" id="itemNo" class="custom-control-input">
                                     <label class="custom-control-label" for="itemNo">當日工作量工項</label>
                                 </div>
+
                             </div>
                         </div>
                         <br />
@@ -275,8 +294,19 @@
     </div>
 </template>
 <script>
+import Com from "../../Common/Common2.js";
+    import downloadTaskStore  from "../../store/downloadTaskStore";
     export default {
+
+        
         props: ['tenderItem', 'canEditUser'],
+        setup()
+        {   
+            downloadTaskStore.getDonloadTaskTag();
+            return {
+                downloadTaskStore 
+            }
+        },
         data: function () {
             return {
                 supDailyItem: null,
@@ -295,6 +325,8 @@
                 //s20230830
                 dnDailyMode: "0", 
                 dnClickEvent: -1,
+                Com : Com,
+                downloadTag:0
             };
         },
         components: {
@@ -304,6 +336,17 @@
             EditEquipment: require('./PM_Construction_EditEquipment').default,
         },
         methods: {
+            getDownloadTag(){
+                window.myAjax.post('/EPCProgressManage/GetDownloadTag', {})
+                    .then(resp => {
+                        if (resp.data.result == 0) {
+                            this.downloadTag = resp.data.downloadTag;
+                        }
+                    })
+                    .catch(err => {
+                        console.log(err);
+                    });
+            },
             sortItem()
             {
                 this.planItems.sort( (a, b) => (a.OrderNo- b.OrderNo) )
@@ -314,6 +357,7 @@
                 window.myAjax.post('/EPCProgressManage/CopyConstructionMiscData', { supDailyItem: this.supDailyItem })
                     .then(resp => {
                         if (resp.data.result == 0) {
+
                             this.$refs.editMaterial.getResords();
                             this.$refs.editPerson.getResords();
                             this.$refs.editEquipment.getResords();
@@ -331,9 +375,10 @@
                 } else if(this.dnClickEvent == 0) {
                     this.downloadDaily();
                 }
+                window.closeModal("#refExportModal");
             },
             //下載(多日期) 日報 s20230228
-            downloadMultiDateReport() {
+            async downloadMultiDateReport() {
                 if (this.filterEndDate == '' || this.filterStartDate == '') {
                     alert('請輸入日期範圍');
                     return;
@@ -342,9 +387,17 @@
                     alert('日期範圍不可以超過31天');
                     return;
                 }
+                let {data :res } = await window.myAjax.post("/EPCProgressManage/DownloadCDailyMulti", {
+                    sd : this.filterStartDate,
+                    ed : this.filterEndDate,
+                    eId : this.tenderItem.Seq,
+                    eEM : this.dnDailyMode
 
-                let action = '/EPCProgressManage/DownloadCDailyMulti?sd=' + this.filterStartDate + '&ed=' + this.filterEndDate + '&eId=' + this.tenderItem.Seq + '&eEM=' + this.dnDailyMode;
-                window.comm.dnFile(action, this.dnCallBack);
+                });
+                downloadTaskStore.isDownloading = res.downloadTaskTag;
+                alert(res.message);
+                // let action = '/EPCProgressManage/DownloadCDailyMulti?sd=' + this.filterStartDate + '&ed=' + this.filterEndDate + '&eId=' + this.tenderItem.Seq + '&eEM=' + this.dnDailyMode;
+                // window.comm.dnFile(action, this.dnCallBack);
             },
             //下載 施工日報
             downloadDaily() {
@@ -387,7 +440,7 @@
             },
 
             //下載(多日期) Excel範本
-            downloadMultiDate() {
+            async downloadMultiDate() {
                 if (this.filterEndDate == '' || this.filterStartDate == '') {
                     alert('請輸入日期範圍');
                     return;
@@ -396,9 +449,16 @@
                     alert('日期範圍不可以超過31天');
                     return;
                 }
-
+      
                 let action = '/EPCProgressManage/DnMultiDate?sd=' + this.filterStartDate + '&ed=' + this.filterEndDate + '&eId=' + this.tenderItem.Seq;
-                window.comm.dnFile(action);
+                let {data :res} =  await window.myAjax.get(action);
+                if(res)
+                {
+                    downloadTaskStore.isDownloading = res.downloadTaskTag;
+                    alert(res.message);
+                }
+
+                // window.comm.dnFile(action);
             },
             //匯入(多日期)日誌(excel)
             uploadMultiDailyLog(event) {
@@ -417,7 +477,8 @@
                         headers: { 'Content-Type': 'multipart/form-data' }
                     }).then(resp => {
                         if (resp.data.result == 0) {
-                            if (this.selectDay != null) this.getConstructionItem(this.selectDay);
+                            if (this.selectDay != null) 
+                                this.getConstructionItem(this.selectDay);
                         }
                         alert(resp.data.message);
                     }).catch(error => {
@@ -465,21 +526,23 @@
                         if (resp.data.result == 0) {
                             if (this.supDailyItem.Seq == -1) {
                                 this.getConstructionItem(this.selectDay);
-                                this.getConstructionCalInfo();
+
                             }
                             if (this.selectTab == '') {
                                 alert('請繼續填寫工地材料、工地人員、機具使用狀況');
                                 //s20230908
                                 this.selectTab = 'menu02';
-                                document.getElementById('tabMenu01').classList.remove("active");
-                                document.getElementById('menu01').classList.remove("active");
-                                document.getElementById('tabMenu02').classList.add("active");
-                                if (document.getElementById('menu02') != null) {
-                                    document.getElementById('menu02').classList.add("active");
-                                }
+                                // document.getElementById('tabMenu01').classList.remove("active");
+                                // document.getElementById('menu01').classList.remove("active");
+                                // document.getElementById('tabMenu02').classList.add("active");
+                                // if (document.getElementById('menu02') != null) {
+                                //     document.getElementById('menu02').classList.add("active");
+                                // }
+                                window.scrollTo(0, 0);
                             } else {
                                 alert(resp.data.msg);
                             }
+                            this.getConstructionCalInfo();
                         } else {
                             alert(resp.data.msg);
                         }
@@ -488,14 +551,13 @@
                         console.log(err);
                     });
             },
-            getConstructionItem(sDay) {
+            async getConstructionItem(sDay) {
                 this.selectDay = null;
                 this.supDailyItem = null;
                 this.miscItem = {};
                 this.planItems = [];
-                this.selectTab = '';
                 if (sDay == null) return;
-                window.myAjax.post('/EPCProgressManage/GetConstructionItem', { id: this.tenderItem.Seq, tarDate: sDay })
+                await window.myAjax.post('/EPCProgressManage/GetConstructionItem', { id: this.tenderItem.Seq, tarDate: sDay })
                     .then(resp => {
                         if (resp.data.result == 0) {
                             this.supDailyItem = resp.data.supDailyItem;
@@ -503,17 +565,16 @@
                             this.planItems = resp.data.planItems;
                             this.selectDay = sDay;
                             //s20230908
-                            document.getElementById('tabMenu01').classList.add("active");
-                            document.getElementById('menu01').classList.add("active");
-                            document.getElementById('tabMenu02').classList.remove("active");
+                            // document.getElementById('tabMenu01').classList.add("active");
+                            // document.getElementById('tabMenu02').classList.remove("active");
                             var that = this;
                             this.$refs.calendar.setSupDailyDateNote(this.supDailyItem);
                             this.$nextTick(function () {//s20230908
                                 that.$refs.pagination.setPagination();
 
-                                if (document.getElementById('menu02') != null) {
-                                    document.getElementById('menu02').classList.remove("active");
-                                }
+                                // if (document.getElementById('menu02') != null) {
+                                //     document.getElementById('menu02').classList.remove("active");
+                                // }
                             });
                             /*setTimeout(function greet() {
                                 that.$refs.pagination.setPagination();
@@ -534,7 +595,15 @@
                 window.myAjax.post('/EPCProgressManage/GetConstructionInfo', { id: this.tenderItem.Seq, fromDate: this.fromDate })
                     .then(resp => {
                         if (resp.data.result == 0) {
-                            this.setCalAttr(resp.data.items);
+                            var _schOrgStartDate = Com.ToDate(this.tenderItem.schOrgStartDate);
+                            var _schOrgEndDate = Com.ToDate(this.tenderItem.schOrgEndDate);
+                            console.log("FFFF", _schOrgStartDate, _schOrgEndDate
+                            )
+                            this.setCalAttr(resp.data.items.filter(
+                                e => Date.parse(e.DateStr) >= Date.parse(_schOrgStartDate) && 
+                             Date.parse(e.DateStr) <= Date.parse(_schOrgEndDate)
+
+                            ) );
                         }
                     })
                     .catch(err => {
@@ -549,6 +618,7 @@
                     return false;
             },
             onPaginationChange(pInx, pCnt) {
+                console.log("LLLLL")
                 this.startRow = (pInx - 1) * pCnt;
                 this.endRow = pInx * pCnt;
                 console.log("pInx:" + pInx + " pCnt:" + pCnt);
@@ -561,6 +631,12 @@
                 var fillin = {
                     highlight: {
                         class: 'bg-success',
+                    },
+                    dates: [],
+                }
+                var fillin2 = {
+                    highlight: {
+                        class: 'bg-lightgreen',
                     },
                     dates: [],
                 }
@@ -586,26 +662,51 @@
                     else if (item.Mode == 1)
                         stopfillin.dates.push(Date.parse(item.DateStr));
                     else if (item.Mode == 2)
-                        fillin.dates.push(Date.parse(item.DateStr));
+                    {
+                        if(item.MachineLoading )
+                            fillin.dates.push(Date.parse(item.DateStr));
+                        else
+                            fillin2.dates.push(Date.parse(item.DateStr));
+                    }
+                        
                 }
                 this.attrs.push(notfillin);
                 this.attrs.push(stopfillin);
                 this.attrs.push(fillin);
+                this.attrs.push(fillin2);
             },
             onCalFromPage(item) {
                 this.fromDate = item.year + '-' + item.month + '-01';
                 this.getConstructionCalInfo();
             },
             onCalDayClick(day) {
-                this.selectTab = '';//s20230425
+                // this.selectTab = '';//s20230425
                 //this.planItemsTotal = 0;
                 //this.getConstructionItem(day.id);
                 //s20230412
+                day._id = new Date(day.id);
+                var _schOrgStartDate = new Date(this.tenderItem.schOrgStartDate);
+                var _schOrgEndDate = new Date(this.tenderItem.schOrgEndDate);
+                _schOrgStartDate = new Date( _schOrgStartDate .setDate(_schOrgStartDate.getDate() + 1))
+                _schOrgEndDate = new Date(_schOrgEndDate.setDate(_schOrgEndDate.getDate() + 1))
+                // if(_schOrgStartDate > day._id || _schOrgEndDate < day._id)
+                // {
+
+                //     alert("該日期不在預定進度範圍，請執行工程變更");
+                //     return ;
+                // }
+                
                 window.myAjax.post('/EPCProgressManage/CheckActiveDate', { id: this.tenderItem.Seq, tarDate: day.id })
-                    .then(resp => {
+                    .then(async(resp) => {
                         if (resp.data.result == 0) {
                             this.planItemsTotal = 0;
-                            this.getConstructionItem(day.id);
+                            this.tenderItem.currentDate = {
+                                Date : day.id,
+                                ConstructionDateConfirmed : resp.data.ConstructionDateConfirmed,
+                                MiscDateConfirmed : resp.data.MiscDateConfirmed    
+                            };
+                            await this.getConstructionItem(day.id);
+                            this.selectTab = '';
                         } else
                             alert(resp.data.msg);
                     })
@@ -624,11 +725,14 @@
             },
             isDisabledAndCompleted: function () {//s20231116
                 if (this.supDailyItem == null || this.supDailyItem.Seq == -1 || this.supDailyItem.ItemState == 1) return true;
+                if(this.tenderItem.IsSupervision ) return true;
                 return false;
             }
         },
         mounted() {
+            this.tenderItem.currentDate = null;
             console.log('mounted() 施工日誌');
+            // this.getDownloadTag();
         }
     }
 </script>
@@ -636,4 +740,30 @@
     .vc-highlight {
         width: 95% !important;
     }
+    .bg-lightgreen
+    {
+        background : lightgreen !important
+    }
+</style>
+<style scoped>
+
+    .tableFixHead          { overflow: auto; max-height: 500px;   }
+table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+.table {
+    margin : 0;
+}
+.tableFixHead thead  { position: sticky !important ; top: 0 !important ; z-index: 1 !important;     }
+th {
+    border : 0;
+    border-bottom: #ddd solid 1px !important; 
+    border-left : 0 !important;
+    border-right:0 !important;
+}
+td {
+    z-index: 0;
+    position: relative;
+}
 </style>

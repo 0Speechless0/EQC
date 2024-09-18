@@ -21,12 +21,168 @@ using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using EQC.ViewModel.Interface;
 using EQC.Models;
+using NPOI.SS.UserModel;
+using System.Text;
+
+
 namespace EQC.Common
 {
     public static class Utils
     {
+        public static string rootPath;
 
+        public static bool isNumber(string s)
+        {
+            int Flag = 0;
+            char[] str = s.ToCharArray();
+            for (int i = 0; i < str.Length; i++)
+            {
+                if (Char.IsNumber(str[i]))
+                {
+                    Flag++;
+                }
+                else
+                {
+                    Flag = -1;
+                    break;
+                }
+            }
 
+            if (Flag > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public static void GetEngDismantlingRate<T>(int engSeq, Func<EDMXModel.EngMain, IEnumerable<T> > payItemsGetter,ref decimal rate, ref decimal greenRate)
+        where T : EDMXModel.InterFace.PayItem
+        {
+            using(var context = new EQC.EDMXModel.EQC_NEW_Entities())
+            {
+                rate = 0;
+                greenRate = 0;
+                var eng = context.EngMain.Find(engSeq);
+
+                    
+                var payItems = payItemsGetter(eng)?.Where(r => r.RStatusCode != 300).ToList() ;
+                if (payItems == null) return;
+                var bascAmount = payItems.Sum(r => r.Amount);
+                if(bascAmount.HasValue && bascAmount > 0)
+                {
+                    var listA = payItems.Where(r => r.KgCo2e != null);
+                    if (listA.Sum(r => r.Amount) is decimal d)
+                    {
+                        rate = decimal.Round(d / bascAmount.Value * 100, 2);
+ 
+                    }
+                    if (listA.Where(r => r.GreenFundingSeq != null ).Sum(r => r.Amount) is decimal dd)
+                    {
+                        greenRate = decimal.Round(dd / bascAmount.Value * 100, 2);
+
+                    }
+                }
+            }
+        }
+
+        public static void importToOther<T>(this EQC.EDMXModel.EQC_NEW_Entities db, ICollection<T> source, ICollection<T> other)  where T : class, new()
+        {
+
+            source.ToList().ForEach(e =>
+            {
+                var t  = new T();
+                other.Add(t);
+                db.Entry(t).CurrentValues.SetValues(e);
+            });
+        }
+
+        public static bool CheckDirectorOfSupervision(string userNo)
+        {
+            using (var context = new EDMXModel.EQC_NEW_Entities())
+            {
+                // 委辦監造主任判別
+                var engNo = userNo.Substring(1);
+                if (
+                    context.EngMain.Select(r => r.EngNo)
+                    .Contains(engNo)
+                )
+                    return true;
+
+                // 自辦判別
+                return context.EngSupervisor
+                    .Where(r => r.UserKind == 0 && r.UserMain.UserNo == userNo).Count() > 0;
+            }
+        }
+
+        public static IRow copyRowToNext(this ISheet sheet, int row)
+        {
+            var newRow = sheet.CreateRow(row +1);
+            var standardRow = sheet.GetRow(row);
+            int i = 0;
+            while( i < standardRow.LastCellNum)
+            {
+                var newCell = newRow.CreateCell(i);
+                var standardCell = standardRow.GetCell(i);
+                var cellStyle = sheet.Workbook.CreateCellStyle();
+                cellStyle.CloneStyleFrom(standardCell.CellStyle);
+                if (standardCell.CellStyle != null)
+                    newCell.CellStyle = cellStyle;
+                newCell.CellStyle.SetFont(standardCell.CellStyle.GetFont(sheet.Workbook) );
+                i++;
+            }
+            newRow.Height = standardRow.Height;
+            if(standardRow.RowStyle != null)
+                newRow.RowStyle.CloneStyleFrom(standardRow.RowStyle );
+            return newRow;
+        }
+        public static DateTime?[] GetEngDate(this EDMXModel.EngMain eng)
+        {
+            var engStartDate = eng.EngChangeStartDate ?? eng.StartDate;
+            var engEndDate = eng.EngChangeSchCompDate ?? eng.SchCompDate;
+            return new DateTime?[] {
+                engStartDate,
+                engEndDate
+            };
+        }
+        public static List<T> GetValueByJoin<T>(
+            this List<T> originList,
+            List<SelectOptionModel> externalList,
+            Func<T, string> joinCondition,
+            Action<T, string> joinAction
+        )
+        {
+            return originList
+                .GroupJoin(externalList,
+                r1 => joinCondition.Invoke(r1),
+                r2 => r2.Value,
+                (r1, r2) => {
+                    joinAction.Invoke(r1, r2.FirstOrDefault()?.Text);
+                    return r1;
+                }
+
+                ).ToList();
+        }
+        public static void InteropWordAddPicFromBase64(this Microsoft.Office.Interop.Word.Application wordApp, Microsoft.Office.Interop.Word.Cell cell, string base64)
+        {
+            cell.Select();
+            byte[] imageBytes = Convert.FromBase64String(base64.Replace("data:image/png;base64,", ""));
+            using (var ms = new MemoryStream(imageBytes, 0, imageBytes.Length))
+            {
+                Image image = Image.FromStream(ms, true);
+                string fileName = Utils.GetTempFile(".png");
+                image.Save(fileName);
+                object linkToFile = false;
+                object saveWithDocument = true;
+                object range = wordApp.Selection.Range;
+                Microsoft.Office.Interop.Word.InlineShape shape = wordApp.ActiveDocument.InlineShapes.AddPicture(fileName, ref linkToFile, ref saveWithDocument, ref range);
+                shape.Width = 90f;
+                shape.Height = 30f;
+                shape.ConvertToShape().WrapFormat.Type = Microsoft.Office.Interop.Word.WdWrapType.wdWrapFront;
+            }
+        }
         public static string getEscapeDataString(this string str)
         {
             return Uri.EscapeDataString(Path.GetFileName(str));
@@ -262,8 +418,16 @@ namespace EQC.Common
         public static string getAuthoritySqlForTender(string alias, string engAlias)
         {
             string sql = " and 1=0";
-            System.Web.SessionState.HttpSessionState _session = System.Web.HttpContext.Current.Session;
-            if (_session["UserInfo"] == null) return sql;
+
+
+            System.Web.SessionState.HttpSessionState _session = null;
+
+            if (System.Web.HttpContext.Current != null)
+            {
+                _session = System.Web.HttpContext.Current.Session;
+            }
+            if (_session == null) return " and 1=1";
+            if (  _session["UserInfo"] == null) return sql;
 
             UserInfo userInfo = (UserInfo)_session["UserInfo"];
             if (userInfo.UnitSeq1 == null && userInfo.UnitSeq2 == null) return sql;
@@ -497,17 +661,25 @@ namespace EQC.Common
         {
             skipRole = skipRole ?? new List<int>();
 
-            string sql = " and 1=0";
-            System.Web.SessionState.HttpSessionState _session = System.Web.HttpContext.Current.Session;
+            string sql = " and 1=0 ";
+            System.Web.SessionState.HttpSessionState _session = null;
+
+            if(System.Web.HttpContext.Current != null)
+                _session=
+                System.Web.HttpContext.Current.Session ;
 
             int roleSeq; string roleSeqId; UserInfo userInfo = new UserInfo(); VUserMain user = new VUserMain();
 
-
-            if (userNo == null)
+            if(_session == null)
+            {
+                return " and 1=1";
+            }
+            else if (userNo == null)
             {
                 userInfo = new SessionManager().GetUser();
                 if (ConfigurationManager.AppSettings.Get("Debug") == null)
                 {
+
                     if (_session["UserInfo"] == null) return sql;
 
                 }
@@ -570,8 +742,9 @@ namespace EQC.Common
                         or
                         {0}ExecUnitSeq={1}
                         or (
-                         " +(SupervisorAlias ?? "{0}Seq" )+@" in (select EngMainSeq from EngSupervisor where UserMainSeq={2})
+                         " +(SupervisorAlias ?? "{0}Seq" )+ @" in (select EngMainSeq from EngSupervisor where UserMainSeq={2})
                         )
+                        111%99
                     ) ", alias, userInfo.UnitSeq1, userNo != null ? user.Seq : getUserSeq());
                 }
                 else
@@ -583,6 +756,7 @@ namespace EQC.Common
                         or (
                         " + (SupervisorAlias ?? "{0}Seq") + @" in (select EngMainSeq from EngSupervisor where UserMainSeq={3})
                         )
+                        111%99
                     ) ", alias, userInfo.UnitSeq1, userInfo.UnitSeq2, userNo != null ? user.Seq : getUserSeq());
                 }
             } else if (roleSeq == ConfigManager.BuildContractor_RoleSeq) //施工廠商
@@ -590,7 +764,7 @@ namespace EQC.Common
                 if(userInfo.UnitCode2!=null)
                 {
                     sql = String.Format(@" and (
-                        {0}BuildContractorTaxId='{1}'
+                        {0}BuildContractorTaxId='{1}' 111%99
                     ) ", alias, userInfo.UnitCode2);
                 }
             }
@@ -599,7 +773,7 @@ namespace EQC.Common
                 if (userInfo.UnitCode2 != null)
                 {
                     sql = String.Format(@" and (
-                        {0}SupervisorTaxid='{1}'
+                        {0}SupervisorTaxid='{1}' 111%99
                     ) ", alias, userInfo.UnitCode2);
                 }
             }
@@ -608,15 +782,16 @@ namespace EQC.Common
                 if (userInfo.UnitCode2 != null)
                 {
                     sql = String.Format(@" and (
-                        {0}DesignUnitTaxId='{1}'
+                        {0}DesignUnitTaxId='{1}' 111%99
                     ) ", alias, userInfo.UnitCode2);
                 }
             }
             else if(roleSeqId == "20" ) //署內執行者
             {
                 sql = String.Format(@" and (
-                        " + (SupervisorAlias ?? "{0}Seq") + @" in (select EngMainSeq from EngSupervisor where UserMainSeq={1})
-                    ) ", alias, userNo != null ? user.Seq : getUserSeq());
+                        " + (SupervisorAlias ?? "{0}Seq") + @" in (select EngMainSeq from EngSupervisor where UserMainSeq={1}) 
+                        or " + alias + @"OrganizerUserSeq = {1} 111%99
+                    ) ", alias, userNo != null ? user.Seq : getUserSeq()) ;
 
             }
             
@@ -625,7 +800,7 @@ namespace EQC.Common
                 sql = " ";
             }*/
 
-            return sql;
+            return sql.Replace("111%99", $" or ( {alias}EngNo Like '111%99' and {alias}ExecUnitSeq={userInfo.UnitSeq1})");
         }
         //取得使用者 單位/機關
         public static void GetUserUnit(ref string unitSeq, ref string unitSubSeq)
@@ -725,16 +900,18 @@ namespace EQC.Common
             return unitName;
         }
         //發送 email
-        public static bool Email(string toMailAddress, string subject, string mailBody)
+        public static bool Email(string toMailAddress, string subject, string mailBody, string token = null, string loginHost = null)
         {
             try
             {
                 MailMessage message = new MailMessage();
+                string loginUrl = loginHost ?? "(https://eqc.wra.gov.tw)";
+                if (token != null) loginUrl += "?token=" + token;
                 message.From = new MailAddress(ConfigManager.MailAdress);
                 message.To.Add(new MailAddress(toMailAddress));
                 message.Subject = subject;
                 message.IsBodyHtml = true; //to make message body as html  
-                message.Body = "工程品管數位化系統(https://eqc.wra.gov.TW) <br>" + mailBody;
+                message.Body = $"工程品管數位化系統{loginUrl} <br>" + mailBody;
                 message.BodyEncoding = System.Text.Encoding.UTF8;
 
                 SmtpClient smtp = new SmtpClient();
@@ -911,6 +1088,7 @@ namespace EQC.Common
             //設定其他欄位為空字串
             foreach (PropertyInfo prop in source.GetType().GetProperties())
             {
+
                 if (prop.PropertyType == typeof(string))
                 {
                     string propValue = prop.GetValue(source, null) as string;
@@ -921,43 +1099,55 @@ namespace EQC.Common
                     }
                     catch { }
                 }
+                if (prop.PropertyType == typeof(int))
+                {
+                    string propValue = prop.GetValue(source, null) as string;
+                    try
+                    {
+                        if (propValue == null)
+                            prop.SetValue(source, (object)DBNull.Value, null);
+                    }
+                    catch { }
+                }
             }
         }
         //後台上傳模板檔案目錄
         public static string GetSignatureFile(string srcFile)
         {
-            string webRootPath = HttpContext.Current.Server.MapPath("~");
+            string webRootPath = WebRootPath ?? HttpContext.Current.Server.MapPath("~");
             if (srcFile.IndexOf("\\") == 0) srcFile = srcFile.Substring(1);
             //System.Diagnostics.Debug.WriteLine(Path.Combine(webRootPath, srcFile));
             //return webRootPath + srcFile;
             return Path.Combine(webRootPath, srcFile);
         }
+
+        public static string WebRootPath;
         //套版檔案路徑
         public static string GetTemplateFilePath()
         {
             string folderName = "TemplateFile";
-            string webRootPath = HttpContext.Current.Server.MapPath("~");
+            string webRootPath = WebRootPath ?? HttpContext.Current.Server.MapPath("~");
             return Path.Combine(webRootPath, folderName);
         }
         //後台上傳模板檔案目錄
         public static string GetTemplateFolder()
         {
             string folderName = "FileUploads/Tp";
-            string webRootPath = HttpContext.Current.Server.MapPath("~");
+            string webRootPath = WebRootPath ?? HttpContext.Current.Server.MapPath("~");
             return Path.Combine(webRootPath, folderName);
         }
         //工程專案檔案目錄
         public static string GetEngMainFolder(int engMainSeq)
         {
             string folderName = String.Format("FileUploads/Eng/{0}", engMainSeq);
-            string webRootPath = HttpContext.Current.Server.MapPath("~");
+            string webRootPath = WebRootPath ?? HttpContext.Current.Server.MapPath("~");
             return Path.Combine(webRootPath, folderName);
         }
         //監造計畫書目錄
         public static string GetSupervisionPlanFolder(int engMainSeq)
         {
             string folderName = String.Format("FileUploads/Eng/{0}/SupervisionPlan", engMainSeq);
-            string webRootPath = HttpContext.Current.Server.MapPath("~");
+            string webRootPath = WebRootPath ?? HttpContext.Current.Server.MapPath("~");
             return Path.Combine(webRootPath, folderName);
         }
 
@@ -965,14 +1155,14 @@ namespace EQC.Common
         public static string GetQualityPlanFolder(int engMainSeq)
         {
             string folderName = String.Format("FileUploads/Eng/{0}/QualityPlan", engMainSeq);
-            string webRootPath = HttpContext.Current.Server.MapPath("~");
+            string webRootPath = WebRootPath ?? HttpContext.Current.Server.MapPath("~");
             return Path.Combine(webRootPath, folderName);
         }
         //標案PrjXML檔案目錄
         public static string GetTenderFolder(int engMainSeq)
         {
             string folderName = String.Format("FileUploads/Tender/{0}", engMainSeq);
-            string webRootPath = HttpContext.Current.Server.MapPath("~");
+            string webRootPath = WebRootPath ?? HttpContext.Current.Server.MapPath("~");
             return Path.Combine(webRootPath, folderName);
         }
         /// <summary>
@@ -982,7 +1172,7 @@ namespace EQC.Common
         /// <returns></returns>
         public static string GetConstRiskEvalFolder(int engMainSeq)
         {
-            string fPath = Path.Combine(HttpContext.Current.Server.MapPath("~"), String.Format("FileUploads/ConstRiskEval/{0}", engMainSeq));
+            string fPath = Path.Combine(WebRootPath ?? HttpContext.Current.Server.MapPath("~"), String.Format("FileUploads/ConstRiskEval/{0}", engMainSeq));
             if (!Directory.Exists(fPath)) Directory.CreateDirectory(fPath);
             return fPath;
         }
@@ -1004,7 +1194,7 @@ namespace EQC.Common
             {
                 fPath =
                     Path.Combine(
-                        HttpContext.Current.Server.MapPath("~")
+                        WebRootPath ?? HttpContext.Current.Server.MapPath("~")
                         ,
                         ConfigurationManager
                         .AppSettings["SelfEvalPath"].ToString()
@@ -1029,7 +1219,7 @@ namespace EQC.Common
         }
         public static string GetEcologicalCheckFolder(int engMainSeq, string folder)
         {
-            string fPath = Path.Combine(HttpContext.Current.Server.MapPath("~"), String.Format(folder+"/{0}", engMainSeq));
+            string fPath = Path.Combine(WebRootPath ?? HttpContext.Current.Server.MapPath("~"), String.Format(folder+"/{0}", engMainSeq));
             //string fPath =
             //    Path.Combine(
             //        ConfigurationManager
@@ -1048,7 +1238,7 @@ namespace EQC.Common
         /// <returns></returns>
         public static string GetEcologicalCheck2Folder(int engMainSeq, string folder)
         {
-            string fPath = Path.Combine(HttpContext.Current.Server.MapPath("~"), String.Format("FileUploads/EcologicalCheck2/{0}", engMainSeq));
+            string fPath = Path.Combine(WebRootPath ??HttpContext.Current.Server.MapPath("~"), String.Format("FileUploads/EcologicalCheck2/{0}", engMainSeq));
             if (!Directory.Exists(fPath)) Directory.CreateDirectory(fPath);
             return fPath;
         }
@@ -1059,7 +1249,7 @@ namespace EQC.Common
         /// <returns></returns>
         public static string GetEngReportFolder(int engReportSeq)
         {
-            string fPath = Path.Combine(HttpContext.Current.Server.MapPath("~"), String.Format("FileUploads/EngReport/{0}", engReportSeq));
+            string fPath = Path.Combine(WebRootPath ?? HttpContext.Current.Server.MapPath("~"), String.Format("FileUploads/EngReport/{0}", engReportSeq));
             if (!Directory.Exists(fPath)) Directory.CreateDirectory(fPath);
             return fPath;
         }
@@ -1070,7 +1260,7 @@ namespace EQC.Common
         /// <returns></returns>
         public static string GetEngRiskFrontFolder(int engSeq)
         {
-            string fPath = Path.Combine(HttpContext.Current.Server.MapPath("~"), String.Format("FileUploads/EngRiskFront/{0}", engSeq));
+            string fPath = Path.Combine(WebRootPath ?? HttpContext.Current.Server.MapPath("~"), String.Format("FileUploads/EngRiskFront/{0}", engSeq));
             if (!Directory.Exists(fPath)) Directory.CreateDirectory(fPath);
             return fPath;
         }
@@ -1085,13 +1275,31 @@ namespace EQC.Common
             System.IO.File.Copy(srcFile, tempFile);
             return tempFile;
         }
+
+        /// <summary>
+        /// 建立使用者暫存目錄
+        /// </summary>
+        /// <returns></returns>
+        public static string GetTempFolderForUser(string uuid ="", int? userSeq = null)
+        {
+            string tempFolder = Path.Combine(Path.GetTempPath(), 
+                "EQCUserTempFile",
+                (userSeq  ?? Utils.getUserSeq() ).ToString(), uuid);
+            if (!Directory.Exists(tempFolder))
+            {
+                Directory.CreateDirectory(tempFolder);
+            }
+
+            return tempFolder;
+        }
+
         /// <summary>
         /// 建立暫存目錄
         /// </summary>
         /// <returns></returns>
-        public static string GetTempFolder()
+        public static string GetTempFolder(string uuid = null)
         {
-            string tempFolder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("B").ToUpper());
+            string tempFolder = uuid ?? Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("B").ToUpper());
             if (!Directory.Exists(tempFolder))
             {
                 Directory.CreateDirectory(tempFolder);
@@ -1105,11 +1313,51 @@ namespace EQC.Common
         /// </summary>
         /// <param name="extFile"></param>
         /// <returns></returns>
-        public static string GetTempFile(string extFile)
+        public static string GetTempFile(string extFile, string _uuid = null)
         {
-            string uuid = Guid.NewGuid().ToString("B").ToUpper();
+            string uuid = _uuid ?? Guid.NewGuid().ToString("B").ToUpper();
             string tempPath = Path.GetTempPath();
             return Path.Combine(tempPath, uuid + extFile);
+        }
+
+        //轉為中曆時間
+        /// <summary>
+        /// 轉為中曆字串 {0}/{1}/{2}
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <returns></returns>
+        public static string ToChsDateTime(this DateTime? dt)
+        {
+            if (dt.HasValue)
+            {
+                DateTime tar = dt.Value;
+                int year = tar.Year - 1911;
+                return String.Format("{0}/{1}/{2} {3}:{4}:{5}", year, tar.Month, tar.Day, tar.Hour, tar.Minute, tar.Second);
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
+        //轉為中曆字串
+        /// <summary>
+        /// 轉為中曆字串 {0}/{1}/{2}
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <returns></returns>
+        public static string ToChsDate(this DateTime? dt)
+        {
+            if (dt.HasValue)
+            {
+                DateTime tar = dt.Value;
+                int year = tar.Year - 1911;
+                return String.Format("{0}/{1}/{2}", year, tar.Month, tar.Day);
+            }
+            else
+            {
+                return string.Empty;
+            }
         }
         //轉為中曆字串
         /// <summary>
@@ -1130,6 +1378,25 @@ namespace EQC.Common
                 return string.Empty;
             }
         }
+
+        //中曆字串格式化為DateTime
+        /// <summary>
+        /// yyyMMdd 轉 DateTime
+        /// </summary>
+        /// <param name="dateStr">yyyMMdd</param>
+        /// <returns>yyy/MM/dd</returns>
+        public static DateTime? ChsDateStrToDate(string dateStr)
+        {
+            if (String.IsNullOrEmpty(dateStr) || dateStr.Length != 7)
+            {
+                return null;
+            }
+            else
+            {
+                return new DateTime(1911 + Int32.Parse(dateStr.Substring(0, 3)), Int32.Parse(dateStr.Substring(3, 2)), Int32.Parse(dateStr.Substring(5, 2)));
+
+            }
+        }
         //中曆字串格式化 s20230519
         /// <summary>
         /// yyyMMdd 轉 yyy/MM/dd
@@ -1147,6 +1414,30 @@ namespace EQC.Common
                 return String.Format("{0}/{1}/{2}", dateStr.Substring(0,3), dateStr.Substring(3, 2), dateStr.Substring(5, 2));
             }
         }
+        public static string GetDayOfWeek(DateTime? dt)
+        {
+            if (dt.HasValue)
+            {
+                DateTime tar = dt.Value;
+                switch( tar.DayOfWeek)
+                {
+                    case DayOfWeek.Sunday: return "星期天";break;
+                    case DayOfWeek.Monday : return "星期一"; break;
+                    case DayOfWeek.Tuesday : return "星期二"; break;
+                    case DayOfWeek.Wednesday : return "星期三"; break;
+                    case DayOfWeek.Thursday : return "星期四"; break;
+                    case DayOfWeek.Friday : return "星期五"; break;
+                    case DayOfWeek.Saturday : return "星期六"; break;
+                    default: return "";
+                }
+
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
         /// <summary>
         /// 轉為中曆字串 {0}年{1}月{2}日
         /// </summary>
@@ -1374,7 +1665,8 @@ namespace EQC.Common
             imgPhoto.Dispose();
             return bmPhoto;
         }
-    
+
+
         
     }
 }

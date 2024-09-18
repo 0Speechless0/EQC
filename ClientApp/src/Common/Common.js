@@ -109,6 +109,7 @@ export default {
             resizable: false,
             open: function (event, ui) {                
                 // 是否顯示標題旁的關閉按鈕和灰底關閉
+                window.content.appendChild(event.target.offsetParent);
                 if (!isShowCloseBtn) {
                     $('.ui-dialog-titlebar-close', ui.dialog | ui).hide();
                 }

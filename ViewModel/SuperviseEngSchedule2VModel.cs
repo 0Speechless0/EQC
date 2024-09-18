@@ -6,6 +6,8 @@ namespace EQC.ViewModel
     {//工程督導 - 行程安排
         public string PhaseCode { get; set; }
         public string OrganizerName { get; set; }
+
+        public string ExecUnitName { get; set; }
         public string BelongPrj { get; set; }
         public string TenderName { get; set; }
         public string Location { get; set; }

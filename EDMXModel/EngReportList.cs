@@ -128,6 +128,8 @@ namespace EQC.EDMXModel
         public string BookingProcess_SM { get; set; }
         public string BookingProcess_EY { get; set; }
         public string BookingProcess_EM { get; set; }
+        public Nullable<decimal> RefCarbonEmission { get; set; }
+        public Nullable<int> ProposalReviewEngReportSeq { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<EngReportApprove> EngReportApprove { get; set; }

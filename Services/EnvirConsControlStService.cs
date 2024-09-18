@@ -312,19 +312,19 @@ namespace EQC.Services
             SqlCommand cmd = db.GetCommand(sql);
 
             cmd.Parameters.Clear();
-            cmd.Parameters.AddWithValue("@ECCFlow1", m.ECCFlow1);
-            cmd.Parameters.AddWithValue("@ECCCheckItem1", m.ECCCheckItem1);
+            cmd.Parameters.AddWithValue("@ECCFlow1", m.ECCFlow1 ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@ECCCheckItem1", m.ECCCheckItem1 ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@ECCCheckItem2", this.NulltoDBNull(m.ECCCheckItem2));//s20230920
             cmd.Parameters.AddWithValue("@ECCStand1", this.NulltoDBNull(m.ECCStand1));//s20231006
             cmd.Parameters.AddWithValue("@ECCStand2", this.NulltoDBNull(m.ECCStand2));//s20231006
             cmd.Parameters.AddWithValue("@ECCStand3", this.NulltoDBNull(m.ECCStand3));//s20231006
             cmd.Parameters.AddWithValue("@ECCStand4", this.NulltoDBNull(m.ECCStand4));//s20231006
             cmd.Parameters.AddWithValue("@ECCStand5", this.NulltoDBNull(m.ECCStand5));//s20231006
-            cmd.Parameters.AddWithValue("@ECCCheckTiming", m.ECCCheckTiming);
-            cmd.Parameters.AddWithValue("@ECCCheckMethod", m.ECCCheckMethod);
-            cmd.Parameters.AddWithValue("@ECCCheckFeq", m.ECCCheckFeq);
-            cmd.Parameters.AddWithValue("@ECCIncomp", m.ECCIncomp);
-            cmd.Parameters.AddWithValue("@ECCManageRec", m.ECCManageRec);
+            cmd.Parameters.AddWithValue("@ECCCheckTiming", m.ECCCheckTiming ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@ECCCheckMethod", m.ECCCheckMethod ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@ECCCheckFeq", m.ECCCheckFeq ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@ECCIncomp", m.ECCIncomp ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@ECCManageRec", m.ECCManageRec ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@ECCType", this.NulltoDBNull(m.ECCType));//s20230920
             cmd.Parameters.AddWithValue("@ECCMemo", m.ECCMemo);
             cmd.Parameters.AddWithValue("@ECCCheckFields", this.NulltoDBNull(m.ECCCheckFields));//s20230920

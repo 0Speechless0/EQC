@@ -48,6 +48,21 @@ export function useSelectionStore(_route) {
         return List
     }
 
+    async function GetWithHandler(handler, prefix= "")
+    {
+
+        List.value = handler( (await window.myAjax.post(route.value, param.value)).data );
+        Map.value =
+        List.value.reduce((a, c)=>{ 
+            a[prefix+ c.Value] = c.Text
+            return a ;   
+        }, {});
+
+        List.value.sort(compare);
+        console.log(List.value);
+        return List
+    }
+
     async function GetSelection(route, prefix= "")
     {
 
@@ -69,6 +84,7 @@ export function useSelectionStore(_route) {
         //選項清單
         GetSelection,
         setParameter,
+        GetWithHandler,
         Get,
         //選項文字字典
         Map,

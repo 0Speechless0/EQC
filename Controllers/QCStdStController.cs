@@ -428,7 +428,7 @@ namespace EQC.Controllers
                 return Json(new
                 {
                     result = -1,
-                    message = "資料儲存失敗，或資料不可變更"
+                    message = "資料不可變更"
                 });
             }
         }

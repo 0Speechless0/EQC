@@ -316,7 +316,7 @@ body.mainpage-demobg {
 .navbar {
     width: auto;
     height: auto;
-    background: url(../images1/navbar-bg.png) no-repeat center center;
+    background: url(../images1/navbar-bg-5.png) no-repeat center center;
     background-size: cover;
     padding: .5rem 1rem;
     box-shadow: 0 0px 5px rgb(0, 0, 0, 0.2);
@@ -544,11 +544,11 @@ h4 {
 }
 
 h5 {
-    color: #007065;
+    color: #fff;
     font-size: 1.2rem;
     font-weight: bold;
     line-height: 1.5;
-    margin: 2rem 0 1rem;
+    /*margin: 2rem 0 1rem;*/
     padding-left: 9px;
     border-left: 7px solid;
     border-radius: 3px;
@@ -818,6 +818,31 @@ footer {
     margin-top: -3px;
     margin-right: 0;
 }
+
+/*-----agent-----*/
+/*#agent,
+#mobile-agent {
+    cursor: pointer;
+    display: none;
+}*/
+
+#agent {
+    position: fixed;
+    right: 30px;
+    bottom: 100px;
+    width: 45px;
+    height: 45px;
+    border-radius: 5px;
+    text-align: center;
+    line-height: 45px;
+}
+
+#agent img {
+    width: 69px;
+    margin-top: -15px;
+    margin-right: 45px;
+}
+
 
 /* -----------------mb_list1 抽驗清單------------------ */
 

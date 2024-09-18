@@ -90,6 +90,7 @@ export function useUserNotificationStore()
     {
         detailModalShow.value = false;
         detailModalShow.value = true;
+        notification.ExpireTime = null;
         viewNotification.value = Object.assign(viewNotification.value, notification);
         console.log("viewNotification", viewNotification.value);
     }

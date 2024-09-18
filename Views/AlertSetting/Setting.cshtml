@@ -1,0 +1,18 @@
+﻿
+@{
+    ViewBag.Title = "Setting";
+    Layout = "~/Views/Shared/_NoneLayout.cshtml";
+}
+
+<h2>Setting</h2>
+<script>
+    var redirect = new URLSearchParams(window.location.search).get("redirect");
+    var engSeq = new URLSearchParams(
+        redirect.slice(redirect.indexOf('?'))
+    ).get("id")
+
+    console.log("aaaaa", engSeq);
+    sessionStorage.setItem('EPC_SelectTrenderSeq', engSeq);
+    sessionStorage.setItem('EQ_SelectTrenderPlanSeq', engSeq);
+    window.location.href = "../" + redirect;
+</script>

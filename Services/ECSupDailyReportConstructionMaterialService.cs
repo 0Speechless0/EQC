@@ -74,7 +74,7 @@ namespace EQC.Services
                 @Memo,
                 GetDate(),
                 @ModifyUserSeq,
-                GetDate(),
+                0,
                 @ModifyUserSeq
             )";
 

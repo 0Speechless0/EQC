@@ -143,13 +143,17 @@ namespace EQC.Common
             List<EPCCalInfoVModel> fillList = new SupDailyReportService().GetCalendarInfo<EPCCalInfoVModel>(id, fromDate, mode);
             foreach (EPCCalInfoVModel m in fillList)
             {
-                if (cals.ContainsKey(m.DateStr))
+                if (cals.ContainsKey(m.DateStr) )
                 {
-                    cals[m.DateStr].Mode = 2;
+                    cals[m.DateStr].Mode = m.CreateTime == m.ModifyTime ? 0 : 2;
+                    cals[m.DateStr].MachineLoading =
+                        m.machineNumFormFilled ; 
                 }
                 else
                 {
-                    cals.Add(m.ItemDate.ToString("yyyy-MM-dd"), new EPCCalInfoVModel() { Mode = 2, ItemDate = m.ItemDate });
+                    cals.Add(m.ItemDate.ToString("yyyy-MM-dd"), new EPCCalInfoVModel() { Mode = m.CreateTime == m.ModifyTime ? 0 : 2, ItemDate = m.ItemDate, 
+                        MachineLoading = m.machineNumFormFilled 
+                });
                 }
             }
             List<EPCCalInfoVModel> calList = new List<EPCCalInfoVModel>();

@@ -16,11 +16,20 @@ namespace EQC.Controllers
         {
             return View();
         }
-
-
-        public void Submit(string content, string title, DateTime expire_time, int? roleSeq = null, int? unitSeq = null)
+        public void GetNotifications()
         {
-            using(var context = new EQC_NEW_Entities())
+            var list = NotificationProcesser.GetNotifications(Utils.getUserInfo());
+            ResponseJson(new
+            {
+                list = list
+            });
+    
+        }
+
+        public void Submit(string content, string title, DateTime? expire_time = null, int? roleSeq = null, int? unitSeq = null)
+        {
+            expire_time = expire_time ?? DateTime.Now.AddMonths(1);
+            using (var context = new EQC_NEW_Entities())
             {
                 var user = new SessionManager().GetUser();
                 
@@ -32,7 +41,7 @@ namespace EQC.Controllers
                     Unit = unitSeq,
                     EmitContent = content.Replace("<table>", "<table class=\"table\">"),
                     Title = title,
-                    ExpireTime = expire_time.AddDays(1),
+                    ExpireTime = expire_time.Value.AddDays(1),
                     CreateUser = user?.Seq  ?? 0 
                 });
                 context.SaveChanges();

@@ -93,6 +93,8 @@ namespace EQC.Services
                         a.EngName,
                         a.AwardAmount,
                         b.Name ExecUnit,
+                        px.BelongPrj,
+                        p.EngType,
                         (
                             select
                                 ROUND(sum(ISNULL(za.ItemKgCo2e,0)),0) Co2Total
@@ -109,6 +111,8 @@ namespace EQC.Services
                     FROM EngMain a
                     inner join Unit b on(b.Seq=a.ExecUnitSeq)
                     inner join #temp e on (e.Seq = a.Seq)
+                    left join PrjXML p on ( p.Seq = a.PrjXMLSeq)
+                    left join PrjXMLExt px on ( px.PrjXMLSeq = p.Seq)
                     where a.EngYear>=@startYear and a.EngYear<=@endYear
                      "
                     + unitList +

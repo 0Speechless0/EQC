@@ -50,7 +50,25 @@ namespace EQC.Controllers
                 });
             }
         }
-        public JsonResult Del(string engNo, int mode )
+
+        public JsonResult DelEngReport(int id)
+        {
+            var service = new EngReportService();
+            if(service.DelEngReportAll(id) > 0 )
+            {
+                return Json(new
+                {
+                    result = 0,
+                    message = "刪除成功"
+                });
+            }
+            return Json(new
+            {
+                result = -1,
+                message = "刪除失敗"
+            });
+        }
+        public JsonResult Del(string engNo, int mode)
         {
             EngMainService service = new EngMainService();
 
@@ -65,6 +83,14 @@ namespace EQC.Controllers
                         message = "刪除成功"
                     });
                 } else if (mode == 1 && service.DelEng1(items[0].Seq, engNo))
+                {
+                    return Json(new
+                    {
+                        result = 0,
+                        message = "刪除成功"
+                    });
+                }
+                else if (mode == 2 && service.DelEng2(items[0].Seq))
                 {
                     return Json(new
                     {

@@ -15,6 +15,9 @@ namespace EQC.ViewModel
         public decimal? TotalBudget { get; set; } //s20230329
         public DateTime? StartDate { get; set; }
         public DateTime? SchCompDate { get; set; }
+
+        public DateTime? ProgressDoneEarly { get; set; }
+
         public string StartDateStr
         {
             get
@@ -28,6 +31,24 @@ namespace EQC.ViewModel
                 return this.SchCompDate.HasValue ? Utils.ChsDate(this.SchCompDate) : "";
             }
         }
+
+        public string prjSchStartDateStr
+        {
+            get
+            {
+                return this.prjSchStartDate.HasValue ? Utils.ChsDate(this.prjSchStartDate) : "";
+            }
+        }
+        public string prjSchCompDateStr
+        {
+            get
+            {
+                return this.prjSchCompDate.HasValue ? Utils.ChsDate(this.prjSchCompDate) : "";
+            }
+        }
+
+        public DateTime? prjSchStartDate { get; set; }
+        public DateTime? prjSchCompDate { get; set; }
         // from PrjXML
         public string ActualStartDate { get; set; }
         public int? PrjXMLSeq { get; set; }

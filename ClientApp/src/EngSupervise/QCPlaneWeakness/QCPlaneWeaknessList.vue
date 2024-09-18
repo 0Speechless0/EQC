@@ -258,6 +258,7 @@
                     .then(resp => {
                         if (resp.data.result == 0) {
                             this.targetPhase = resp.data.item;
+                            this.yearPhaseItems = resp.data.phaseOption;
                             this.getPhaseEngItems();
                         } else {
                             alert(resp.data.msg);
@@ -360,7 +361,8 @@
             },
             //工程是否可加入期別
             canAddEng(item) {
-                if (this.requireLinkEng(item) && item.EngMainSeq == null) return false;
+                // if (this.requireLinkEng(item) ) return false;
+                // if (this.requireLinkEng(item) && item.EngMainSeq == null) return false;
                 //if (item.Seq == 0) return true;
                 var i;
                 for (i = 0; i < this.targetPhaseItems.length; i++) {

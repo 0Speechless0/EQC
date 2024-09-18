@@ -23,13 +23,13 @@ namespace EQC.Controllers
         }
         
         //工程清單
-        public JsonResult GetList(int year, int unit, int subUnit, int rptType, int pageRecordCount, int pageIndex)
+        public JsonResult GetList(int year, int unit, int subUnit, int rptType, int pageRecordCount, int pageIndex, string keyWord = null )
         {
             List<EngReportVModel> engList = new List<EngReportVModel>();
-            int total = engReportService.GetEngListCount(year, unit, subUnit, rptType, 2);
+            int total = engReportService.GetEngListCount(year, unit, subUnit, rptType, 2, keyWord);
             if (total > 0)
             {
-                engList = engReportService.GetEngList<EngReportVModel>(year, unit, subUnit, rptType, pageRecordCount, pageIndex, 2);
+                engList = engReportService.GetEngList<EngReportVModel>(year, unit, subUnit, rptType, pageRecordCount, pageIndex, 2, keyWord);
 
                 int iCount = 0;
                 foreach (EngReportVModel vm in engList) 

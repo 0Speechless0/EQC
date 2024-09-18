@@ -501,7 +501,7 @@ namespace EQC.Services
                 inner join @tmp_PrjXML a1 ON(a1.Seq=a.PrjXMLSeq)
                 left join PrjXMLTag pt on  ( pt.PrjXMLSeq = a1.Seq  )
                 inner join EcologicalChecklist ec on ec.EngMainSeq = a.Seq
-                where ec.Stage = 2  and (
+                where ec.Stage = 1  and (
                     ec.SelfEvalFilename is null or
                     ec.PlanDesignRecordFilename is null or
                     ec.ConservMeasFilename is null
@@ -515,7 +515,10 @@ namespace EQC.Services
                 left join PrjXMLTag pt on  ( pt.PrjXMLSeq = a1.Seq  )
                 inner join EcologicalChecklist ec on ec.EngMainSeq = a.Seq
                 where ec.Stage = 2  
-                and ec.ToDoChecklit <= 2
+                and exists(
+                    select ec2.ToDoChecklit from EcologicalChecklist ec2
+                    where ec2.ToDoChecklit <=2 and ec2.Stage = 1 and ec2.EngMainSeq = a.Seq
+                )
                 and ISNULL((select PDAccuActualProgress from dbo.fPrjXMLProgress(a.PrjXMLSeq)), 0) >= 10
                 and (
                     ec.SelfEvalFilename is null or
@@ -559,9 +562,9 @@ namespace EQC.Services
                         )
                     ))
             
-                    union
+                    union all
             
-                    select count(a.Seq) cnt
+                    select a.Seq
                     from PrjXML a
                     inner join Country2WRAMapping c on(
                         substring(a.ExecUnitName,1,3)=c.Country
@@ -681,7 +684,7 @@ namespace EQC.Services
                     select a.PrjXMLSeq  --20230705
                     from EngMain a 
                     inner join EcologicalChecklist ec on ec.EngMainSeq = a.Seq
-                    where ec.Stage = 2  and (
+                    where ec.Stage = 1  and (
                         ec.SelfEvalFilename is null or
                         ec.PlanDesignRecordFilename is null or
                         ec.ConservMeasFilename is null
@@ -697,7 +700,10 @@ namespace EQC.Services
                     from EngMain a 
                     inner join EcologicalChecklist ec on ec.EngMainSeq = a.Seq
                     where ec.Stage = 2  
-                    and ec.ToDoChecklit <= 2 --20230709
+                    and exists(
+                        select ec2.ToDoChecklit from EcologicalChecklist ec2
+                        where ec2.ToDoChecklit <=2 and ec2.Stage = 1 and ec2.EngMainSeq = a.Seq
+                    )
                     and ISNULL((select PDAccuActualProgress from dbo.fPrjXMLProgress(a.PrjXMLSeq)), 0) >= 10
                     and (
                         ec.SelfEvalFilename is null or

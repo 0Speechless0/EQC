@@ -14,6 +14,12 @@ namespace EQC.EDMXModel
     
     public partial class ConstCheckRecResult
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
+        public ConstCheckRecResult()
+        {
+            this.ConstCheckRecResultStandard = new HashSet<ConstCheckRecResultStandard>();
+        }
+    
         public int Seq { get; set; }
         public Nullable<int> ConstCheckRecSeq { get; set; }
         public Nullable<int> ControllStSeq { get; set; }
@@ -24,5 +30,7 @@ namespace EQC.EDMXModel
         public string RecResultRemark { get; set; }
     
         public virtual ConstCheckRec ConstCheckRec { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<ConstCheckRecResultStandard> ConstCheckRecResultStandard { get; set; }
     }
 }

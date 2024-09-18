@@ -9,5 +9,9 @@ namespace EQC.ViewModel
         public string ExecUnit { get; set; }
         public decimal? AwardAmount { get; set; }
         public decimal? Co2Total { get; set; }
+        
+        public string EngType { get; set; }
+
+        public string BelongPrj { get; set; }
     }
 }

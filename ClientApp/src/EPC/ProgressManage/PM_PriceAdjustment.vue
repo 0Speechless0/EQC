@@ -54,7 +54,7 @@
             <div id="menu01" class="tab-pane active">
                 <h5 class="insearch mt-0 py-2">
                     <div class="form-row mb-1">
-                        <div class="table-responsive">
+                        <div class="table-responsive tableFixHead">
                             <h5 style="margin: 0;">設定中類</h5>
                             <table class="table table-responsive-md table-hover VA-middle">
                                 <thead class="insearch">
@@ -361,8 +361,27 @@
         }
     }
 </script>
-<style>
+<style scoped>
     .labelDisabled {
         opacity: .65;
     }
+    .tableFixHead          { overflow: auto; max-height: 500px;   }
+table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+.table {
+    margin : 0;
+}
+.tableFixHead thead  { position: sticky !important ; top: 0 !important ; z-index: 1 !important;     }
+th {
+    border : 0;
+    border-bottom: #ddd solid 1px !important; 
+    border-left : 0 !important;
+    border-right:0 !important;
+}
+td {
+    z-index: 0;
+    position: relative;
+}
 </style>

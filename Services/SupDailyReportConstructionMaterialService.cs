@@ -179,7 +179,7 @@ namespace EQC.Services
                 @Memo,
                 GetDate(),
                 @ModifyUserSeq,
-                GetDate(),
+                0,
                 @ModifyUserSeq
             )";
 
@@ -217,11 +217,9 @@ namespace EQC.Services
             Null2Empty(m);
             string sql = @"
             update SupDailyReportConstructionMaterial set 
-                --MaterialName = @MaterialName,
                 Unit = @Unit,
                 ContractQuantity = @ContractQuantity,
                 TodayQuantity = @TodayQuantity,
-                --AccQuantity = @AccQuantity,
                 Memo = @Memo,
                 ModifyTime = GetDate(),
                 ModifyUserSeq = @ModifyUserSeq

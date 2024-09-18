@@ -6,6 +6,7 @@ using Microsoft.Office.Interop.Excel;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 
@@ -163,7 +164,7 @@ namespace EQC.Controllers
             }
 
             List<EPCSupDailyDate1VModel> supDailyDateList = iService.GetSupDailyDateCount<EPCSupDailyDate1VModel>(id);
-            if (supDailyDateList.Count > 0 && supDailyDateList[0].dailyCount > 0)
+            if (supDailyDateList.Count > 0 && supDailyDateList[0].OrderNo > 0)
             {
                 return Json(new
                 {
@@ -553,8 +554,10 @@ namespace EQC.Controllers
                 return Json(new
                 {
                     result = 0,
-                    items = dList
-                });
+                    items = dList,
+                    schOrgStartDate = dList.FirstOrDefault()?.ItemDate,
+                    schOrgEndDate = dList.LastOrDefault()?.ItemDate,
+                }) ;
             }
 
             return Json(new
@@ -646,7 +649,7 @@ namespace EQC.Controllers
         }
 
         //下載工程範本(excel)
-        public ActionResult Download(int id)
+        public ActionResult Download(int id, DownloadArgExtension downloadArg = null)
         {
             List<EngMainEditVModel> items = new EngMainService().GetItemBySeq<EngMainEditVModel>(id);
             if (items.Count != 1)
@@ -691,9 +694,9 @@ namespace EQC.Controllers
             //工程變更清單 s20230411
             List<EPCProgressEngChangeListVModel> secList = new SchEngChangeService().GetEngChangeList<EPCProgressEngChangeListVModel>(id);
 
-            return CreateExcel(eng, spList, dateList, spHeader, secList);
+            return CreateExcel(eng, spList, dateList, spHeader, secList, downloadArg);
         }
-        private ActionResult CreateExcel(EngMainEditVModel eng, List<SchProgressPayItemModel> spList, List<EPCSchProgressVModel> dateList, EPCSchProgressHeaderVModel spHeader, List<EPCProgressEngChangeListVModel> secList)
+        private ActionResult CreateExcel(EngMainEditVModel eng, List<SchProgressPayItemModel> spList, List<EPCSchProgressVModel> dateList, EPCSchProgressHeaderVModel spHeader, List<EPCProgressEngChangeListVModel> secList, DownloadArgExtension downloadArg = null)
         {
             string filename = Utils.CopyTemplateFile("進度管理-工程範本.xlsx", ".xlsx");
             Dictionary<string, Worksheet> dict = new Dictionary<string, Worksheet>();
@@ -717,7 +720,7 @@ namespace EQC.Controllers
                 workbook.Save();
                 workbook.Close();
                 appExcel.Quit();
-
+                downloadArg?.targetPathSetting(filename);
                 return DownloadFile(filename, eng.EngNo);
             }
             catch (Exception e)
@@ -1178,7 +1181,7 @@ namespace EQC.Controllers
         }
 
         //下載 PccesXML shioulo 20220712
-        public ActionResult DownloadPccesXML(int id)
+        public ActionResult DownloadPccesXML(int id, DownloadArgExtension downloadArg = null)
         {
             List<EPCSchProgressHeaderVModel> items = iService.GetHeaderList<EPCSchProgressHeaderVModel>(id);
             if (items.Count != 1)
@@ -1201,6 +1204,7 @@ namespace EQC.Controllers
             }
 
             Stream iStream = new FileStream(fName, FileMode.Open, FileAccess.Read, FileShare.Read);
+            downloadArg?.targetPathSetting(fName);
             return File(iStream, "application/blob", m.PccesXMLFile);
         }
 

@@ -2,7 +2,7 @@
     <div>
         <div>
             <ul class="nav nav-tabs" role="tablist">
-                <li class="nav-item"><a v-on:click="selectTab='tabCtlTable'" data-toggle="tab" href="##" class="nav-link active">管制填報表(原報表)</a></li>
+                <!-- <li class="nav-item"><a v-on:click="selectTab='tabCtlTable'" data-toggle="tab" href="##" class="nav-link active">管制填報表(原報表)</a></li> -->
                 <li class="nav-item"><a v-on:click="selectTab='tabCarbonTrade'" data-toggle="tab" href="##" class="nav-link">碳交易</a></li>
                 <li class="nav-item"><a v-on:click="selectTab='tabCarbonReport'" data-toggle="tab" href="##" class="nav-link">碳報表</a></li>
                 <li class="nav-item"><a v-on:click="selectTab='tabCarbonEmissionReport'" data-toggle="tab" href="##" class="nav-link">管制填報表(詳細)</a></li>

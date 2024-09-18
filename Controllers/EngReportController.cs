@@ -34,7 +34,45 @@ namespace EQC.Controllers
             Utils.setUserClass(this, 1);
             return View("Index");
         }
+        public JsonResult UpdateRptYear(int seq, int rptYear)
+        {
+            using(var context = new EQC_NEW_Entities())
+            {
+                var target = context.EngReportList.Find(seq);
 
+
+                target.RptYear = (short)rptYear;
+                var refCarbonCalVM = new EngReportVModel
+                {
+                    RptYear = target.RptYear,
+                    ApprovedFund = target.ApprovedFund
+                };
+                EngReportVModel.GetRefCarbonEmission(refCarbonCalVM);
+                target.RefCarbonEmission = refCarbonCalVM.RefCarbonEmission;
+                context.SaveChanges();
+
+                //處理提案審查分期案件
+                //var comparation = EngReportUtils.GetProposalReviwCopyId(seq);
+
+                //context.EngReportList
+                //    .ToList()
+                //    .Where(r => comparation.Contains(r.Seq.ToString()))
+                //    .ToList()
+                //    .ForEach(e => {
+                //        e.RptYear = (short)rptYear;
+                //        refCarbonCalVM = new EngReportVModel
+                //        {
+                //            RptYear = e.RptYear,
+                //            ApprovedFund = e.ApprovedFund
+                //        };
+                //        EngReportVModel.GetRefCarbonEmission(refCarbonCalVM);
+                //        e.RefCarbonEmission = refCarbonCalVM.RefCarbonEmission;
+                //});
+                context.SaveChanges();
+                return Json(true);
+            }
+            return Json(false);
+        }
         public ActionResult GetUserUnit()
         {
             string unitSubSeq = "";
@@ -171,7 +209,7 @@ namespace EQC.Controllers
         }
 
         //下載-提案需求評估表
-        public ActionResult DownloadNeedAssessmentVF(int year, int unit, int subUnit, int rptType)
+        public ActionResult DownloadNeedAssessmentVF(int year, int unit, int subUnit, int rptType, int? seq = null, string seqs = null)
         {
             try
             {
@@ -188,6 +226,14 @@ namespace EQC.Controllers
                         result = -1,
                         msg = "工程資料錯誤"
                     });
+                }
+                if(seq != null)
+                {
+                    engList = engList.Where(r => r.Seq == seq).ToList();
+                }
+                if(seqs != null)
+                {
+                    engList = engList.ToList().Where(r => seqs.Contains(r.Seq.ToString()) ).ToList();
                 }
                 //暫存目錄
                 string uuid = Guid.NewGuid().ToString("B").ToUpper();
@@ -206,10 +252,23 @@ namespace EQC.Controllers
                 //Stream iStream = new FileStream(destFile, FileMode.Open, FileAccess.Read, FileShare.Read);
                 //return File(iStream, "application/blob", "提案需求評估表.docx");
 
-                string zipFile = Path.Combine(Path.GetTempPath(), uuid + "-提案需求評估表.zip");
-                System.IO.Compression.ZipFile.CreateFromDirectory(folder, zipFile);// AddFiles(files, "ProjectX");
-                Stream iStream = new FileStream(zipFile, FileMode.Open, FileAccess.Read, FileShare.Read);
-                return File(iStream, "application/blob", $"{DateTime.Now:yyyyMMddHHmmss}_提案需求評估表.zip");
+                
+                if(seq != null )
+                {
+
+                    string docxPath = Directory.GetFiles(folder).Where(r => Path.GetExtension(r) == ".docx").FirstOrDefault();
+                    Stream iStream = new FileStream(docxPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                    return File(iStream, "application/blob", $"{DateTime.Now:yyyyMMddHHmmss}_{engList[0].RptName}_提案需求評估表.docx");
+                }
+                else
+                {
+                    string zipFile = Path.Combine(Path.GetTempPath(), uuid + "-提案需求評估表.zip");
+                    System.IO.Compression.ZipFile.CreateFromDirectory(folder, zipFile);// AddFiles(files, "ProjectX");
+                    Stream iStream = new FileStream(zipFile, FileMode.Open, FileAccess.Read, FileShare.Read);
+                    return File(iStream, "application/blob", $"{DateTime.Now:yyyyMMddHHmmss}_提案需求評估表.zip");
+                }
+
+
             }
             catch (Exception e)
             {
@@ -333,19 +392,24 @@ namespace EQC.Controllers
                     ["ApprovalNameC"] = ApprovalNameC,
                     ["ApprovalNameD"] = ApprovalNameD,
                     ["ApprovalNameE"] = ApprovalNameE,
-
-                    ["FileName1"] = FileName1,
-                    ["FileName2"] = FileName2,
-                    ["FileName3"] = FileName3,
-                    ["FileName4"] = FileName4,
-                    ["FileName5"] = FileName5,
-                    ["FileName6"] = FileName6,
-                    ["FileName7"] = FileName7,
                 };
                 docxBytes = WordUtility.GenerateDocx(templat, data);
                 MergeFilePath = Path.Combine(folder, $"提案需求評估表-{DateTime.Now:HHmmss}.docx");
                 System.IO.File.WriteAllBytes(MergeFilePath, docxBytes);
                 Thread.Sleep(1000);
+                var imageData = new Dictionary<string, string>()
+                {
+                    ["FileName1"] = item.LocationMap ?? "",
+                    ["FileName2"] = item.AerialPhotography ?? "",
+                    ["FileName3"] = item.ScenePhoto ?? "",
+                    ["FileName4"] = item.BaseMap ?? "",
+                    ["FileName5"] = item.EngPlaneLayout ?? "",
+                    ["FileName6"] = item.LongitudinalSection ?? "",
+                    ["FileName7"] = item.StandardSection ?? "",
+                };
+
+                var imagesFolder = Path.Combine(Utils.GetEngReportFolder(item.Seq));
+                WordUtility.InsertImageToDocx(MergeFilePath, imagesFolder, imageData);
                 files.Add(MergeFilePath);
             }
 
@@ -550,15 +614,7 @@ namespace EQC.Controllers
                     ["LocalCommunication"] = LC,  //在地溝通辦理情形-日期、文號
                     ["OnSiteConsultation"] = SC,  //在地諮詢辦理情形-日期、文號
                     ["DemandCarbonEmissionsMemo"] = string.IsNullOrEmpty(item.DemandCarbonEmissionsMemo) ? "" : item.DemandCarbonEmissionsMemo,
-                    ["DemandCarbonEmissions"] = !item.DemandCarbonEmissions.HasValue ? "" : item.DemandCarbonEmissions.ToString(),
-
-                    ["LocationMap"] = FileName1,  //LocationMap
-                    ["AerialPhotography"] = FileName2,  //空拍照
-                    ["ScenePhoto"] = FileName3,  //現場照片
-                    ["BaseMap"] = FileName4,  //基地地籍圖
-                    ["EngPlaneLayout"] = FileName5,  //工程平面配置圖
-                    ["LongitudinalSection"] = FileName6,  //縱斷面圖
-                    ["StandardSection"] = FileName7,  //標準斷面圖
+                    ["DemandCarbonEmissions"] = !item.DemandCarbonEmissions.HasValue ? "" : item.DemandCarbonEmissions.ToString()
                 };
                 //主要工程內容
                 int ListDCount = 0;
@@ -583,6 +639,17 @@ namespace EQC.Controllers
                 MergeFilePath = Path.Combine(folder, $"提案審查表-{item.RptName}.docx");
                 System.IO.File.WriteAllBytes(MergeFilePath, docxBytes);
                 Thread.Sleep(1000);
+                var imageData = new Dictionary<string, string>() {
+                    ["LocationMap"] = item.LocationMap ?? "",  //LocationMap
+                    ["AerialPhotography"] = item.AerialPhotography ?? "",  //空拍照
+                    ["ScenePhoto"] = item.ScenePhoto ?? "",  //現場照片
+                    ["BaseMap"] = item.BaseMap ?? "",  //基地地籍圖
+                    ["EngPlaneLayout"] = item.EngPlaneLayout ?? "",  //工程平面配置圖
+                    ["LongitudinalSection"] = item.LongitudinalSection ?? "",  //縱斷面圖
+                    ["StandardSection"] = item.StandardSection ?? "",  //標準斷面圖
+                };
+                var imagesFolder = Path.Combine(Utils.GetEngReportFolder(item.Seq));
+                WordUtility.InsertImageToDocx(MergeFilePath, imagesFolder, imageData);
                 files.Add(MergeFilePath);
             }
 

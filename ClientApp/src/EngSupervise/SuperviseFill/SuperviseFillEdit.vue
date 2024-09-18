@@ -67,7 +67,7 @@
                     <td style="min-width: unset;">{{index+1}}</td>
                     <template v-if="item.Seq != editSeq">
                         <td>{{item.MissingNo}}</td>
-                        <td>{{item.MissingLoc}}</td>
+                        <td>{{item.MissingLoc  }}</td>
                         <td>{{item.DeductPointStr}}</td>
                         <td>{{item.SuperviseMemo}}</td>
                         <td>
@@ -85,7 +85,7 @@
                         </td>
                     </template>
                     <template v-if="item.Seq == editSeq">
-                        <td><input v-model.trim="editRecord.MissingNo" @change="onMissingNoChange" maxlength="30" type="text" class="form-control"></td>
+                        <td><input v-model.trim="editRecord.MissingNo" @change="ItemMissingLocByNo(editRecord)" maxlength="30" type="text" class="form-control"></td>
                         <td>
                             <input v-model.trim="editRecord.MissingLoc" maxlength="10" type="text" class="form-control">
                             {{editRecord.missingContent}}
@@ -100,7 +100,7 @@
                         </td>
                         <td style="min-width: unset;">
                             <div class="d-flex justify-content-center">
-                                <button @click="onSaveRecord" class="btn btn-color11-2 btn-xs sharp m-1" title="儲存"><i class="fas fa-save"></i></button>
+                                <button @click="onSaveRecord" class="btn btn-color11-2 btn-xs sharp m-1" title="儲存" ><i class="fas fa-save"></i></button>
                                 <button @click="onEditCancel" class="btn btn-color9-1 btn-xs sharp m-1" title="取消"><i class="fas fa-mil">X</i></button>
                             </div>
                         </td>
@@ -109,6 +109,27 @@
             </table>
         </div>
         <p class="text-R">* 表單依照缺失編號排序</p>
+        <p style="color:red">
+            *優點:主辦機關0.01、監造單位0.02、承攬廠商0.03、施工品質0.04、施工進度0.05、規劃設計7.01、其他建議8.01
+        </p>
+        <p style="color:red">
+            *加重扣點缺失項目(請參考施工補充說明書第三十三點規定)
+        </p>
+        <p style="color:red">
+            工程施工查核、督導小組依據工程會頒布之「工程施工查核小組查核品質缺失扣點表」進行扣點時，施工廠商有下列事項列為扣點項目者，其扣點加一倍計算，罰款額度依契約規定辦理，如相同缺失於初次改善期限內，經工程施工查核、督導小組再行扣點時，則不予以加倍計罰：
+        </p>
+        <p style="color:red">
+            (一)缺失編號4.03.04「品管自主檢查表□未落實執行或□檢查標準未訂量化値」。
+        </p>
+        <p style="color:red">
+            (二)缺失編號4.03.02.04「未訂定各分項工程品質管理標準」。
+        </p>
+        <p style="color:red">
+            (三)缺失編號5.01.01「混凝土澆置、搗實不合規範，有冷縫、蜂窩或孔洞產生」。
+        </p>
+        <p style="color:red">
+            (四)缺失編號5.14.01.01「於高差2公尺以上之工作場所邊緣及開口部分(如樓梯、電梯口、天井、管道間、構台、橋樑墩柱及橋面版等)，未設置符合規定之護欄、護蓋、安全網或佩掛安全帶之防墜設施」。
+        </p>
         <h5>抽驗項目</h5>
         <div class="table-responsive">
             <table class="table table-responsive-md table-hover table2">
@@ -272,11 +293,12 @@
                         console.log(err);
                     });
             },
-            //缺失編號異動
-            onMissingNoChange() {
-                if (!window.comm.stringEmpty(this.editRecord.MissingLoc)) return;
-
-                var str = this.editRecord.MissingNo;
+                //缺失編號異動
+            ItemMissingLocByNo(item)
+            {
+                console.log("ffff", item)
+                if (item.MissingLoc != null && !window.comm.stringEmpty(item.MissingLoc)) return ;
+                var str = item.MissingNo;
                 var loc = "";
                 if (str.indexOf('4.01') == 0)
                     loc = "主辦機關";
@@ -292,8 +314,51 @@
                     loc = "規劃設計";
                 else if (str.indexOf('8.01') == 0)
                     loc = "其他建議";
-                this.editRecord.MissingLoc = loc;
+                else if(str.startsWith('0.01'))
+                    loc = "優點-主辦單位"
+                else if(str.startsWith('0.02'))
+                    loc = "優點-監造單位"
+                else if(str.startsWith('0.03'))
+                    loc = "優點-承攬廠商"
+                else if(str.startsWith('0.04'))
+                    loc = "優點-施工品質"
+                else if(str.startsWith('0.05'))
+                    loc = "施工進度"
+                item.MissingLoc = loc;
+                return loc;
             },
+            //缺失編號異動
+            // onMissingNoChange() {
+            //     if (!window.comm.stringEmpty(this.editRecord.MissingLoc)) return;
+
+            //     var str = this.editRecord.MissingNo;
+            //     var loc = "";
+            //     if (str.indexOf('4.01') == 0)
+            //         loc = "主辦機關";
+            //     else if (str.indexOf('4.02') == 0)
+            //         loc = "監造單位";
+            //     else if (str.indexOf('4.03') == 0)
+            //         loc = "承攬廠商";
+            //     else if (str.indexOf('5.') == 0)
+            //         loc = "施工品質";
+            //     else if (str.indexOf('6.01') == 0)
+            //         loc = "施工進度";
+            //     else if (str.indexOf('7.') == 0)
+            //         loc = "規劃設計";
+            //     else if (str.indexOf('8.01') == 0)
+            //         loc = "其他建議";
+            //     else if(str.startsWith('0.01'))
+            //         loc = "優點-主辦單位"
+            //     else if(str.startsWith('0.02'))
+            //         loc = "優點-監造單位"
+            //     else if(str.startsWith('0.03'))
+            //         loc = "優點-承攬廠商"
+            //     else if(str.startsWith('0.04'))
+            //         loc = "優點-施工品質"
+            //     else if(str.startsWith('0.05'))
+            //         loc = "施工進度"
+            //     this.editRecord.MissingLoc = loc;
+            // },
             //取消編輯
             onEditCancel() {
                 this.editSeq = -99;
@@ -304,6 +369,7 @@
                 if (this.editSeq > -99) return;
                 this.editRecord = Object.assign({}, item);
                 this.editSeq = this.editRecord.Seq;
+                this.ItemMissingLocByNo(this.editRecord);
             },
             //紀錄清單
             getResords() {
@@ -312,6 +378,10 @@
                 window.myAjax.post('/ESSuperviseFill/GetRecords', { id: this.targetId })
                     .then(resp => {
                         if (resp.data.result == 0) {
+                            // resp.data.items.forEach(e => {
+                            //     this.ItemMissingLocByNo(e)
+                            // });
+                            // console.log("ffff", resp.data.items)
                             this.items = resp.data.items;
                             this.totalScore = resp.data.totalScore;
                         }

@@ -77,6 +77,9 @@
                     產製監造計畫書
                 </button>
             </div>
+            <div class="form-inline mt-3" v-if="engMain.DocState==1" >
+                <span style="color:red;margin: auto;background: lightgreen; ">{{ (engMain.Progress*100).toFixed(0) }} %</span>
+            </div>
             <!-- div class="col-12 col-sm-5 col-lg-4 col-xl-3 mt-3">
             <button v-on:click.stop="back()" role="button" class="btn btn-shadow btn-color1 btn-block">
                 回上頁
@@ -158,6 +161,7 @@
                     .then(resp => {
                         if (resp.data.result == 0) {
                             this.engMain = resp.data.item;
+                            this.engMain.Progress = resp.data.Progress;
                             this.selectTab = 'Chapter5Summary';
                             this.$refs.Chapter5.classList.toggle('active');
                             if(this.engMain.DocState == -1) this.docState = 1; 
@@ -425,3 +429,6 @@
         }
     }
 </script>
+<style scoped>
+
+</style>

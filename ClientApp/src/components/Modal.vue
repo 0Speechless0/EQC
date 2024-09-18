@@ -1,3 +1,4 @@
+<!-- you need to control [show]  outside  by ref argument for opening modal-->
 <script setup>
     import {ref, defineExpose, defineProps, watch} from "vue";
     const show = ref(false);
@@ -9,9 +10,11 @@
         if(value)
         {
             modalClass.value = modalClass.value.concat(" show");
+            document.querySelector("body").style['overflow'] = "hidden";
         }
         else{
             modalClass.value = modalClass.value.slice(0, 10);
+            document.querySelector("body").style['overflow'] = "auto";
         }
 
     })

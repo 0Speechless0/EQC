@@ -43,6 +43,8 @@ namespace EQC.Services
         /// </summary>
         private SqlConnection _connection;
 
+        private static Queue<int> threadPriorityQueue = new Queue<int>();
+
         /// <summary>取得Connection物件
         /// </summary>
         public SqlConnection Connection
@@ -59,7 +61,10 @@ namespace EQC.Services
         {
             if (Connection.State == ConnectionState.Closed && _transaction == null)
             {
-                Connection.Open();
+
+                    Connection.Open();
+
+ 
             }
         }
 
@@ -70,6 +75,7 @@ namespace EQC.Services
             if (Connection.State == ConnectionState.Open && _transaction == null)
             {
                 Connection.Close();
+
             }
         }
 
@@ -264,7 +270,7 @@ namespace EQC.Services
             {
                 da.Fill(dt);
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 throw;
             }
@@ -391,33 +397,52 @@ namespace EQC.Services
         /// <returns></returns>
         public List<T> GetDataTableWithClass<T>(SqlCommand command)
         {
-            try
-            {
-                _connection.Open();
-            }
-            catch { }
+
+
+            //if (!threadPriorityQueue.Contains(Thread.CurrentThread.ManagedThreadId))
+            //    threadPriorityQueue.Enqueue(Thread.CurrentThread.ManagedThreadId);
+
+            //while (threadPriorityQueue.Count > 0 && threadPriorityQueue.Peek() != Thread.CurrentThread.ManagedThreadId )
+            //{
+            //    Thread.Sleep(500);
+            //}
+             ConnectionOpen();
+
             List<T> targetList = new List<T>();
             command.Connection = _connection;
+            SqlDataReader reader = null;
             using (command)
             {
-                SqlDataReader reader = command.ExecuteReader(CommandBehavior.CloseConnection);
-                //Type underlyingType = typeof(T);
-               
-                 while (reader.Read())
+                try
                 {
-                    T targetClass = Activator.CreateInstance<T>();
-                    for (int i = 0; i < reader.FieldCount; i++)
+                    reader = command.ExecuteReader(CommandBehavior.CloseConnection);
+
+                    //Type underlyingType = typeof(T);
+                    while (reader.Read())
                     {
-                        PropertyInfo property = targetClass.GetType().GetProperty(reader.GetName(i));
-                        if (property != null)
+                        T targetClass = Activator.CreateInstance<T>();
+                        for (int i = 0; i < reader.FieldCount; i++)
                         {
-                            property.SetValue(targetClass, (reader.IsDBNull(i)) ? null : reader.GetValue(i), null);
+                            PropertyInfo property = targetClass.GetType().GetProperty(reader.GetName(i));
+                            if (property != null)
+                            {
+                                property.SetValue(targetClass, (reader.IsDBNull(i)) ? null : reader.GetValue(i), null);
+                            }
                         }
+                        targetList.Add(targetClass);
                     }
-                    targetList.Add(targetClass);
+
                 }
-                reader.Close();
-                _connection.Close();
+                finally
+                {
+                    //if (threadPriorityQueue.Peek() == Thread.CurrentThread.ManagedThreadId)
+                    //{
+                    //    ConnectionClose();
+                    //    threadPriorityQueue.Dequeue();
+                    //}
+                    reader?.Close();
+                }
+
 
                 return targetList;
             }

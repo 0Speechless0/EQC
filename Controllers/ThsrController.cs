@@ -32,9 +32,9 @@ namespace EQC.Controllers
                      thsrService.GetList(0, rowCount, ob);
 
 
-            var startOptionList = thsrService.getStartStationList(ob.Direction).SortListByMap(r => r, Order.TrainOrderMap, true);
+            var startOptionList = thsrService.getStartStationList(ob.Direction).SortListByMap(r => r, Order.TrainOrderMap);
              var endOptionList = 
-                thsrService.getEndingStationList(ob.Direction, ob.StartStationName).SortListByMap(r => r, Order.TrainOrderMap, true) ;
+                thsrService.getEndingStationList(ob.Direction, ob.StartStationName).SortListByMap(r => r, Order.TrainOrderMap) ;
 
             return Json(new
             {

@@ -79,7 +79,7 @@
             <div class="col-12 col-md-6 form-inline my-2 justify-content-md-between">
                 <label class="my-2 mx-2">執行單位<span
                         class="small-red">&nbsp;*</span></label>
-                        <select  :disabled="createType != 2" class="col-12 col-md-10 form-control" v-model="Eng.ExecSubUnitSeq"  @change="assignToTreeProperty('ExecSubUnitSeq', Eng.ExecSubUnitSeq)">
+                        <select  :disabled="createType != 2 || user.RoleSeq == 20" class="col-12 col-md-10 form-control" v-model="Eng.ExecSubUnitSeq"  @change="assignToTreeProperty('ExecSubUnitSeq', Eng.ExecSubUnitSeq)">
                             <option v-for="(item, index) in subUnitList" :key="index" :value="item.Value">{{  
                                 item.Text
                             }}</option>
@@ -89,7 +89,7 @@
             <div class="col-12 col-md-6 form-inline my-2 justify-content-md-between">
                 <label class="my-2 mx-2">標案建立者<span
                         class="small-red">&nbsp;*</span></label>
-                        <select  :disabled="createType != 2" class="col-12 col-md-10 form-control" v-model="Eng.OrganizerUserSeq" @change="assignToTreeProperty('OrganizerUserSeq', Eng.OrganizerUserSeq)">
+                        <select  :disabled="createType != 2 || user.RoleSeq == 20" class="col-12 col-md-10 form-control" v-model="Eng.OrganizerUserSeq" @change="assignToTreeProperty('OrganizerUserSeq', Eng.OrganizerUserSeq)">
                             <option v-for="(item, index) in userList" :key="index" :value="item.Value">{{  
                                 item.Text
                             }}</option>
@@ -139,7 +139,7 @@ import axios from "axios";
 
 export default{
 
-    props: ["Eng", "createType", "EngTypeOptions", "tender", "EngType", "treePlantMainSeq", "treeMain"],
+    props: ["Eng", "createType", "EngTypeOptions", "tender", "EngType", "treePlantMainSeq", "treeMain", "user"],
     emits : ["selectEngType", "assignToTreeProperty"],
     watch:{
         EngType : {

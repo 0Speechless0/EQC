@@ -4,7 +4,9 @@
             <div class="form-row">
                 <div class="col-1 mt-3">
                     <select v-model="selectYear" @change="onYearChange($event)" class="form-control">
-                        <option selected="selected" :value="-1"> 全部</option>
+                        <option :value="-1">
+                            全部
+                        </option>
                         <option v-for="option in selectYearOptions" v-bind:value="option.Value" v-bind:key="option.Value">
                             {{ option.Text }}
                         </option>
@@ -12,13 +14,14 @@
                 </div>
                 <div class="col-12 col-sm-3 mt-3">
                     <select v-model="selectUnit" @change="onUnitChange(selectUnit)" class="form-control">
+                        <option selected="selected" :value="-1"> 全部</option>
                         <option v-for="option in selectUnitOptions" v-bind:value="option.Value"
                                 v-bind:key="option.Value">
                             {{ option.Text }}
                         </option>
                     </select>
                 </div>
-                <div class="col-12 col-sm-2 mt-3">
+                <div class="col-12 col-sm-2 mt-3" v-if="selectUnit >0">
                     <select v-model="selectSubUnit" @change="onSubUnitChange($event)" class="form-control">
                         <option v-for="option in selectSubUnitOptions" v-bind:value="option.Value"
                                 v-bind:key="option.Value">
@@ -26,13 +29,21 @@
                         </option>
                     </select>
                 </div>
-                <div class="col-1 col-sm-2 mt-3">
+                <div class="col-1 col-sm-2 mt-3" >
                     <select v-model="selectRptType" @change="onRptTypeChange($event)" class="form-control">
                         <option v-for="option in selectRptTypeOptions" v-bind:value="option.Value"
                                 v-bind:key="option.Value">
                             {{ option.Text }}
                         </option>
                     </select>
+                </div>
+                <div class="col-1 col-sm-2 mt-3 fomr-inline">
+                    <input class="form-control" v-model="keyWord" placeholder="可輸入關鍵字查詢工程名稱"/> 
+                </div>
+                <div class="col-1 col-sm-2 mt-3 fomr-inline">
+                    <button class="btn btn-color11-3 btn-xs sharp mx-1 mt-2" @click.prevent="getList">
+                        <i class="fas fa-search"></i>
+                    </button>
                 </div>
                 <div class="ml-auto bd-highlight align-self-center" style="padding-right: 15px;">
                     <!--<a href="./files/112先期檢討報部v4_核定.xlsx" download="112先期檢討報部v4_核定.xlsx">-->
@@ -71,7 +82,7 @@
                         <td>{{pageRecordCount*(pageIndex-1)+index+1}}</td>
                         <td><input v-if="item.IsTransfer==0" type="checkbox" v-model.trim="item.IsCheck" v-bind:id="item.Seq"></td>
                         <td>{{item.RptYear}}</td>
-                        <td><a href="#" title="{{item.RptName}}" v-on:click.stop="onViewEng(item)">{{item.RptName}}</a></td>
+                        <td><a href="#" :title="item.RptName" v-on:click.stop="onViewEng(item)">{{item.RptName}}</a></td>
                         <td>{{item.ExecUnit}}</td>
                         <td>{{item.ExecSubUnit}}</td>
                         <td>{{item.ExecUser}}</td>
@@ -81,10 +92,11 @@
                             <input v-if="item.edit" type="text" v-model.trim="item.EngNo" class="form-control" />
                         </td>
                         <td style="min-width: 105px;">
-                            <a href="#" v-if="!item.edit&&item.IsTransfer==0" v-on:click.stop="item.edit=!item.edit" class="btn btn-color11-3 btn-xs mx-1" title="編輯"><i class="fas fa-pencil-alt"></i> 編輯</a>
-                            <a href="#" v-if="item.edit" v-on:click.stop="onSaveRecord(item)" class="btn btn-color11-2 btn-xs mx-1"><i class="fas fa-save"></i> 儲存</a>
-                            <a href="#" v-if="item.edit" v-on:click.stop="item.edit=false" class="btn btn-color9-1 btn-xs mx-1" title="取消"><i class="fas fa-times"></i> 取消</a>
-                            <a href="#" v-if="!item.edit&&item.IsTransfer==0" class="btn btn-color11-2 btn-xs mx-1" v-on:click.stop="onTransferRecord(item);" title="轉入建立案件"><i class="fas fa-file-import"></i> 轉入 </a>
+                            <a href="#" v-if="!item.edit&&item.IsTransfer==0" v-on:click.prevent="item.edit=!item.edit" class="btn btn-color11-3 btn-xs mx-1" title="編輯"><i class="fas fa-pencil-alt"></i> 編輯</a>
+                            <a href="#" v-if="item.edit" v-on:click.prevent="onSaveRecord(item)" class="btn btn-color11-2 btn-xs mx-1"><i class="fas fa-save"></i> 儲存</a>
+                            <a href="#" v-if="item.edit" v-on:click.prevent="item.edit=false" class="btn btn-color9-1 btn-xs mx-1" title="取消"><i class="fas fa-times"></i> 取消</a>
+                            <a href="#" v-if="!item.edit&&item.IsTransfer==0" class="btn btn-color11-2 btn-xs mx-1" v-on:click.prevent="onTransferRecord(item);" title="轉入建立案件"><i class="fas fa-file-import"></i> 轉入 </a>
+                            <button href="#" v-else class="btn btn-color11-2 btn-xs mx-1" :disabled="true" title="轉入建立案件"><i class="fas fa-file-import"></i> 已轉入 </button>
                         </td>
                     </tr>
                     <tr v-if="items==null||items.length==0">
@@ -106,6 +118,7 @@
     export default {
         data: function () {
             return {
+                keyWord : "",
                 //使用者單位資訊
                 userUnit: null,
                 userUnitSub: '',
@@ -119,6 +132,7 @@
                 recordTotal: 0,
                 pageRecordCount: 30,
                 pageIndex: 1,
+
                 //pageIndexOptions:[],
                 //選項
                 selectYear: '',
@@ -185,6 +199,7 @@
 
                 sessionStorage.removeItem('selectERYear');
                 window.sessionStorage.setItem("selectERYear", this.selectYear);
+                this.onUnitChange(this.selectUnit)
             },
             async onUnitChange(unitSeq) {
                 if (this.selectUnitOptions.length == 0) return;
@@ -270,7 +285,8 @@
                         subUnit: this.selectSubUnit,
                         rptType: this.selectRptType,
                         pageRecordCount: this.pageRecordCount,
-                        pageIndex: this.pageIndex
+                        pageIndex: this.pageIndex,
+                        keyWord : this.keyWord
                     })
                     .then(resp => {
                         this.items = resp.data.items;
@@ -319,7 +335,7 @@
             },
             onTransfer() {
                 if (!confirm('是否確定轉入建立案件？\n請確認「工程案號」是否填寫正確，一旦轉入則無法再編輯！')) return;
-                window.myAjax.post('/ERApprovedCase/UpdateEngReportTransfer', { list: this.items })
+                window.myAjax.post('/ERApprovedCase/UpdateEngReportTransfer', { list: this.items.filter(e => ! e.IsTransfer ) })
                     .then(resp => {
                         if (resp.data.result == 0) {
                             this.getList();

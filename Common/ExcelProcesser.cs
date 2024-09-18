@@ -34,6 +34,7 @@ namespace EQC.Common
     }
     public class ExcelProcesser
     {
+        private bool log = true;
         public ISheet sheet;
         private int width;
         private string[] dbColumns;
@@ -79,12 +80,22 @@ namespace EQC.Common
             sheet.Workbook.SetActiveSheet(0);
             doInit?.Invoke(workbook);
         }
+
+        public void  Disopse()
+        {
+            sheet.Workbook.Dispose();
+        }
         public ExcelProcesser(string filePath, int _headerRow, int activeSheet = 0)
         {
 
+            MemoryStream ms = new MemoryStream();
+            using(var inputStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                inputStream.CopyTo(ms);
+            }
+            ms.Position = 0;
 
-            var workbook = new XSSFWorkbook(filePath);
-
+            var workbook = new XSSFWorkbook(ms);
             if (workbook.NumberOfSheets == 0)
             {
                 throw new Exception("No Sheet");
@@ -93,10 +104,16 @@ namespace EQC.Common
             sheet = workbook.GetSheetAt(0);
 
             startRow = _headerRow + 1;
-
+            ms.Dispose();
             sheet.Workbook.SetActiveSheet(activeSheet);
 
         }
+
+        public void setImportPreAction(Action<ExcelProcesser> importPreAction)
+        {
+            importPreAction.Invoke(this);
+        }
+
         public ExcelProcesser(MemoryStream inputStream, int? _headerRow, int activeSheet = 0)
         {
             inputStream.Position = 0;
@@ -271,7 +288,7 @@ namespace EQC.Common
         private void createHeaderMapToIndex()
         {
             IRow headers = sheet.GetRow(headerRow);
-            int headerNum = sheet.GetRow(headerRow).LastCellNum;
+            int headerNum = sheet.GetRow(headerRow).Cells.Count();
             for (int i = 0; i < headerNum; i++)
             {
                 string headerName = headers.Cells[i].ToString().Replace("\n", "");
@@ -604,8 +621,12 @@ namespace EQC.Common
             string lastSplit = sql.Substring(cutting_pos, sql.Length - cutting_pos);
             SessionManager session = new SessionManager();
             lastSplit = lastSplit.Remove(lastSplit.Length - 2, 2);
-            firstSplit += ", CreateTime, CreateUserSeq, ModifyTime, ModifyUserSeq";
-            lastSplit += ", GETDATE(), " + session.GetUser().Seq + ", GETDATE()," + session.GetUser().Seq;
+            if(log)
+            {
+                firstSplit += ", CreateTime, CreateUserSeq, ModifyTime, ModifyUserSeq";
+                lastSplit += ", GETDATE(), " + session.GetUser().Seq + ", GETDATE()," + session.GetUser().Seq;
+            }
+
             return firstSplit + lastSplit + ");";
         }
         private string remarkUpdate(string sql)
@@ -615,7 +636,8 @@ namespace EQC.Common
             SessionManager session = new SessionManager();
             string afterWhere = sql.Substring(cutting_pos, sql.Length - beforceWhere.Length);
 
-            beforceWhere += ", ModifyTime= GETDATE(), ModifyUserSeq=" + session.GetUser().Seq;
+            if(log)
+                beforceWhere += ", ModifyTime= GETDATE(), ModifyUserSeq=" + session.GetUser().Seq;
 
             return beforceWhere + " " + afterWhere + ";";
         }
@@ -710,7 +732,19 @@ namespace EQC.Common
             return this;
 
         }
+        public void SaveToFile(string path, string fileName )
+        {
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+            var filePath = Path.Combine(path, fileName);
+            using (var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write))
+            {
+                sheet.Workbook.Write(fileStream);
 
+            }
+        }
         public MemoryStream getTemplateStream(MemoryStream mss = null)
         {
             var ms = mss ?? new MemoryStream();
@@ -793,8 +827,15 @@ namespace EQC.Common
             startRow++;
             return this;
         }
+
+        public ExcelProcesser setLogFlag(bool b)
+        {
+            log = b;
+            return this;
+        }
         public ExcelProcesser setStartRow(int row)
         {
+            headerRow = row - 1;
             startRow = row;
             return this;
         }
@@ -850,6 +891,12 @@ namespace EQC.Common
         public ExcelProcesser setSheet(int n)
         {
             sheet = sheet.Workbook.GetSheetAt(n);
+            return this;
+        }
+
+        public ExcelProcesser setSheetName(string name, int sheetIndex)
+        {
+            sheet.Workbook.SetSheetName(sheetIndex, name);
             return this;
         }
         public ExcelProcesser fowardStartRow(int n)

@@ -106,7 +106,8 @@ namespace EQC.Controllers
         //水利署碳報表 s20230529
 
         public ActionResult GetCarbonReoprt(int year, int unit, int subUnit)
-        { 
+        {
+            var list = iService.GetCarbonReoprtGroup<CarbonEmissionReportVModel>(year, unit, subUnit);
             return Json(new
             {
                 result = 0,
@@ -141,7 +142,9 @@ namespace EQC.Controllers
                 }
                 Microsoft.Office.Interop.Excel.Worksheet sheet = dict["總表"];
                 List<CarbonEmissionReportVModel> items = iService.GetCarbonReoprtGroup<CarbonEmissionReportVModel>(year, unit, subUnit);
-                List<CarbonEmissionReportVModel> dItems = iService.GetCarbonReoprtDetail<CarbonEmissionReportVModel>(year, unit, subUnit);
+                List<CarbonEmissionReportVModel> dItems = 
+                    iService.GetCarbonReoprtDetail<CarbonEmissionReportVModel>(year, unit, subUnit)
+                    .OrderBy(r => r.OrderNo).ToList();
 
                 //sheet.Cells[1, 3] = String.Format("附件1-{0}年度工程碳排量資料表總表", year);
                 sheet.Cells[1, 6] = String.Format("附件1-{0}年度工程碳排量資料表總表", year);
@@ -167,7 +170,8 @@ namespace EQC.Controllers
                     F1108Area = 0,
                     F1109Length = 0,
                     co2TotalRate = 0,
-                    Co2TotalItem = 0
+                    Co2TotalItem = 0,
+                    Co2TotalItemAll = 0
                 };
                 decimal Total02931 = 0;
                 decimal Total02932 = 0;
@@ -204,7 +208,7 @@ namespace EQC.Controllers
                     total.greenFundingRate += m.greenFundingRate.HasValue ? m.greenFundingRate : 0;
                     total.F1108Area += m.F1108Area.HasValue ? m.F1108Area : 0;
                     total.F1109Length += m.F1109Length.HasValue ? m.F1109Length : 0;
-                    total.co2TotalRate += m.co2TotalRate.HasValue ? m.co2TotalRate : 0;
+                    total.Co2TotalItemAll += m.Co2TotalItemAll ;
 
                     inx++;
                     row++;
@@ -217,12 +221,14 @@ namespace EQC.Controllers
                 sheet.Cells[row, 7] = total.awardCnt;
                 sheet.Cells[row, 8] = total.Co2Total;
                 sheet.Cells[row, 9] = total.GreenFunding;
-                sheet.Cells[row, 10] = (total.GreenFunding*1000 / total.AwardTotalBudget) *100 + "%";
+                sheet.Cells[row, 10] = total.AwardTotalBudget > 0 ? 
+                    (total.GreenFunding*1000 / total.AwardTotalBudget) *100 + "%" : "";
                 sheet.Cells[row, 11] = Total02931;
                 sheet.Cells[row, 12] = Total02932;
                 sheet.Cells[row, 13] = total.F1108Area;
                 sheet.Cells[row, 14] = total.F1109Length;
-                sheet.Cells[row, 15] = (total.Co2TotalItem / total.AwardTotalBudget)*100 + "%";
+                sheet.Cells[row, 15] =
+                total.Co2TotalItemAll > 0 ?  (total.Co2TotalItem / total.Co2TotalItemAll) *100 + "%" : "";
 
                 //
                 sheet = dict["明細表"];

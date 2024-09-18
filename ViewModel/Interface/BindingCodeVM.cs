@@ -10,5 +10,6 @@ namespace EQC.ViewModel.Interface
     {
         string AppCode { get; set; }
         int  UserMainSeq { get; set; }
+        DateTime CreateTime { get; set; }
     }
 }

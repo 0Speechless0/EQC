@@ -7,10 +7,15 @@ using System.Web;
 using System.Web.Mvc;
 using System.Web.WebSockets;
 using EQC.Common;
+using EQC.EDMXModel;
+using EQC.ViewModel;
+
 using EQC.Models;
 using EQC.ViewModel;
 using EQC.ViewModel.Common;
 using Newtonsoft.Json.Linq;
+using UserMain = EQC.Models.UserMain;
+using Role = EQC.Models.Role;
 
 namespace EQC.Services
 {
@@ -20,6 +25,42 @@ namespace EQC.Services
 
         /// <summary> 取得人員含單位資料 </summary>
         /// <param name="userSeq"> 單位序號 </param>
+        /// 
+        public IEnumerable<Models.UserMain> GetUserByAccountKeyWord(string keyWord, int role)
+        {
+            using (var context = new EQC_NEW_Entities())
+            {
+
+                context.Configuration.LazyLoadingEnabled = false;
+                var userRoleDic =
+                    context.UserMain
+                    .Include("UserUnitPosition.Role")
+                    .ToList()
+                    .Join(
+                        context.UserUnitPosition,
+                        user => user.Seq, pos => pos.UserMainSeq,
+                        (user, pos) => pos
+
+                    ).ToDictionary(r => r.UserMainSeq, r => r.Role.FirstOrDefault()?.Seq);
+
+                var list = context.UserMain
+                    .ToList()
+                    .Where(user => {
+
+                        userRoleDic.TryGetValue(user.Seq, out byte? roleValue);
+                        return roleValue == role && user.UserNo.Contains(keyWord);
+                    })
+                    .Select(r => new Models.UserMain
+                    {
+                        Seq = r.Seq,
+                        DisplayName = r.DisplayName,
+                        UserNo = r.UserNo
+
+                    });
+
+                return list;
+            }
+        }
         public List<VUserMain> GetUserInfo(int userSeq) //20210704 shioulo
         {
             string sql = @"
@@ -147,7 +188,7 @@ namespace EQC.Services
         /// <param name="page"> 頁數 </param>
         /// <param name="per_page"> 跳頁 </param>
         /// <param name="unitSeq"> 單位序號 </param>
-        public List<VUserMain> GetList(int unitSeq, string nameSearch, int? page, int? per_page)
+        public List<VUserMain> GetList(int unitSeq, string nameSearch, int? page = null, int? per_page = null)
         {
             try
             {
@@ -199,7 +240,8 @@ namespace EQC.Services
                 cmd.Parameters.AddWithValue("@Per_page", per_page ?? 100);
                 cmd.Parameters.AddWithValue("@UnitSeq", unitSeq);
                 cmd.Parameters.AddWithValue("@nameSearch", '%'+(nameSearch ?? "")+'%' ?? "");
-                return db.GetDataTableWithClass<VUserMain>(cmd);
+                var l = db.GetDataTableWithClass<VUserMain>(cmd);
+                return l;
             }
             catch (Exception ex)
             {
@@ -224,6 +266,7 @@ namespace EQC.Services
                       ,a.[IsDelete]
                       ,a.[CreateTime]
                       ,a.[CreateUserSeq]
+                      ,a.[LastLoginTime]  
                       ,a.[ModifyTime]
                       ,a.[ModifyUserSeq]						  
 					  ,ROW_NUMBER() OVER(ORDER BY a.Seq) AS Rows		
@@ -235,14 +278,18 @@ namespace EQC.Services
                       ,Case When f.Seq is null or g.Seq is null THEN NULL ELSE c.Seq END as UnitSeq3
 					  ,e.Name as RoleName 	
                       ,e.Seq as RoleSeq 
+					  ,e2.Name as RoleName2	
+                      ,e2.Seq as RoleSeq2
                       ,b.PositionSeq
                       ,(SELECT COUNT(*) FROM SignatureFile WHERE UserMainSeq = a.Seq) AS SignatureFileCount
                       ,ccal.Seq ConstCheckAppLock
+                      ,ccal.CreateTime ConstCheckAppCreateTime
 				FROM UserMain a
 				join UserUnitPosition b on a.Seq=b.UserMainSeq
 				left join Unit c on b.UnitSeq=c.Seq
 				left join UserRole d on b.Seq=d.UserUnitPositionSeq
 				left join Role e on d.RoleSeq=e.Seq
+				left join Role e2 on d.RoleSeq2=e2.Seq
                 left join Unit f on c.ParentSeq=f.Seq
 				left join Unit g on f.ParentSeq=g.Seq
                 left join ConstCheckAppLock ccal on ccal.UserMainSeq = a.Seq
@@ -361,7 +408,65 @@ namespace EQC.Services
             return (int)( db.ExecuteScalar(cmd) ?? 0);
 
         }
+        public List<VUserMain> GetUserBelong(int userSeq, bool hasConstCheckApp = false)
+        {
+            try
+            {
+                string sql = @"
 
+                    SELECT a.[Seq]
+                      ,a.[UserNo]                      
+                      ,a.[DisplayName]
+                      ,a.[PassWord]
+                      ,a.[TelRegion]
+                      ,a.[Tel]
+                      ,a.[TelExt]
+                      ,a.[Mobile]
+                      ,a.[Email]
+                      ,a.[IsEnabled]
+                      ,a.[IsDelete]
+                      ,a.[CreateTime]
+                      ,a.[CreateUserSeq]
+                      ,a.[ModifyTime]
+                      ,a.[ModifyUserSeq]						  
+					  ,ROW_NUMBER() OVER(ORDER BY a.Seq) AS Rows		
+					  ,ISNULL(g.Name,ISNULL(f.Name,c.Name)) as UnitName1
+                      ,ISNULL(g.Seq,ISNULL(f.Seq,c.Seq))  as UnitSeq1					  
+					  ,ISNULL('/' + Case When g.Name is null Then (Case When f.name is null Then NULL Else c.name END) ELSE f.Name END, '')  as UnitName2
+                      ,Case When g.Seq is null Then (Case When f.Seq is null Then NULL Else c.Seq END) ELSE f.Seq END as UnitSeq2
+					  ,ISNULL('/' + Case When f.Name is null or g.Name is null THEN NULL ELSE c.Name END, '') as UnitName3
+                      ,Case When f.Seq is null or g.Seq is null THEN NULL ELSE c.Seq END as UnitSeq3
+					  ,e.Name as RoleName 	
+                      ,e.Seq as RoleSeq 
+                      ,b.PositionSeq
+                      ,ccal.Seq ConstCheckAppLock
+                      ,ccal.CreateTime ConstCheckAppCreateTime
+                      ,(SELECT COUNT(*) FROM SignatureFile WHERE UserMainSeq = a.Seq) AS SignatureFileCount
+				FROM UserMain a
+				join UserUnitPosition b on a.Seq=b.UserMainSeq
+				left join Unit c on b.UnitSeq=c.Seq
+				left join UserRole d on b.Seq=d.UserUnitPositionSeq
+				left join Role e on d.RoleSeq=e.Seq
+                left join Unit f on c.ParentSeq=f.Seq
+				left join Unit g on f.ParentSeq=g.Seq
+                left join ConstCheckAppLock ccal on ccal.UserMainSeq = a.Seq
+				where  a.IsDelete=0 and (a.Seq = @userSeq or a.CreateUserSeq = @userSeq)
+                and (ccal.Seq is not null or @hasConstCheckApp = 0 )
+				ORDER BY CASE @Sort_by
+						WHEN 'a.Seq'
+							THEN a.Seq END";
+
+                SqlCommand cmd = db.GetCommand(sql);
+                cmd.Parameters.AddWithValue("@Sort_by", "a.Seq");
+                cmd.Parameters.AddWithValue("@hasConstCheckApp", hasConstCheckApp ? 1 : 0);
+                cmd.Parameters.AddWithValue("@userSeq", userSeq);
+                return db.GetDataTableWithClass<VUserMain>(cmd);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
         public List<VUserMain> GetUser(int userSeq)
         {
             try
@@ -401,7 +506,7 @@ namespace EQC.Services
 				left join Role e on d.RoleSeq=e.Seq
                 left join Unit f on c.ParentSeq=f.Seq
 				left join Unit g on f.ParentSeq=g.Seq
-				where  a.IsDelete=0 and a.Seq = @userSeq
+				where  a.IsDelete=0 and a.Seq = @userSeq 
 				ORDER BY CASE @Sort_by
 						WHEN 'a.Seq'
 							THEN a.Seq END";
@@ -436,6 +541,7 @@ namespace EQC.Services
             cmd.Parameters.AddWithValue("@UnitSeq", unitSeq);
             return db.ExecuteScalar(cmd);
         }
+
         //shioulo 20220706
         public List<VUserMain> GetUser(string userNo, string passWd)
         {
@@ -633,14 +739,17 @@ namespace EQC.Services
                     cmd.Parameters.Clear();
                     string sql4 = @"INSERT INTO UserRole
                                    (UserUnitPositionSeq
-                                   ,RoleSeq)
+                                   ,RoleSeq
+                                   ,RoleSeq2)
                                     VALUES
                                    (@UserUnitPositionSeq
-                                   ,@RoleSeq)";
+                                   ,@RoleSeq
+                                   ,@RoleSeq2)";
 
                     cmd = db.GetCommand(sql4);
                     cmd.Parameters.AddWithValue("@UserUnitPositionSeq", UserUnitPositionSeq);
                     cmd.Parameters.AddWithValue("@RoleSeq", vUserMain.RoleSeq);
+                    cmd.Parameters.AddWithValue("@RoleSeq2", Utils.NulltoDBNull(vUserMain.RoleSeq2) );
                     db.ExecuteNonQuery(cmd);
                     cmd.Parameters.Clear();
                 }
@@ -658,7 +767,7 @@ namespace EQC.Services
 
         /// <summary> 單簽新增人員 </summary>
         /// <returns></returns>
-        public int OauthAddUser(string UserNo, string Mail, string userName, string Phone, string Unit)
+        public int OauthAddUser(string UserNo, string Mail, string userName, string Phone, string Unit, string UpperUnit1, string UpperUnit2)
         {
             db.BeginTransaction();
             try
@@ -679,17 +788,51 @@ namespace EQC.Services
                 }
                 else
                 {
-                    //查詢對應單位Seq
-                    string sql2 = @"SELECT * FROM Unit WHERE Name = @Name ";
-                    SqlCommand cmd = db.GetCommand(sql2);
-                    cmd.Parameters.AddWithValue("@Name", Utils.NulltoDBNull(Unit));
+                    //上層分分署代號對應名稱設定
+                    Dictionary<string, string> unitDictionary = new Dictionary<string, string>
+                    {
+                        { "wra01", "第一河川分署" },
+                        { "wra02", "第二河川分署" },
+                        { "wra03", "第三河川分署" },
+                        { "wra04", "第四河川分署" },
+                        { "wra05", "第五河川分署" },
+                        { "wra06", "第六河川分署" },
+                        { "wra07", "第七河川分署" },
+                        { "wra08", "第八河川分署" },
+                        { "wra09", "第九河川分署" },
+                        { "wra10", "第十河川分署" },
+                        { "wratp", "臺北水源特定區管理分署" },
+                        { "wranb", "北區水資源分署" },
+                        { "wracb", "中區水資源分署" },
+                        { "wrasb", "南區水資源分署" },
+                        { "wrapi", "水利規劃分署" }
+                    };
+
+                    // 檢查上層名稱是否有對應到key
+                    if (unitDictionary.TryGetValue(UpperUnit1.ToLower(), out string unitName))
+                    {
+                        UpperUnit1 = unitName;
+                    }
+
+                    //查詢上層單位Seq
+                    string sql = @"SELECT * FROM Unit WHERE Name = @Name ";
+                    SqlCommand cmd = db.GetCommand(sql);
+                    cmd.Parameters.AddWithValue("@Name", Utils.NulltoDBNull(UpperUnit1));
                     DataTable dt1 = db.GetDataTable(cmd);
-                    unitSeq = Convert.ToInt32(dt1.Rows[0]["Seq"].ToString());
-                    unitParentSeq = Convert.ToInt32(dt1.Rows[0]["ParentSeq"].ToString());
+                    unitParentSeq = Convert.ToInt32(dt1.Rows[0]["Seq"].ToString());
                     cmd.Parameters.Clear();
 
+                    //查詢單位Seq
+                    string sql2 = @"SELECT * FROM Unit WHERE Name = @Name AND ParentSeq = @ParentSeq";
+                    SqlCommand cmd2 = db.GetCommand(sql2);
+                    cmd2.Parameters.AddWithValue("@Name", Utils.NulltoDBNull(Unit));
+                    cmd2.Parameters.AddWithValue("@ParentSeq", Utils.NulltoDBNull(unitParentSeq));
+                    DataTable dt2 = db.GetDataTable(cmd2);
+                    unitSeq = Convert.ToInt32(dt2.Rows[0]["Seq"].ToString());
+                    cmd2.Parameters.Clear();
+
                     // 新增人員資料
-                    string sql = @"
+                    string sql3 = @"
                     INSERT INTO [UserMain]
                            ([UserNo]
                            ,[PassWord]
@@ -704,7 +847,7 @@ namespace EQC.Services
                            ,@Email
                            ,@IsEnabled
                            ,@CreateTime)";
-                    cmd = db.GetCommand(sql);
+                    cmd = db.GetCommand(sql3);
                     cmd.Parameters.AddWithValue("@UserNo", UserNo);
                     cmd.Parameters.AddWithValue("@PassWord", "12345");
                     cmd.Parameters.AddWithValue("@DisplayName", Utils.NulltoDBNull(userName) );
@@ -721,14 +864,14 @@ namespace EQC.Services
                     db.ExecuteNonQuery(cmd);
                     cmd.Parameters.Clear();
                     //最新一筆Seq
-                    string sql1 = @"SELECT IDENT_CURRENT('UserMain') AS Seq";
-                    cmd = db.GetCommand(sql1);
-                    DataTable dt = db.GetDataTable(cmd);
-                    userMainSeq = Convert.ToInt32(dt.Rows[0]["Seq"].ToString());
+                    string sql4 = @"SELECT IDENT_CURRENT('UserMain') AS Seq";
+                    cmd = db.GetCommand(sql4);
+                    DataTable dt4 = db.GetDataTable(cmd);
+                    userMainSeq = Convert.ToInt32(dt4.Rows[0]["Seq"].ToString());
                     cmd.Parameters.Clear();
 
                     //新增人員單位
-                    string sql3 = @"INSERT INTO [UserUnitPosition]
+                    string sql5 = @"INSERT INTO [UserUnitPosition]
                                    (UnitSeq 
                                    ,UserMainSeq 
                                    ,IsEnabled 
@@ -739,7 +882,7 @@ namespace EQC.Services
                                    ,@IsEnabled
                                    ,@CreateTime)";
 
-                    cmd = db.GetCommand(sql3);
+                    cmd = db.GetCommand(sql5);
                     cmd.Parameters.AddWithValue("@UnitSeq", unitSeq);
                     cmd.Parameters.AddWithValue("@UserMainSeq", userMainSeq);
                     cmd.Parameters.AddWithValue("@IsEnabled", true);
@@ -747,20 +890,20 @@ namespace EQC.Services
                     db.ExecuteNonQuery(cmd);
                     cmd.Parameters.Clear();
                     //
-                    string sql4 = @"SELECT IDENT_CURRENT('UserUnitPosition') AS Seq";
-                    cmd = db.GetCommand(sql4);
-                    DataTable dt2 = db.GetDataTable(cmd);
-                    int UserUnitPositionSeq = Convert.ToInt32(dt2.Rows[0]["Seq"].ToString());
+                    string sql6 = @"SELECT IDENT_CURRENT('UserUnitPosition') AS Seq";
+                    cmd = db.GetCommand(sql6);
+                    DataTable dt6 = db.GetDataTable(cmd);
+                    int UserUnitPositionSeq = Convert.ToInt32(dt6.Rows[0]["Seq"].ToString());
                     cmd.Parameters.Clear();
                     //權限
-                    string sql5 = @"INSERT INTO UserRole
+                    string sql7 = @"INSERT INTO UserRole
                                    (UserUnitPositionSeq
                                    ,RoleSeq)
                                     VALUES
                                    (@UserUnitPositionSeq
                                    ,@RoleSeq)";
 
-                    cmd = db.GetCommand(sql5);
+                    cmd = db.GetCommand(sql7);
                     cmd.Parameters.AddWithValue("@UserUnitPositionSeq", UserUnitPositionSeq);
                     if (unitParentSeq < 14 || (unitParentSeq >= 19 && unitParentSeq <= 22) || (unitParentSeq == 135) || (unitParentSeq == 136))
                     {
@@ -847,7 +990,8 @@ namespace EQC.Services
                       WHERE  UserMainSeq = @UserMainSeq 
  
                  UPDATE UserRole 
-                      SET RoleSeq = @RoleSeq
+                      SET RoleSeq = @RoleSeq,
+                      RoleSeq2 = @RoleSeq2
                       WHERE UserUnitPositionSeq = 
                       (Select top 1 Seq 
                       From UserUnitPosition
@@ -870,6 +1014,7 @@ namespace EQC.Services
                 cmd.Parameters.AddWithValue("@UnitSeq", unitSeq);
                 cmd.Parameters.AddWithValue("@PositionSeq", vUserMain.PositionSeq == 0 ? (Object)DBNull.Value : vUserMain.PositionSeq);
                 cmd.Parameters.AddWithValue("@RoleSeq", vUserMain.RoleSeq);
+                cmd.Parameters.AddWithValue("@RoleSeq2", Utils.NulltoDBNull(vUserMain.RoleSeq2) );
                 cmd.Parameters.AddWithValue("@UserMainSeq", vUserMain.Seq);
                 db.ExecuteNonQuery(cmd);
 
@@ -920,7 +1065,7 @@ namespace EQC.Services
 			left join Role e on d.RoleSeq=e.Seq
             left join Unit f on c.ParentSeq=f.Seq
 			left join Unit g on f.ParentSeq=g.Seq
-			where a.UserNo=@UserNo";
+			where a.UserNo=@UserNo and a.IsDelete = 0";
             /*//shioulo 20210521-1046
             string sql = @"
 				SELECT b.UnitSeq, a.*
@@ -986,7 +1131,7 @@ namespace EQC.Services
 				JOIN UserRole ON UserRole.RoleSeq = [Role].Seq
 				JOIN UserUnitPosition ON UserUnitPosition.Seq = UserRole.UserUnitPositionSeq
 				JOIN UserMain ON UserMain.Seq = UserUnitPosition.UserMainSeq
-				WHERE UserNo = @UserNo";
+				WHERE UserNo = @UserNo and UserMain.IsDelete = 0";
             SqlCommand cmd = db.GetCommand(sql);
             cmd.Parameters.AddWithValue("@UserNo", account);
             return db.GetDataTableWithClass<Role>(cmd);
@@ -1046,6 +1191,96 @@ namespace EQC.Services
             SqlCommand cmd = db.GetCommand(sql);
             cmd.Parameters.AddWithValue("@UserMainSeq", userSeq);
             return db.GetDataTableWithClass<SignatureFileVM>(cmd);
+        }
+
+        /// <summary> AD登入人員資料修改 </summary>
+        /// <returns></returns>
+        public SaveChangeStatus OauthUpdateUserData(int Seq,string Mail,string Name,string Phone,string Unit, string UpperUnit1, string UpperUnit2)
+        {
+            db.BeginTransaction();
+
+            try
+            {
+                //上層分分署代號對應名稱設定
+                Dictionary<string, string> unitDictionary = new Dictionary<string, string>
+                {
+                    { "wra01", "第一河川分署" },
+                    { "wra02", "第二河川分署" },
+                    { "wra03", "第三河川分署" },
+                    { "wra04", "第四河川分署" },
+                    { "wra05", "第五河川分署" },
+                    { "wra06", "第六河川分署" },
+                    { "wra07", "第七河川分署" },
+                    { "wra08", "第八河川分署" },
+                    { "wra09", "第九河川分署" },
+                    { "wra10", "第十河川分署" },
+                    { "wratp", "臺北水源特定區管理分署" },
+                    { "wranb", "北區水資源分署" },
+                    { "wracb", "中區水資源分署" },
+                    { "wrasb", "南區水資源分署" },
+                    { "wrapi", "水利規劃分署" }
+                };
+
+                // 檢查上層名稱是否有對應到key
+                if (unitDictionary.TryGetValue(UpperUnit1.ToLower(), out string unitName))
+                {
+                    UpperUnit1 = unitName;
+                }
+
+                //查詢上層單位Seq
+                string sql = @"SELECT * FROM Unit WHERE Name = @Name ";
+                SqlCommand cmd = db.GetCommand(sql);
+                cmd.Parameters.AddWithValue("@Name", Utils.NulltoDBNull(UpperUnit1));
+                DataTable dt1 = db.GetDataTable(cmd);
+                var UpperUnitSeq = Convert.ToInt32(dt1.Rows[0]["Seq"].ToString());
+                cmd.Parameters.Clear();
+
+                //查詢單位Seq
+                string sql2 = @"SELECT * FROM Unit WHERE Name = @Name AND ParentSeq = @ParentSeq";
+                SqlCommand cmd2 = db.GetCommand(sql2);
+                cmd2.Parameters.AddWithValue("@Name", Utils.NulltoDBNull(Unit));
+                cmd2.Parameters.AddWithValue("@ParentSeq", Utils.NulltoDBNull(UpperUnitSeq));
+                DataTable dt2 = db.GetDataTable(cmd2);
+                var UnitSeq = Convert.ToInt32(dt2.Rows[0]["Seq"].ToString());
+                cmd2.Parameters.Clear();
+
+                //寫入更新
+                SaveChangeStatus saveChangeStatus = new SaveChangeStatus(true, StatusCode.Save);
+                string sql3 = @"
+                UPDATE [UserMain]
+                   SET [DisplayName] = @DisplayName
+                      ,[Mobile] = @Mobile
+                      ,[Email] = @Email
+                      ,[ModifyTime] = @ModifyTime
+                      ,[ModifyUserSeq] = @ModifyUserSeq
+                      WHERE Seq = @Seq 
+
+                 UPDATE  UserUnitPosition 
+                      SET  UnitSeq = @UnitSeq 
+                          ,ModifyTime = @ModifyTime 
+                          ,ModifyUserSeq = @ModifyUserSeq 
+                      WHERE  UserMainSeq = @UserMainSeq";
+
+                SqlCommand cmd3 = db.GetCommand(sql3);
+                cmd3.Parameters.AddWithValue("@Seq", Seq);
+                cmd3.Parameters.AddWithValue("@DisplayName", Name);
+                cmd3.Parameters.AddWithValue("@Mobile", Phone);
+                cmd3.Parameters.AddWithValue("@Email", Mail);
+                cmd3.Parameters.AddWithValue("@ModifyTime", DateTime.Now);
+                cmd3.Parameters.AddWithValue("@ModifyUserSeq", new SessionManager().GetUser().Seq);
+                cmd3.Parameters.AddWithValue("@UnitSeq", UnitSeq);
+                cmd3.Parameters.AddWithValue("@UserMainSeq", Seq);
+                db.ExecuteNonQuery(cmd3);
+
+                db.TransactionCommit();
+                saveChangeStatus.Data = Seq;
+                return saveChangeStatus;
+            }
+            catch (Exception ex)
+            {
+                db.TransactionRollback();
+                return new SaveChangeStatus(false, StatusCode.Save, ex);
+            }
         }
     }
 }

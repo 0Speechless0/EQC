@@ -67,6 +67,8 @@
                         <th style="width: 42px;"><strong>項次</strong></th>
                         <th class="text-left"><strong>年度</strong></th>
                         <th><strong>工程名稱</strong></th>
+                        <th><strong>工程類別</strong></th>
+                        <th><strong>歸屬計畫</strong></th>
                         <th><strong>執行單位</strong></th>
                         <th><strong>決標經費</strong></th>
                         <th><strong>碳排放量</strong></th>
@@ -78,6 +80,8 @@
                         <td><strong>{{ pageRecordCount * (pageIndex - 1) + index + 1 }}</strong></td>
                         <td class="text-left"><strong>{{ item.EngYear }}</strong></td>
                         <td>{{ item.EngName }}</td>
+                        <td>{{ item.EngType }}</td>
+                        <td>{{ item.BelongPrj }}</td>
                         <td>{{ item.ExecUnit }}</td>
                         <td>{{ item.AwardAmount }}</td>
                         <td>{{ item.Co2Total }}</td>

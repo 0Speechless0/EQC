@@ -1,4 +1,5 @@
 ﻿using EQC.Common;
+using EQC.EDMXModel;
 using EQC.Models;
 using EQC.Services;
 using EQC.ViewModel;
@@ -818,14 +819,18 @@ namespace EQC.Controllers
         }
 
         #region G-Word
-        public ActionResult DownloadReport(int engMain,string engNo)
+        public ActionResult DownloadReport(int engMain, DownloadArgExtension downloadArg = null)
         {
             try
             {
                 string uuid = Guid.NewGuid().ToString("B").ToUpper();
                 string folder = Path.Combine(Path.GetTempPath(), uuid);
                 if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
-
+                string engNo;
+                using(var context = new EQC_NEW_Entities())
+                {
+                    engNo = context.EngMain.Find(engMain)?.EngNo;
+                }
                 List<EngMaterialDeviceSummaryVModel> items51 = emdAuditService.GetEMDSummaryListByEngMainSeq<EngMaterialDeviceSummaryVModel>(engMain);
                 if (items51.Count == 0)
                 {
@@ -847,15 +852,27 @@ namespace EQC.Controllers
                 }
 
                 string dName = engNo + "-材料送審管制.zip";
-                Report51(engMain, items51, folder);
-                Report52(engMain, items52, folder);
+                string outputFilePath = "";
+                outputFilePath  =Report51(engMain, items51, folder);
+                downloadArg?.targetPathSetting(outputFilePath);
+                outputFilePath = Report52(engMain, items52, folder);
+                downloadArg?.targetPathSetting(outputFilePath);
 
-                string path = Path.Combine(Path.GetTempPath(), uuid);
-                string zipFile = Path.Combine(Path.GetTempPath(), uuid + ".zip");
-                ZipFile.CreateFromDirectory(path, zipFile);// AddFiles(files, "ProjectX");
+                if(downloadArg?.DistFilePath == null)
+                {
+                    string path = Path.Combine(Path.GetTempPath(), uuid);
+                    string zipFile = Path.Combine(Path.GetTempPath(), uuid + ".zip");
+                    ZipFile.CreateFromDirectory(path, zipFile);// AddFiles(files, "ProjectX");
 
-                Stream iStream = new FileStream(zipFile, FileMode.Open, FileAccess.Read, FileShare.Read);
-                return File(iStream, "application/blob", dName);
+                    Stream iStream = new FileStream(zipFile, FileMode.Open, FileAccess.Read, FileShare.Read);
+
+                    return File(iStream, "application/blob", dName);
+                }
+                else
+                {
+                    return null;
+                }
+
             }
             catch (Exception e)
             {
@@ -867,7 +884,7 @@ namespace EQC.Controllers
             }
         }
 
-        public void Report51(int engMain, List<EngMaterialDeviceSummaryVModel> items, string folder)
+        public string Report51(int engMain, List<EngMaterialDeviceSummaryVModel> items, string folder)
         {
             string tempFile = CopyTemplateFile("表5-1材料設備送審管制總表.docx");
             DateTime dt = DateTime.Now;
@@ -946,9 +963,10 @@ namespace EQC.Controllers
             fsOut.Close();
             doc.Close();
             fs.Close();
+            return outFile;
         }
 
-        public void Report52(int engMain, List<EngMaterialDeviceTestSummaryVModel> items, string folder)
+        public string Report52(int engMain, List<EngMaterialDeviceTestSummaryVModel> items, string folder)
         {
             string tempFile = CopyTemplateFile("表5-2材料設備檢(試)驗管制總表.docx");
             DateTime dt = DateTime.Now;
@@ -1015,6 +1033,7 @@ namespace EQC.Controllers
             fsOut.Close();
             doc.Close();
             fs.Close();
+            return outFile;
         }
 
         private string CopyTemplateFile(string filename)

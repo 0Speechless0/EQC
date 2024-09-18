@@ -8,22 +8,31 @@
                 <div class="row small">
                     <div class="col">
                         <span>開工日期：{{formatDateStr(tenderItem.ActualStartDate)}}</span>
-                        <div class="form-inline">
-                            <div class="d-flex align-items-center m-1"><i class="fas fa-square-full text-success mr-1"></i> 已填寫</div>
+                        <div class="form-inline" >
+                            <div class="d-flex align-items-center m-1" v-if="!supervision"><i class="fas fa-square-full text-success mr-1"></i> 日誌、機具已填寫</div>
+                            <div class="d-flex align-items-center m-1" v-else><i class="fas fa-square-full text-success mr-1"></i> 日誌已填寫</div>
+                            <div class="d-flex align-items-center m-1" v-if="!supervision"><i class="fas fa-square-full mr-1" style="color:lightgreen" ></i> 日誌已填寫</div>
                             <div class="d-flex align-items-center m-1"><i class="fas fa-square-full text-warning mr-1"></i> 逾期未填</div>
                             <div class="d-flex align-items-center m-1"><i class="fas fa-square-full text-danger mr-1"></i> 停工</div>
+                            <slot name="constructionBtn">
+                                    
+                            </slot>
                             <!-- div class="d-flex align-items-center m-1"><i class="fas fa-square-full text-info mr-1"></i> 不計工期</div -->
                         </div>
                     </div>
                 </div>
-                <div class="row mb-2">
+                <div class="row mb-2" v-if="!readOnly">
                     <button v-on:click="onWorkModalOpen()" type="button" class="btn btn-color11-4 btn-block btn-sm" data-toggle="modal" data-target="#date_stopAndstart">設定停工 / 復工</button>
                     <button v-on:click="onExtensionModalOpen()" type="button" class="btn btn-color11-4 btn-block btn-sm mb-1" data-toggle="modal" data-target="#date_extend">設定展延工期</button>
+                    <slot name="constructionDaysSetting"  >
+
+                    </slot>
                     <!--
         <button v-on:click="onNoDurationModalOpen()" type="button" class="btn btn-color-1 btn-sm mb-1" data-toggle="modal" data-target="#date_NotContainHoliday">設定不計工期</button>
         <button v-on:click="onHolidayModalOpen()" type="button" class="btn btn-color-1 btn-sm mb-1" data-toggle="modal" data-target="#date_ContainHoliday">設定假日計工期</button>
         -->
                 </div>
+
                 <div class="row small mb-2">
                     <div class="col-3 pr-0" style="max-width:112px">本日天氣:上午</div>
                     <div class="col-4 pl-0"><input v-model.trim="supDailyDateNote.Weather1" maxlength="30" type="text" class="form-control "></div>
@@ -468,13 +477,13 @@
 </template>
 <script>
     export default {
-        props: ['tenderItem','attrs'],
+        props: ['tenderItem','attrs', "supervision", "readOnly"],
         data: function () {
             return {
                 //設定假日計工期
                 reportHoliday: {},
                 holidayItems: [],
-
+                
                 //設定不計工期
                 reportNoDuration: {},
                 noDurationItems: [],
@@ -883,7 +892,7 @@
             },
         },
         mounted() {
-            console.log('mounted() 標案月曆');
+            console.log('mounted() 標案月曆', this.supervision);
             this.initReportHoliday();
             this.initReportNoDuration();
             this.initReportExtension();

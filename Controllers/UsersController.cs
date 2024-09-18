@@ -30,21 +30,59 @@ namespace EQC.Controllers
         // GET: Users
         public ActionResult Index()
         {
+            new SessionManager().currentSystemSeq = "2";
             return View();
         }
 
 
-        public JsonResult GetUserInfo()
+        public void DownloadUser()
         {
+            List<VUserMain> list = userService.GetListV2(1, null, false);
+            var p = new ExcelProcesser(0, (wookBook ) => {
+                var sheet = wookBook.GetSheetAt(0);
+                var row = sheet.CreateRow(0);
+                new string[] { 
+                    "姓名",
+                    "帳號",
+                    "機關/單位",
+                    "角色",
+                    "APP下載時間",                   
+                    "最後登入時間",
+ 
+                }.ToList()
+                .ForEach(colName =>
+                {
+                    row.CreateCell(row.Cells.Count).SetCellValue(colName);
+                });
+            });
+            p.insertOneCol(list.Select(r => r.DisplayName), 0);
+            p.insertOneCol(list.Select(r => r.UserNo), 1);
+            p.insertOneCol(list.Select(r => $"{r.UnitName1}{r.UnitName2}"), 2);
+            p.insertOneCol(list.Select(r => $"{r.RoleName}"), 3);
+            p.insertOneCol(list.Select(r => $"{r.ConstCheckAppCreateTime?.ToString("yyyy-MM-dd HH:mm:ss")}"), 4);
+            p.insertOneCol(list.Select(r => $"{r.LastLoginTime?.ToString("yyyy-MM-dd HH:mm:ss")  ?? (r.ModifyTime?.ToString("yyyy-MM-dd HH:mm:ss")  ?? "" )}"), 5);
+            DownloadFile(p.getTemplateStream(), "使用者清單.xlsx");
+        }
+        public JsonResult GetUserInfo(int? Seq = null)
+        {
+            using(var context = new EQC_NEW_Entities())
+            {
+                VUserMain.SetPositonDic(context.Position);
+            }
+
             SessionManager sessionManager = new SessionManager();
             UserInfo userInfo = sessionManager.GetUser();
-            VUserMain vuserInfo = userService.GetUserInfo(userInfo.Seq).First();
+            VUserMain vuserInfo = userService.GetUserInfo(Seq ?? userInfo.Seq).First();
             var _createUserInfo = userService.GetUserInfo(vuserInfo.CreateUserSeq);
             VUserMain createUserInfo = _createUserInfo.Count > 0 ? _createUserInfo.First() : new VUserMain();
             return Json(new
             {
                 userInfo = vuserInfo,
-                isLastLevel = createUserInfo.RoleSeq == 4 || createUserInfo.RoleSeq == 5 || createUserInfo.RoleSeq == 6,
+                isLastLevel =
+                    (vuserInfo.RoleSeq == 4 || vuserInfo.RoleSeq == 5 || vuserInfo.RoleSeq == 6) &&
+                    vuserInfo.UserNo.StartsWith(createUserInfo.UserNo)  &&
+                    createUserInfo.UserNo.Length < vuserInfo.UserNo.Length 
+,
                 isOutsource = userInfo.IsBuildContractor || userInfo.IsSupervisorUnit || userInfo.IsOutsourceDesign
             });
 
@@ -91,7 +129,7 @@ namespace EQC.Controllers
             else
             {
                 //其他角色 只能編輯自己的資料
-                list = userService.GetUser(userInfo.Seq);
+                list = userService.GetUserBelong(userInfo.Seq, hasConstCheckApp);
             }
 
             if(userInfo.IsAdmin || userInfo.IsDepartmentAdmin ||userInfo.IsDepartmentUser)
@@ -307,36 +345,8 @@ namespace EQC.Controllers
         public void GetUserByAccountKeyWord(string keyWord, int role)
         {
 
-            using (var context = new EQC_NEW_Entities() )
-            {
-
-                context.Configuration.LazyLoadingEnabled = false;
-                var userRoleDic =
-                    context.UserMain
-                    .Include("UserUnitPosition.Role")
-                    .ToList()
-                    .Join(
-                        context.UserUnitPosition,
-                        user => user.Seq, pos => pos.UserMainSeq,
-                        (user, pos) => pos
-
-                    ).ToDictionary(r => r.UserMainSeq, r => r.Role.FirstOrDefault()?.Seq);
-
-                var list = context.UserMain
-                    .ToList()
-                    .Where(user => {
-
-                        userRoleDic.TryGetValue(user.Seq, out byte? roleValue);
-                        return roleValue == role && user.UserNo.Contains(keyWord);
-                    })
-                    .Select(r => new { 
-                        DisplayName = r.DisplayName,
-                        UserNo = r.UserNo
-                        
-                    });
-
-                ResponseJson(list) ;
-            }
+            var list = userService.GetUserByAccountKeyWord(keyWord, role);
+            ResponseJson(list);
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 using EQC.Common;
+using EQC.EDMXModel;
 using EQC.Models;
 using EQC.Services;
 using System;
@@ -66,9 +67,11 @@ namespace EQC.Controllers
         }
         public ActionResult DelCommittee(int seq)
         {
-            int state = iService.Del(seq);
-            if(state == 1)
+            int? prjSeq = iService.Del(seq);
+            
+            if(prjSeq == null)
             {
+                
                 return Json(new
                 {
                     result = 0,
@@ -76,11 +79,19 @@ namespace EQC.Controllers
                 });
             } else
             {
-                return Json(new
+                using (var context = new EQC_NEW_Entities())
                 {
-                    result = -1,
-                    msg = "刪除失敗"
-                });
+                    var tar = context.SuperviseEng.Where(r => r.PrjXMLSeq == prjSeq).FirstOrDefault();
+                    var phrase = new SupervisePhaseService().GetPhaseEngList<SupervisePhaseModel>(tar.SupervisePhaseSeq ?? 0).FirstOrDefault();
+                    return Json(new
+                    {
+                        result = -1,
+                        msg = $"刪除失敗，委員可能已新增在工程督導, 工程: {  tar?.PrjXML?.TenderName }, 期別: {phrase.PhaseCode}" 
+                      
+                    });
+                }
+
+
             }
         }
         public JsonResult Save(ExpertCommitteeVModel m)
@@ -113,6 +124,42 @@ namespace EQC.Controllers
                 result = -1,
                 msg = "儲存失敗"
             });
+        }
+
+        public void Download()
+        {
+            string templateFileName = Path.Combine(Utils.GetTemplateFilePath(), "專家委員匯出資料範本.xlsx");
+
+            var processer = new ExcelProcesser(templateFileName, 0);
+            using(var context = new EQC_NEW_Entities())
+            {
+
+                var list =  context.ExpertCommittee.ToList();
+                var i = 1;
+                processer.copyOutSideRowStyle(0, 1, list.Count());
+                processer.insertOneCol(list.Select(r => i++).ToList(), 0);
+                processer.insertOneCol(list.Select(r => r.ECUnit), 1);
+                processer.insertOneCol(list.Select(r => r.ECName).ToList(), 2);
+                processer.insertOneCol(list.Select(r => $"{r.ECBirthday?.Year - 1911 }.{r.ECBirthday?.ToString("MM")}.{r.ECBirthday?.ToString("dd") }").ToList(), 4);
+                processer.insertOneCol(list.Select(r => r.ECId).ToList(), 5);
+                processer.insertOneCol(list.Select(r => r.ECPosition).ToList(), 7);
+                processer.insertOneCol(list.Select(r => r.ECTel ).ToList(), 8);
+                processer.insertOneCol(list.Select(r => r.ECMobile).ToList(), 10);
+                processer.insertOneCol(list.Select(r => r.ECFax).ToList(), 12);
+                processer.insertOneCol(list.Select(r => r.ECAddr1).ToList(), 14);
+                processer.insertOneCol(list.Select(r => r.ECAddr2).ToList(), 15);
+                processer.insertOneCol(list.Select(r => r.ECEmail).ToList(), 16);
+                processer.insertOneCol(list.Select(r => r.ECBankNo).ToList(), 17);
+                processer.insertOneCol(list.Select(r => r.ECNeed).ToList(), 18);
+                processer.insertOneCol(list.Select(r => r.ECDiet == 1 ? "葷" : "素" ).ToList(), 19);
+                processer.insertOneCol(list.Select(r => r.ECMemo).ToList(), 20);
+                processer.insertOneCol(list.Select(r => r.ECMainSkill).ToList(), 27);
+                processer.insertOneCol(list.Select(r => r.ECSecSkill).ToList(), 28);
+
+
+            }
+            Response.AddHeader("Content-Disposition", $"attachment; filename=專家委員匯出資料{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}.xlsx");
+            Response.BinaryWrite(processer.getTemplateStream().ToArray());
         }
         //匯入 excel
         public JsonResult Upload()

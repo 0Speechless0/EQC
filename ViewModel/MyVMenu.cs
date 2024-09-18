@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EQC.EDMXModel;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -19,5 +20,7 @@ namespace EQC.ViewModel
         public bool IsSelected { get; set; }
         public int ParentSeq { get; set; } //(int, null)
         public byte? SystemTypeSeq { get; set; } //(int, null)
+
+        public HashSet<byte> MenuRoleSeqs { get; set; }
     }
 }

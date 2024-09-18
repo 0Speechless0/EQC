@@ -7,6 +7,7 @@
             <tr >
                 <th style="width: 200px;"><strong>樹種年度</strong></th>
                 <th style="width: 200px;"><strong>樹種</strong></th>
+                <th style="width: 200px;"><strong>樹名</strong></th>
                 <th style="width: 200px;"><strong>預定種植株數</strong></th>
                 <th style="width: 200px;"><strong>實際種植株數</strong></th>
                 <th style="text-align: center; width: 00px;">
@@ -22,11 +23,17 @@
                     {{ TreeYear }}
                 </td>
                 <td>
+                    <select class="form-control" v-model="item.TreeType">
+                        <option value="喬木">喬木</option>
+                        <option value="灌木">灌木</option>
+                    </select>
+                </td>
+                <td>
                     <!-- <select class="form-control " v-model="item.TreeTypeSeq">
                         <option v-for="(option, index) in treeList" :key="index" :value="option.Seq">{{option.Name}}</option>
 
                     </select> -->
-                    <div v-if="item.TreeTypeName == null">
+                    <!-- <div v-if="item.TreeTypeName == null">
                         <el-select
                         style="width: 80%;font-weight: 400;"
                         v-model="item.TreeTypeSeq"
@@ -47,10 +54,8 @@
 
                         />
                     </el-select>
-                    </div>
-                    <div v-else>
-                        <el-input       style="width: 80%;font-weight: 400;" v-model="item.TreeTypeName" placeholder="請輸入內容"></el-input>
-                    </div>
+                    </div> -->
+                    <input class="form-control"     style="width: 80%;font-weight: 400;" v-model="item.TreeTypeName" placeholder="請輸入內容" />
                     
                 </td>
                 

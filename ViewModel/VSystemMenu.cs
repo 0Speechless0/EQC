@@ -11,5 +11,6 @@ namespace EQC.ViewModel
         public string PathName { get; set; }
         public string Name { get; set; }
         public int SystemType { get; set; }
+        public int OrderNo { get; set; }
     }
 }

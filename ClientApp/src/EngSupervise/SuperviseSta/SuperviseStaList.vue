@@ -4,12 +4,12 @@
             <tr>
                 <td style="width: 60px; background: #f2f2f2; text-align:center;width: 100px;">缺失類別</td>
                 <td colspan="3" class="pl-2">
-                    <div class="custom-control custom-radio custom-control-inline">
-                        <input v-model="docNo" @change="selChange" value="1" type="radio" id="W1" class="custom-control-input">
+                    <div class="custom-control custom-checkbox custom-control-inline">
+                        <input v-model="docNo" @change="selChange" value="1" type="checkbox" id="W1" class="custom-control-input">
                         <label for="W1" class="custom-control-label" style="width:120px">品質管制制度</label>
                     </div>
-                    <div class="custom-control custom-radio custom-control-inline">
-                        <input v-model="docNo" @change="selChange" value="2" type="radio" id="W2" class="custom-control-input">
+                    <div class="custom-control custom-checkbox custom-control-inline">
+                        <input v-model="docNo" @change="selChange" value="2" type="checkbox" id="W2" class="custom-control-input">
                         <label for="W2" class="custom-control-label">施工品質</label>
                     </div>
                 </td>
@@ -48,8 +48,8 @@
                         <th style="width: 42px;"><strong>排序</strong></th>
                         <th><strong>缺失編號</strong></th>
                         <th><strong>缺失內容</strong></th>
-                        <th style="width: 120px;"><strong>缺失件數</strong></th>
-                        <th style="width: 120px;"><strong>缺失比率</strong></th>
+                        <th style="width: 140px;"><strong>缺失件數</strong></th>
+                        <th style="width: 140px;"><strong>缺失比率</strong></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -58,7 +58,7 @@
                         <td>{{item.MissingNo}}</td>
                         <td>{{item.Content}}</td>
                         <td>{{item.MissingCnt}}</td>
-                        <td>{{item.MissingRate}}</td>
+                        <td>{{item.MissingRate}}%</td>
                     </tr>
                 </tbody>
                 <tfoot>
@@ -66,8 +66,8 @@
                         <td></td>
                         <td></td>
                         <td></td>
-                        <td>加總: {{staItems.reduce((a, c) => a+c.MissingCnt, 0)}}</td>
-                        <td>平均 : {{ (staItems.reduce((a, c) => a+c.MissingRate, 0) /staItems.length).toFixed(2) }}</td>
+                        <td>總案件: {{staNum}}/{{staTotal}}</td>
+                        <td>總比率 : {{ ((staNum /staTotal)*100).toFixed(2)}}%</td>
                     </tr>
                 </tfoot>
             </table>
@@ -98,7 +98,9 @@ import Common from '../../Common/Common2';
                 filterEndDate: '',
                 selStartDate: '',
                 selEndDate: '',
-                docNo: 1,
+                docNo: [],
+                staNum: '',
+                staTotal:'',
             };
         },
         methods: {
@@ -163,6 +165,10 @@ import Common from '../../Common/Common2';
                     });
             },
             staList() {
+                if (this.docNo == "") {
+                    alert("請選取至少一種缺失類別");
+                    return;
+                }
                 if (this.filterStartDate == '' || this.filterEndDate == '') {
                     alert("請輸入日期範圍");
                     return;
@@ -177,8 +183,11 @@ import Common from '../../Common/Common2';
                     .then(resp => {
                         if (resp.data.result == 0) {
                             this.staItems = resp.data.items;
-                        } else
+                            this.staNum = resp.data.staNum;
+                            this.staTotal = resp.data.staTotal;
+                        } else {
                             alert(resp.data.msg);
+                        }
                     })
                     .catch(err => {
                         console.log(err);

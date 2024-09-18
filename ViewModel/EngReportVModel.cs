@@ -1,4 +1,5 @@
 ﻿using EQC.Common;
+using EQC.EDMXModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +9,12 @@ namespace EQC.Models
 {
     public class EngReportVModel: EngReportModel
     {
+        //public decimal? _ApprovedCarbonEmissions {
+        //    get
+        //    {
+        //        return DemandCarbonEmissions * (decimal)0.7;
+        //    }
+        //}
         public string ExecUnit { get; set; }
         public string ExecSubUnit { get; set; }
         public string ExecUser { get; set; }
@@ -19,7 +26,33 @@ namespace EQC.Models
         //轉入建立案件（中文名稱）
         public string IsTransferName { get; set; }
 
+        public static void GetRefCarbonEmission(EngReportVModel m)
+        {
+            using (var context = new EQC_NEW_Entities())
+            {
+
+                decimal avergePrindex = context.PriceIndexItems
+
+                    .Where(r => r.PriceIndexKindId == 999)
+                    .ToList()
+                    .Where(r => r.PIDate.Year - 1911 == m.RptYear - 1)
+                    .Average(r => r.PriceIndex);
+
+                if (avergePrindex > 0)
+                {
+                   m.RefCarbonEmissionFactor = (decimal)0.38 * ((decimal)82.156 / avergePrindex);
+                   m.RefCarbonEmission =
+                        decimal.Round((decimal)(m.ApprovedFund ?? 0) * m.RefCarbonEmissionFactor , 4);
+                }
+                else
+                {
+                    m.RefCarbonEmission = 0;
+                }
+            }
+        }
+        public decimal RefCarbonEmissionFactor { get; set; }
         public decimal? RefCarbonEmission { get; set; }
+        public decimal? _RefCarbonEmission { get; set; }
         public decimal? CarbonEmissionRatio { get; set; }
         public decimal? RegressionCurve { get; set; }
         public decimal? PriceAdjustmentIndex { get; set; }
@@ -121,5 +154,7 @@ namespace EQC.Models
         /// 能否顯示送簽或簽核
         /// </summary>
         public bool IsSavaApproval { get; set; }
+
+        public int? ProposalReviewEngReportSeq { get; set; }
     }
 }

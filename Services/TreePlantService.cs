@@ -350,7 +350,7 @@ namespace EQC.Services
 
             return dbContext.TreePlantMain
                 .ToList()
-                .Select(row => new TreePlantMainVM(row, dbContext))
+                .Select(row => new TreePlantMainVM().SetTreeMainSourceEntity(row, dbContext) )
                 .ToList();
         }
 
@@ -719,9 +719,18 @@ namespace EQC.Services
                 cmd.Parameters.AddWithValue("@treeMainSeq", treeMainSeq);
             }
 
+            var target = db.GetDataTableWithClass<TreePlantMainPrj>(cmd).FirstOrDefault();
+            using (var context = new EQC_NEW_Entities())
+            {
+               
+                var targetVM = new TreePlantMainVM().SetTreeMainSourceEntity(target, context);
+                target.Contractor= targetVM.ContractorNameResult;
+                target.ContractorUniformNumber = targetVM.ContractorUniformNumberResult;
+                target.ContractDate = targetVM.ContractDateResult;
+            }
 
-
-            return db.GetDataTableWithClass<TreePlantMainPrj>(cmd).FirstOrDefault();
+            return target;
+         
         }
         public List<TreePlantMainPrj> getTreePlantMainList()
         {
@@ -748,7 +757,7 @@ namespace EQC.Services
                 select 
                 (select top 1 Name from TreePlantEngType c where c.Seq = e2.TPEngTypeSeq ) TPEngTypeName,
                 ( select  top 1　Name from Unit c where c.Seq = e2.ExecUnitSeq) execUnitName,
-                null execSubUnitName,
+                ( select  top 1　Name from Unit c where c.Seq = e2.ExecSubUnitSeq) execSubUnitName,
                 e2.*
                 from
                 TreePlantMain e2
@@ -1102,8 +1111,11 @@ namespace EQC.Services
             }
 
         }
+        public void setCitySeq(TreePlantMain m, string cityName)
+        {
 
-        public void setExecUnitSeq(TreePlantMain m, string townCity)
+        }
+            public void setExecUnitSeq(TreePlantMain m, string townCity)
         {
             using (var context = new EQC_NEW_Entities())
             {
@@ -1188,10 +1200,31 @@ namespace EQC.Services
                     m.ExecSubUnitSeq = eng.ExecSubUnitSeq;
                     m.OrganizerUserSeq = eng.OrganizerUserSeq;
 
+                    m.CitySeq = context.Town.Find(eng.EngTownSeq)?.City.Seq;
+
                 }
                 else if (m.EngCreatType == 2)
                 {
                     m.EngSeq = engSeq;
+                    var townName = context.PrjXML.Find(engSeq).TownName;
+                    context.City.ToList().ForEach(e => {
+                        if (townName.Contains(e.CityName))
+                        {
+                            m.CitySeq = e.Seq;
+                        }
+
+                    });
+                    context.Town.ToList().ForEach(e =>
+                    {
+                        if (townName.Contains(e.TownName))
+                        {
+                            m.EngTownSeq = e.Seq;
+                        }
+
+                    });
+
+
+
                 }
 
 
@@ -1446,8 +1479,8 @@ namespace EQC.Services
         {
 
             return getTreePlantNumList(0, treeMainSeq)
-                    .Where(r => r.TreeTypeSeq != null)
-                .GroupBy(row => treeDic[row.TreeTypeSeq ?? 0].Type)
+                    .Where(r => r.TreeType != null)
+                .GroupBy(row => row.TreeType)
                 .ToDictionary(row => row.Key, row => row.Sum(r => (int)(r.ScheduledPlantNum ?? 0)));
 
         }
@@ -1459,8 +1492,8 @@ namespace EQC.Services
         {
 
             return getTreePlantNumList(0, treeMainSeq)
-                .Where(r => r.TreeTypeSeq != null)
-                .GroupBy(row => treeDic[row.TreeTypeSeq ?? 0].Type, row => row)
+                .Where(r => r.TreeType != null)
+                .GroupBy(row => row.TreeType)
                 .ToDictionary(row => row.Key, row => row.Sum(r => (int)(r.ActualPlantNum ?? 0) ));
 
         }
@@ -1473,10 +1506,10 @@ namespace EQC.Services
 
             return
                 getTreePlantNumList(0, treeMainSeq)
-                .Where(r => r.TreeTypeSeq != null)
-                .GroupBy(row => treeDic[row.TreeTypeSeq ?? 0].Type)
+                .Where(r => r.TreeType != null)
+                .GroupBy(row => row.TreeType)
                 .ToDictionary(row => row.Key,
-                    row => row.Aggregate("", (last, cur) => last + $"{treeDic[cur.TreeTypeSeq ?? 0].Name}*{cur.ScheduledPlantNum ?? 0}\r\n")
+                    row => row.Aggregate("", (last, cur) => last + $"{cur.TreeType}-{cur.TreeTypeName}*{cur.ScheduledPlantNum ?? 0}\r\n")
                 );
 
 
@@ -1505,6 +1538,19 @@ namespace EQC.Services
                 return context.TreePlantMonth
                     .Where(row => row.TreePlantSeq == treeMainSeq && row.Year == year)
                     .Sum(row => row.ActualArea) ?? 0;
+            }
+        }
+
+        /// <summary>
+        ///從植樹專區儲存區計算已完成面積
+        /// </summary>
+        public decimal getTreeSchArea(int treeMainSeq, int year)
+        {
+            using (var context = new EQC_NEW_Entities())
+            {
+                return context.TreePlantMonth
+                    .Where(row => row.TreePlantSeq == treeMainSeq && row.Year == year)
+                    .Sum(row => row.ScheduledArea) ?? 0;
             }
         }
 

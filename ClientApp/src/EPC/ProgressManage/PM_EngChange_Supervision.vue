@@ -1,7 +1,7 @@
 <template>
     <div>
         <table>
-            <tr><td colspan="5">避免網路速度影響，僅提供下載30天報表</td></tr>
+            <tr><td colspan="5">避免網路速度影響，僅提供下載31天報表</td></tr>
             <tr>
                 <td style="width: 80px; background: #f2f2f2; text-align:center;">日期範圍</td>
                 <td class="pl-2">
@@ -13,20 +13,24 @@
                 </td>
                 <td>
                     <!-- button @click="downloadDailyMulti" type="button" class="btn btn-outline-secondary btn-sm" title="監造報表下載">下載多日監造報表<i class="fas fa-download"></i></button -->
-                    <button @click="dnClickEvent = 1" data-target="#refExportModal" title="下載多日監造日報" class="btn btn-outline-secondary btn-sm"
+                    <button :disabled="downloadTaskStore.isDownloading" @click="dnClickEvent = 1" data-target="#refExportModal" title="下載多日監造日報" class="btn btn-outline-secondary btn-sm"
                             role="button" data-toggle="modal">
                         下載多日監造日報<i class="fas fa-download"></i>
                     </button>
                 </td>
-                <td v-if="isAdmin">
+                <td >
                     <label class="btn btn-block btn-color11-4 btn-sm" style="margin-top: 6px">
                         <input v-on:change="uploadMultiDailyLog($event)" type="file" name="file" multiple="" style="display:none;">
                         上傳施工日誌&nbsp;<i class="fas fa-upload"></i>
                     </label>
                 </td>
+                <td style="color:red" v-if="downloadTaskStore.isDownloading" class="pl-2">
+                    因資源超負荷使用，請等候....
+                </td>
             </tr>
         </table>
         <CalendarSetting ref="calendar" v-bind:tenderItem="tenderItem" v-bind:attrs="attrs"
+                        :supervision="true"
                          v-on:onDayClickEvent="onCalDayClick"
                          v-on:onFromPageEvent="onCalFromPage"
                          v-on:onDataChangeEvent="onCalDataChange"></CalendarSetting>
@@ -34,16 +38,16 @@
         <div>
             <ul v-show="supDailyItem!=null" class="nav nav-tabs" role="tablist">
                 <li class="nav-item">
-                    <a v-on:click="selectTab=''" class="nav-link active" id="tabMenu01" data-toggle="tab" href="#menu01">一、依施工計畫執行按圖施工概況</a>
+                    <a @click="selectTab=''" :class="`nav-link ${selectTab == '' ? 'active' : ''}`" id="tabMenu01" data-toggle="tab" href="#menu01">一、依施工計畫執行按圖施工概況</a>
                 </li>
                 <li class="nav-item">
-                    <a v-on:click="selectTab='menu02'" class="nav-link" id="tabMenu02" data-toggle="tab" href="#menu02">二、其它</a>
+                    <a @click="selectTab='menu02'" :class="`nav-link ${selectTab == 'menu02' ? 'active' : ''}`" id="tabMenu02" data-toggle="tab" href="#menu02">二、其它</a>
                 </li>
             </ul>
             <!-- Tab panes -->
             <div class="tab-content">
                 <!-- 一 -->
-                <div id="menu01" class="tab-pane">
+                <div id="menu01" v-if="selectTab == ''">
                     <h5>一、依施工計畫執行按圖施工概況(含約定之重要施工項目及完成數量等)</h5>
                     <div class="row justify-content-between">
                         <div class="form-inline col-12 col-md-8 small">
@@ -58,7 +62,7 @@
                         </div>
                     </div>
                     <comm-pagination ref="pagination" :recordTotal="planItems.length" v-on:onPaginationChange="onPaginationChange"></comm-pagination>
-                    <div class="table-responsive">
+                    <div class="table-responsive tableFixHead ">
                         <table class="table table-responsive-md table-hover">
                             <thead class="insearch">
                                 <tr>
@@ -94,7 +98,7 @@
                         </table>
                     </div>
                 </div>
-                <div id="menu02" class="tab-pane">
+                <div id="menu02" v-if="selectTab == 'menu02'">
                     <h5>二、監督依照設計圖說及核定施工圖說施工<small>(含約定之檢驗停留點及施工抽查等情形)</small></h5>
                     <textarea v-model="miscItem.DesignDrawingConst" rows="5" class="form-control"></textarea>
 
@@ -189,8 +193,16 @@
     </div>
 </template>
 <script>
+    import downloadTaskStore  from '../../store/downloadTaskStore';
     export default {
         props: ['tenderItem', 'canEditUser'],
+        setup()
+        {   
+            downloadTaskStore.getDonloadTaskTag();
+            return {
+                downloadTaskStore 
+            }
+        },
         data: function () {
             return {
                 supDailyItem: null,
@@ -224,20 +236,30 @@
                 } else if (this.dnClickEvent == 0) {
                     this.downloadDaily();
                 }
+                window.closeModal("#refExportModal");
             },
             //下載 多日期 監造報表 s20230831
-            downloadDailyMulti() {
+            async downloadDailyMulti() {
                 if (this.filterEndDate == '' || this.filterStartDate == '') {
                     alert('請輸入日期範圍');
                     return;
                 }
-                if (window.comm.calDays(this.filterStartDate, this.filterEndDate) > 29) {
-                    alert('日期範圍不可以超過30天');
+                if (window.comm.calDays(this.filterStartDate, this.filterEndDate) > 30) {
+                    alert('日期範圍不可以超過31天');
                     return;
                 }
 
-                let action = '/ECProgressManage/DownloadSDailyMulti?sd=' + this.filterStartDate + '&ed=' + this.filterEndDate + '&eId=' + this.tenderItem.Seq + '&eEM=' + this.dnDailyMode;
-                window.comm.dnFile(action, this.dnCallBack);
+                // let action = '/ECProgressManage/DownloadSDailyMulti?sd=' + this.filterStartDate + '&ed=' + this.filterEndDate + '&eId=' + this.tenderItem.Seq + '&eEM=' + this.dnDailyMode;
+                // window.comm.dnFile(action, this.dnCallBack);
+                let {data :res } = await window.myAjax.post("/ECProgressManage/DownloadSDailyMulti", {
+                    sd : this.filterStartDate,
+                    ed : this.filterEndDate,
+                    eId : this.tenderItem.Seq,
+                    eEM : this.dnDailyMode
+
+                });
+                downloadTaskStore.isDownloading = res.downloadTaskTag;
+                alert(res.message);
             },
             //下載 監造報表 s20230831
             downloadDaily() {
@@ -249,6 +271,7 @@
                 if (result) {
                     document.getElementById('closeExportModal').click();
                     this.dnDailyMode = "0";
+                    downloadTaskStore.isDownloading = result.downloadTaskTag;
                 }
             },
 
@@ -292,10 +315,11 @@
                                 alert('請繼續填寫 二、其它 頁面相關資料');
                                 //s20230908
                                 this.selectTab = 'menu02';
-                                document.getElementById('tabMenu01').classList.remove("active");
-                                document.getElementById('menu01').classList.remove("active");
-                                document.getElementById('tabMenu02').classList.add("active");
-                                document.getElementById('menu02').classList.add("active");
+                                window.scrollTo(0, 0);
+                                // document.getElementById('tabMenu01').classList.remove("active");
+                                // document.getElementById('menu01').classList.remove("active");
+                                // document.getElementById('tabMenu02').classList.add("active");
+                                // document.getElementById('menu02').classList.add("active");
                             } else {
                                 alert(resp.data.msg);
                             }
@@ -347,10 +371,10 @@
                             this.planItems = resp.data.planItems;
                             this.selectDay = sDay;
                             //s20230831
-                            document.getElementById('tabMenu02').classList.remove("active");
-                            document.getElementById('menu02').classList.remove("active");
-                            document.getElementById('tabMenu01').classList.add("active");
-                            document.getElementById('menu01').classList.add("active");
+                            // document.getElementById('tabMenu02').classList.remove("active");
+                            // document.getElementById('menu02').classList.remove("active");
+                            // document.getElementById('tabMenu01').classList.add("active");
+                            // document.getElementById('menu01').classList.add("active");
                             
                             var that = this;
                             this.$refs.calendar.setSupDailyDateNote(this.supDailyItem);
@@ -455,8 +479,27 @@
         }
     }
 </script>
-<style>
+<style scoped>
     .vc-highlight {
         width: 95% !important;
     }
+    .tableFixHead          { overflow: auto; max-height: 500px;   }
+table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+.table {
+    margin : 0;
+}
+.tableFixHead thead  { position: sticky !important ; top: 0 !important ; z-index: 1 !important;     }
+th {
+    border : 0;
+    border-bottom: #ddd solid 1px !important; 
+    border-left : 0 !important;
+    border-right:0 !important;
+}
+td {
+    z-index: 0;
+    position: relative;
+}
 </style>

@@ -11,7 +11,7 @@
                 </select>
             </div>
             <div class="col-4 col-md-4 form-inline  ">
-                <label class="my-2 mx-2">預定種植日期</label>
+                <label class="my-2 mx-2">預定開始種植日期</label>
                         <!-- <input type="text" name="bday" placeholder="yyy/mm/dd" class="form-control mydatewidth mr-md-3"> -->
                         <input type="date" name="bday" :value="ToDate('ScheduledPlantDate')"
                         @input="treePlantMain.ScheduledPlantDate= $event.target.value "
@@ -28,7 +28,7 @@
         <div class="form-row" style="padding-top: 5px;">
             <div class="col-4 col-md-4 form-inline">
                 <label class="my-2 mx-2">發包日期(決標日期)</label>
-                <input type="date" name="bday" :disabled="createType != 3" :value="ToDate('ContractDate')" 
+                <input type="date" name="bday" :disabled="createType != 3 && createType != 2" :value="ToDate('ContractDate')" 
                  @input="treePlantMain.ContractDate = $event.target.value" class="form-control">
             </div>
             <div class="col-4 col-md-4 form-inline">
@@ -196,6 +196,12 @@ export default{
             {
                 this.GetTreePlanMain(value)
             }
+        },
+        EngType : {
+            handler(value)
+            {
+                this.treePlantMain.TPEngTypeSeq = value;
+            }
         }
 
 
@@ -255,6 +261,7 @@ export default{
                 let treeMainClone = Object.assign({}, this.treePlantMain);
 
                 this.treePlantMain = Object.assign(treeMainClone, this.Eng);
+                this.treePlantMain.EngSeq = null;
 
             }
             else {

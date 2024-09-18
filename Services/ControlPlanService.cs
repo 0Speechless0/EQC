@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Web;
 
 namespace EQC.Services
@@ -74,22 +75,45 @@ namespace EQC.Services
 
 			while (currentRow < lastRow)
 			{
+				//using (var context = new EQC_NEW_Entities())
+				//{
+					try
+					{
+						if (!processer.checkRowVaild(currentRow))
+						{
+							currentRow++;
+							continue;
+						}
+						sql = processer.getInsertSql("wraControlPlanNo", currentRow);
+						string updateSql = processer.getUpdateSql("wraControlPlanNo"
+							, "ProjectName", currentRow);
 
-				if (!processer.checkRowVaild(currentRow))
-				{
-					currentRow++;
-					continue;
-				}
-				sql = processer.getInsertSql("wraControlPlanNo", currentRow);
-				string updateSql = processer.getUpdateSql("wraControlPlanNo"
-					, "ProjectNo", currentRow);
-				int update = db.ExecuteNonQuery(db.GetCommand(updateSql));
-				if (update == 0)
-				{
-					SqlCommand cmd = db.GetCommand(sql);
-					db.ExecuteNonQuery(cmd);
-				}
-				currentRow++;
+						//var rx = new Regex(@"(?<column>\w+)\s?=\s?(?<value>@\w+)");
+						//var projectNameMatch = rx.Matches(updateSql).Cast<Match>().ToList()
+						//	.Where(r => r.Groups["column"].Value == "ProjectName").FirstOrDefault();
+						//if (projectNameMatch != null)
+						//{
+						//	var value = projectNameMatch.Groups["value"].Value;
+							
+						//	context.PrjXML.Where(r => r.ManualBelongPrj.Contains(value) )
+						//		.ToList()
+
+
+						//}
+						int update = db.ExecuteNonQuery(db.GetCommand(updateSql));
+						if (update == 0)
+						{
+							SqlCommand cmd = db.GetCommand(sql);
+							db.ExecuteNonQuery(cmd);
+						}
+						currentRow++;
+					}
+					catch (Exception e)
+					{
+
+					}
+
+				//}
 			}
 
 		}

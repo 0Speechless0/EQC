@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
-using EQC.Controllers.Common;
+using EQC.Controllers.InterFaceForFrontEnd;
 using EQC.EDMXModel;
 using EQC.Common;
 namespace EQC.Controllers
 {
-    public class TreeManagementController : WebBaseController<TreeList>
+    public class TreeManagementController : MyController, WebBaseInterface<TreeList>
     {
         public ActionResult Index()
         {
@@ -16,7 +16,7 @@ namespace EQC.Controllers
             ViewBag.BarTitle = "樹種管理";
             return View();
         }
-        public override void GetPagination(int page, int perPage)
+        public void GetPagination(int page, int perPage)
         {
             using(var context = new EQC_NEW_Entities())
             {
@@ -27,7 +27,7 @@ namespace EQC.Controllers
                 });
             }
         }
-        public override void GetByKeyWord(string keyWord = null)
+        public void GetByKeyWord(string keyWord = null)
         {
             using(var context = new EQC_NEW_Entities())
             {
@@ -39,7 +39,7 @@ namespace EQC.Controllers
                 });
             }
         }
-        public override void Insert(TreeList model)
+        public void Insert(TreeList model)
         {
             using(var context = new EQC_NEW_Entities())
             {
@@ -50,7 +50,7 @@ namespace EQC.Controllers
                 ResponseJson(true);
             }
         }
-        public override void Update(TreeList model)
+        public void Update(TreeList model)
         {
             using (var context = new EQC_NEW_Entities())
             {
@@ -62,7 +62,7 @@ namespace EQC.Controllers
                 ResponseJson(true);
             }
         }
-        public override void Delete(int id)
+        public void Delete(int id)
         {
             using (var context = new EQC_NEW_Entities())
             {
@@ -72,6 +72,11 @@ namespace EQC.Controllers
                 context.SaveChanges();
                 ResponseJson(true);
             }
+        }
+
+        public void Get()
+        {
+            throw new NotImplementedException();
         }
     }
 }

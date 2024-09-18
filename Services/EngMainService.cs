@@ -23,8 +23,7 @@ namespace EQC.Services
             cmd.Parameters.AddWithValue("@Seq", engMainSeq);
             return db.ExecuteNonQuery(cmd);
         }
-        //工程連結標案 shioulo 20220518
-        public int SetEngLinkTender(int engMainSeq, int prjXMLSeq)
+        public int SetEngLinkTempTender(int engMainSeq, int prjXMLSeq)
         {
             string sql = @"SELECT Seq FROM EngMain where Seq<>@Seq and PrjXMLSeq=@PrjXMLSeq";
             SqlCommand cmd = db.GetCommand(sql);
@@ -33,12 +32,55 @@ namespace EQC.Services
             DataTable dt = db.GetDataTable(cmd);
             if (dt.Rows.Count > 0) return -1;
 
-            sql = @"update EngMain set PrjXMlSeq=@PrjXMlSeq where Seq=@Seq";
+            sql = @"update EngMain set PrjXMlSeq=-@PrjXMlSeq where Seq=@Seq";
             cmd = db.GetCommand(sql);
             cmd.Parameters.Clear();
             cmd.Parameters.AddWithValue("@Seq", engMainSeq);
             cmd.Parameters.AddWithValue("@PrjXMLSeq", prjXMLSeq);
             return db.ExecuteNonQuery(cmd);
+
+
+        }
+
+            //工程連結標案 shioulo 20220518
+        public int SetEngLinkTender(int engMainSeq, int prjXMLSeq)
+        {
+            try
+            {
+                string sql = @"SELECT Seq FROM EngMain where Seq<>@Seq and PrjXMLSeq=@PrjXMLSeq";
+                SqlCommand cmd = db.GetCommand(sql);
+                cmd.Parameters.AddWithValue("@Seq", engMainSeq);
+                cmd.Parameters.AddWithValue("@PrjXMlSeq", prjXMLSeq);
+                DataTable dt = db.GetDataTable(cmd);
+                if (dt.Rows.Count > 0) return -1;
+
+                sql = @"
+                    declare @lastPrjXMLSeq as int = (select PrjXMLSeq from EngMain where Seq = @Seq);
+                    update EngMain set PrjXMlSeq=@PrjXMLSeq where Seq=@Seq; 
+                    select ISNULL(@lastPrjXMLSeq , 0)";
+                cmd = db.GetCommand(sql);
+                cmd.Parameters.Clear();
+                cmd.Parameters.AddWithValue("@Seq", engMainSeq);
+                cmd.Parameters.AddWithValue("@PrjXMLSeq", prjXMLSeq);
+                var lastPrjXMLSeq = (int?)db.ExecuteScalar(cmd);
+
+                if (lastPrjXMLSeq < 0)
+                {
+                    sql = @"delete PrjXMLTmp where Seq=@LastPrjXMLSeq";
+                    cmd = db.GetCommand(sql);
+                    cmd.Parameters.Clear();
+                    cmd.Parameters.AddWithValue("@LastPrjXMLSeq", -lastPrjXMLSeq);
+                    db.ExecuteNonQuery(cmd);
+                }
+                return 1;
+            }
+            catch(Exception e)
+            {
+                return 0;
+            }
+
+
+ 
         }
         public List<object> GetEngDataForOpenNetWork()
         {
@@ -390,8 +432,8 @@ namespace EQC.Services
                     c2.Name execSubUnitName,
                     d.DocState,
                     a.PrjXMLSeq,
-                    e.TenderNo,
-                    e.TenderName,
+                    ISNULL(e.TenderNo, e2.TenderNo) TenderNo,
+                    ISNULL(e.TenderName, e2.TenderName) TenderName,
                     e.OrganizerName tenderOrgUnitName,
                     e.ExecUnitName tenderExecUnitName,
                     e.DurationCategory,
@@ -407,6 +449,7 @@ namespace EQC.Services
                     and d.Seq=(select max(Seq) from SupervisionProjectList where EngMainSeq=a.Seq)
                 )
                 left outer join PrjXML e on(e.Seq=a.PrjXMLSeq)
+                left outer join PrjXMLTmp e2 on(e2.Seq= -a.PrjXMLSeq)
                 left outer join PCCESSMain f on(f.contractNo=a.EngNo) -- s20230829
                 where
                     a.Seq=@Seq
@@ -562,7 +605,7 @@ namespace EQC.Services
         }
         public int Update(EngMainEditVModel m)
         {
-            Null2Empty(m);
+            Utils.Null2Empty(m);
             //
             string sql = @"Select Seq from EngSupervisor 
                 where UserKind = 2 and EngMainSeq=@Seq";
@@ -835,6 +878,81 @@ namespace EQC.Services
                 return null;
             }
         }
+
+        public bool DelEng2(int seq)
+        {
+            int commandTimeout = 600;
+            string sql = "";
+            SqlCommand cmd;
+            db.BeginTransaction();
+            try
+            {
+                sql = @"
+                    --工程變更 估驗請款
+                    delete EC_AskPaymentPayItem where EC_AskPaymentHeaderSeq in (select Seq from EC_AskPaymentHeader where EngMainSeq=@EngMainSeq);
+                    delete EC_AskPaymentHeader where EngMainSeq=@EngMainSeq;
+
+                    --工程變更 物價調整款
+                    delete EC_EngPriceAdjWorkItem where EC_EngPriceAdjSeq in(
+                        select Seq from EC_EngPriceAdj where EngMainSeq=@EngMainSeq
+                    );
+                    delete EC_EngPriceAdjLockWorkItem  where EngMainSeq=@EngMainSeq;
+                    delete EC_EngPriceAdj where EngMainSeq=@EngMainSeq;
+ 
+                    --工程變更 日誌
+                    delete EC_SchProgressPayItem
+                    where EC_SchEngProgressPayItemSeq in (
+                        select Seq from EC_SchEngProgressPayItem where EC_SchEngProgressHeaderSeq in(
+                            select Seq from EC_SchEngProgressHeader where EngMainSeq=@EngMainSeq
+                        )
+                    )
+                    delete EC_SupDailyReportMiscConstruction where EC_SupDailyDateSeq in (select Seq from EC_SupDailyDate where EngMainSeq=@EngMainSeq);
+                    delete EC_SupDailyReportMisc where EC_SupDailyDateSeq in (select Seq from EC_SupDailyDate where EngMainSeq=@EngMainSeq);
+                    delete EC_SupDailyReportConstructionPerson where EC_SupDailyDateSeq in (select Seq from EC_SupDailyDate where EngMainSeq=@EngMainSeq);
+                    delete EC_SupDailyReportConstructionMaterial where EC_SupDailyDateSeq in (select Seq from EC_SupDailyDate where EngMainSeq=@EngMainSeq);
+                    delete EC_SupDailyReportConstructionEquipment where EC_SupDailyDateSeq in (select Seq from EC_SupDailyDate where EngMainSeq=@EngMainSeq);
+                    delete EC_SupPlanOverview where EC_SupDailyDateSeq in (select Seq from EC_SupDailyDate where EngMainSeq=@EngMainSeq);
+                    delete EC_SupDailyDate where EngMainSeq=@EngMainSeq;
+
+                    delete EC_SchEngProgressWorkItem where EC_SchEngProgressPayItemSeq in (
+                        select seq from EC_SchEngProgressPayItem where EC_SchEngProgressHeaderSeq in (
+                            select seq from EC_SchEngProgressHeader where EngMainSeq=@EngMainSeq
+                        )
+                    );
+                    delete EC_SchEngProgressPayItem where EC_SchEngProgressHeaderSeq in (
+                        select seq from EC_SchEngProgressHeader where EngMainSeq=@EngMainSeq
+                    );
+
+                    delete EC_SchEngProgressHeader where EngMainSeq=@EngMainSeq;
+
+
+                    Update SchProgressHeader set EngChangeState = 0, SPState= 1 where EngMainSeq = @EngMainSeq;
+
+
+
+                    Update EngMain set
+                    EngChangeSchCompDate = null
+                    where Seq = @EngMainSeq;
+                        ";
+                    cmd = db.GetCommand(sql);
+                    cmd.CommandTimeout = commandTimeout;
+                    cmd.Parameters.Clear();
+                    cmd.Parameters.AddWithValue("@EngMainSeq", seq);
+                    db.ExecuteNonQuery(cmd);
+
+                    db.TransactionCommit();
+                    return true;
+            }
+            catch (Exception e)
+            {
+                db.TransactionRollback();
+                log.Info("EngMainService.delEng: " + e.Message);
+                log.Info(sql);
+                return false;
+            }
+
+       
+        }
         //刪除進度管理內所有資料:<br />預計進度, 監造/施工日誌, 估驗請款, 物價調整款 shioulo20221027
         public bool DelEng1(int seq, string engNo)
         {
@@ -971,27 +1089,35 @@ namespace EQC.Services
 
                 //--前置作業 s20230818
                 sql = @"
-                    delete SchEngProgressSubPayItem where SchEngProgressSubSeq in (
-	                    select seq from SchEngProgressSub where SchEngProgressHeaderSeq in (
-    	                    select seq from SchEngProgressHeader where EngMainSeq=@EngMainSeq
-                        )
-                    );
+                    -- 關閉完整性檢查(反正前面已經刪除了)
+                    EXEC sp_msforeachtable 'ALTER TABLE ? NOCHECK CONSTRAINT ALL'
 
-                    delete SchEngProgressSub where SchEngProgressHeaderSeq in (
-	                    select seq from SchEngProgressHeader where EngMainSeq=@EngMainSeq
-                    );
+                    declare @SchEngProgressHeaderSeq as int = (select Seq from SchEngProgressHeader where EngMainSeq=@EngMainSeq)
+                    delete e1　from SchEngProgressSubPayItem e1
+                    inner join SchEngProgressSub e2 on  e1.SchEngProgressSubSeq = e2.Seq
+                    where e2.SchEngProgressHeaderSeq=@SchEngProgressHeaderSeq;
 
-                    delete SchEngProgressWorkItem where SchEngProgressPayItemSeq in (
-                        select seq from SchEngProgressPayItem where SchEngProgressHeaderSeq in (
-    	                    select seq from SchEngProgressHeader where EngMainSeq=@EngMainSeq
-                        )
-                    )
+                    -- 66
+                    delete e2　from SchEngProgressSub e2
+                    where e2.SchEngProgressHeaderSeq=@SchEngProgressHeaderSeq;
 
-                    delete SchEngProgressPayItem where SchEngProgressHeaderSeq in (
-	                    select seq from SchEngProgressHeader where EngMainSeq=@EngMainSeq
-                    );
 
-                    delete SchEngProgressHeader where EngMainSeq=@EngMainSeq;";
+                    -- 50k * 30k
+                    delete e1　from SchEngProgressWorkItem e1
+                    left join SchEngProgressPayItem e2 on  e1.SchEngProgressPayItemSeq = e2.Seq
+                    where e2.SchEngProgressHeaderSeq=@SchEngProgressHeaderSeq;
+
+                    -- 30k
+                    delete e2 from  
+                    SchEngProgressPayItem e2 
+                    where e2.SchEngProgressHeaderSeq=@SchEngProgressHeaderSeq;
+
+                    -- 361
+                    delete SchEngProgressHeader where EngMainSeq=@EngMainSeq;
+
+                     -- 回復完整性檢查
+                    EXEC sp_msforeachtable 'ALTER TABLE ? CHECK CONSTRAINT ALL'
+                ";
                 cmd = db.GetCommand(sql);
                 cmd.CommandTimeout = commandTimeout;
                 cmd.Parameters.Clear();
@@ -1268,6 +1394,7 @@ namespace EQC.Services
                 //s20230413
                 sql = @"
                     --前置作業 
+                    EXEC sp_msforeachtable 'ALTER TABLE ? NOCHECK CONSTRAINT ALL'
                     delete SchEngProgressSubPayItem where SchEngProgressSubSeq in (
 	                    select seq from SchEngProgressSub where SchEngProgressHeaderSeq in (
     	                    select seq from SchEngProgressHeader where EngMainSeq=@EngMainSeq
@@ -1288,7 +1415,9 @@ namespace EQC.Services
 	                    select seq from SchEngProgressHeader where EngMainSeq=@EngMainSeq
                     );
 
-                    delete SchEngProgressHeader where EngMainSeq=@EngMainSeq;";
+                    delete SchEngProgressHeader where EngMainSeq=@EngMainSeq;
+                    EXEC sp_msforeachtable 'ALTER TABLE ? CHECK CONSTRAINT ALL'
+                    ";
                 cmd = db.GetCommand(sql);
                 cmd.CommandTimeout = commandTimeout;
                 cmd.Parameters.Clear();

@@ -1,6 +1,6 @@
 <template>
-    <div>
-        <table class="table table-responsive-md table-hover">
+    <div class="tableFixHead">
+        <table class="table table-responsive-md table-hover ">
             <thead class="insearch">
                 <tr>
                     <th class="text-left"><strong>項次</strong></th>
@@ -74,3 +74,21 @@
         }
     }
 </script>
+<style scoped>
+.tableFixHead          { overflow: auto; max-height: 500px;   }
+table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+.tableFixHead thead  { position: sticky !important ; top: 0 !important ; z-index: 1 !important;     }
+th {
+    border : 0;
+    border-bottom: #ddd solid 1px !important; 
+    border-left : 0 !important;
+    border-right:0 !important;
+}
+td {
+    z-index: 0;
+    position: relative;
+}
+</style>

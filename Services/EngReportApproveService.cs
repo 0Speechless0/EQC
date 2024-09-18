@@ -17,10 +17,11 @@ namespace EQC.Services
         public List<T> GetEngReportApproveList<T>(int engReportSeq)
         {
             string sql = @"
-                SELECT *
-                FROM [dbo].[view_EngReportApprove]
-                WHERE [EngReportSeq] = @EngReportSeq
-                ORDER BY [GroupId] DESC, [Seq] ASC
+                SELECT v.*, u.DisplayName ApproveUser
+                FROM [dbo].[view_EngReportApprove] v
+                left join UserMain u on u.Seq = ApproveUserSeq
+                WHERE v.[EngReportSeq] = @EngReportSeq
+                ORDER BY v.[GroupId] DESC, v.[Seq] ASC
                 ";
 
             SqlCommand cmd = db.GetCommand(sql);
@@ -52,51 +53,27 @@ namespace EQC.Services
             string unitSeq = "";
             Utils.GetUserUnitPosition(ref unitSeq, ref unitSubSeq, ref positionSeq);
             string sql = @"
-                ----簽核職稱清單：依簽核流程更新資料
-                --UPDATE FN1
-                --SET FN1.[SubUnitSeq]=ISNULL(FN5.Seq,0)
-	               -- ,FN1.[PositionSeq]=ISNULL(FN4.[PositionSeq],0)
-	               -- ,FN1.[UserMainSeq]=0
-                --FROM [dbo].[EngReportApprovePosition] FN1
-	               -- INNER JOIN [dbo].[ApprovalModuleList] FN2 ON FN1.[ApprovalModuleListSeq] = FN2.[Seq] 
-	               -- LEFT OUTER JOIN [dbo].[ApproverList] FN3 ON FN2.[Approver] = FN3.[Seq]
-	               -- LEFT OUTER JOIN [dbo].[ApprovalPosition] FN4 ON FN3.Seq = FN4.ApproverListSeq 
-	               -- LEFT OUTER JOIN [dbo].[Unit] FN5 ON FN1.[UnitSeq] = FN5.[ParentSeq] AND FN3.[Name] = FN5.[Name]
-                --WHERE FN1.[EngReportSeq] = @EngReportSeq AND FN3.[Name] NOT IN ('申請人','提案單位主管')
-
-                ----簽核職稱清單：依簽核流程更新資料(提案單位主管)
-                --UPDATE FN1
-                --SET FN1.[SubUnitSeq]=@SubUnitSeq
-	               -- ,FN1.[PositionSeq]=ISNULL(FN4.[PositionSeq],0)
-	               -- ,FN1.[UserMainSeq]=0
-                --FROM [dbo].[EngReportApprovePosition] FN1
-	               -- INNER JOIN [dbo].[ApprovalModuleList] FN2 ON FN1.[ApprovalModuleListSeq] = FN2.[Seq] 
-	               -- LEFT OUTER JOIN [dbo].[ApproverList] FN3 ON FN2.[Approver] = FN3.[Seq]
-	               -- LEFT OUTER JOIN [dbo].[ApprovalPosition] FN4 ON FN3.Seq = FN4.ApproverListSeq 
-                --WHERE FN1.[EngReportSeq] = @EngReportSeq AND RTRIM(FN3.[Name]) IN ('提案單位主管')
-
-                ----簽核清單：更新尚未簽核的資料
-                --UPDATE FN1
-                --SET FN1.[SubUnitSeq]=FN2.[SubUnitSeq], FN1.[PositionSeq]=FN2.[PositionSeq], FN1.[UserMainSeq]=FN2.[UserMainSeq]
-                --FROM [dbo].[EngReportApprove] FN1
-	               -- INNER JOIN (SELECT * FROM [EngReportApprovePosition] WHERE Seq IN (SELECT MIN(Seq) FROM [EngReportApprovePosition] WHERE EngReportSeq = @EngReportSeq GROUP BY [ApprovalModuleListSeq])) FN2 
-		              --  ON FN1.[ApprovalModuleListSeq] = FN2.[ApprovalModuleListSeq]
-                --WHERE FN1.EngReportSeq = @EngReportSeq AND ISNULL(FN1.ApproveUserSeq,0)=0
 
                 DECLARE @IsOWN INT = ISNULL((SELECT COUNT(SEQ) FROM [dbo].[EngReportList] WHERE [Seq] = @EngReportSeq AND [CreateUserSeq] = @UserMainSeq ),0)
                 DECLARE @Seq INT = ISNULL((SELECT MIN(Seq) AS Seq FROM [dbo].[EngReportApprove] WHERE ISNULL([ApproveTime],'')='' AND [EngReportSeq] = @EngReportSeq ),0)
+                DECLARE @FlowSeq INT = ISNULL(
+	                (SELECT MIN(ApprovalWorkFlow) AS Seq 
+		                FROM EngReportApprove  ep
+		                inner join ApprovalModuleList am on ep.ApprovalModuleListSeq = am.Seq
+		                WHERE ISNULL([ApproveTime],'')='' AND [EngReportSeq] = @EngReportSeq )
+	
+                ,0)
                 IF(@IsOWN=0)
                 BEGIN
 	                DECLARE @GroupId INT = ISNULL((SELECT GroupId FROM [dbo].[view_EngReportApprove] WHERE [Seq] = @Seq),0)
-	                SELECT FN1.*
-	                FROM [dbo].[view_EngReportApprove] FN1
-		                INNER JOIN (SELECT * FROM [dbo].[EngReportApprovePosition] 
-					                WHERE [EngReportSeq] IN (SELECT [EngReportSeq] FROM [dbo].[view_EngReportApprove] WHERE [Seq] = @Seq) 
-						                AND [UnitSeq] = @UnitSeq AND [SubUnitSeq] = @SubUnitSeq AND [PositionSeq] = @PositionSeq) FN2 ON FN1.ApprovalModuleListSeq = FN2.ApprovalModuleListSeq 
-	                WHERE FN1.GroupId=@GroupId AND FN1.[EngReportSeq] = @EngReportSeq
-	                --SELECT *
-	                --FROM [dbo].[view_EngReportApprove]
-	                --WHERE [Seq] = @Seq AND [UnitSeq] = @UnitSeq AND [SubUnitSeq] = @SubUnitSeq AND [PositionSeq] = @PositionSeq
+					SELECT FN1.* , ap.* FROM [dbo].[view_EngReportApprove] FN1
+					inner join ApprovalPosition ap on ap.ApproverListSeq = FN1.ApprovalModuleListSeq and FN1.EngReportSeq = @EngReportSeq
+					where FN1.GroupId = @GroupId 
+                                and  ( FN1.[ApprovalWorkFlow] = @FlowSeq  or @FlowSeq > 2 )
+                                and (FN1.[UnitSeq] = @UnitSeq or FN1.[UnitSeq] is null) 
+                                AND ( FN1.[SubUnitSeq] = @SubUnitSeq or FN1.[SubUnitSeq] is null )
+                                AND ap.[PositionSeq] = @PositionSeq
+
                 END
                 ELSE
                 BEGIN
@@ -122,8 +99,29 @@ namespace EQC.Services
         {
             Null2Empty(m);
             Null2Empty(era);
-            string sql = "";
-            if (Utils.getUserInfo().IsAdmin || m.CreateUserSeq == getUserSeq()) 
+            string sql = $@"
+                DECLARE @FlowSeq INT = ISNULL(
+	                (SELECT MIN(ApprovalWorkFlow) AS Seq 
+		                FROM EngReportApprove  ep
+		                inner join ApprovalModuleList am on ep.ApprovalModuleListSeq = am.Seq
+		                WHERE ISNULL([ApproveTime],'')='' AND [EngReportSeq] = {era.EngReportSeq} )
+	
+                ,0);
+                select @FlowSeq;
+            ";
+            int FlowSeq =0;
+            try
+            {
+                FlowSeq = (int)db.ExecuteScalar(db.GetCommand(sql));
+            }
+            catch(Exception e)
+            {
+
+            }
+            var userInfo = Utils.getUserInfo();
+
+
+            if (userInfo.RoleSeq <= 2 || ( m.CreateUserSeq == getUserSeq() && FlowSeq == 1)) 
             {
                 sql = @"
                     update EngReportApprove set 
@@ -137,7 +135,12 @@ namespace EQC.Services
             else 
             {
                 sql = @"
+
+
+
                     DECLARE @PSeq INT
+
+                    -- 查詢人員簽和狀態 代表 @PSeq，依此更新 EngReportApprovePosition 時間、人Seq
 
                     SET @PSeq = ISNULL((SELECT TOP 1 FN1.[Seq]
                                         FROM [dbo].[EngReportApprovePosition] FN1
@@ -148,6 +151,8 @@ namespace EQC.Services
                     SET ApproveUserSeq = @ApproveUserSeq, ApproveTime=GETDATE()
                     WHERE Seq = @PSeq
 
+                    -- 依 EngReportApprovePosition 更新 EngReportApprove 簽核狀態
+
                     UPDATE [dbo].[EngReportApprove]
                     SET [PositionSeq] = ISNULL((SELECT [PositionSeq] FROM [dbo].[EngReportApprovePosition] WHERE Seq = @PSeq),[PositionSeq])
 	                    ,[ApproveUserSeq] = ISNULL((SELECT [ApproveUserSeq] FROM [dbo].[EngReportApprovePosition] WHERE Seq = @PSeq),[ApproveUserSeq])
@@ -156,6 +161,8 @@ namespace EQC.Services
 	                    ,[ModifyTime] = GETDATE()
 	                    ,[Signature] = @Signature
                     WHERE [Seq] = @Seq
+                        
+                    --如果有重新評估
 
                     UPDATE FN1
                     SET FN1.[ApproveTime]=FN2.[ApproveTime] ,FN1.[ApproveUserSeq]=FN2.[ApproveUserSeq] ,FN1.[Signature]=FN2.[Signature],FN1.ModifyTime = GetDate(),ModifyUserSeq = @ModifyUserSeq

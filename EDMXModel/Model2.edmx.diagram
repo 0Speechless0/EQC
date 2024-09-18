@@ -4,7 +4,7 @@
   <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
     <!-- Diagram content (shape and connector positions) -->
     <edmx:Diagrams>
-      <Diagram DiagramId="86c7ea9ec8e142948b5e206ffa0e1d4b" Name="Diagram1" ZoomLevel="106">
+      <Diagram DiagramId="86c7ea9ec8e142948b5e206ffa0e1d4b" Name="Diagram1" ZoomLevel="45">
         <EntityTypeShape EntityType="EQC_80Model.PttCheckRecord" Width="1.5" PointX="5.75" PointY="0.75" IsExpanded="true" />
         <EntityTypeShape EntityType="EQC_80Model.PttMain" Width="1.5" PointX="2.75" PointY="5.75" IsExpanded="true" />
         <EntityTypeShape EntityType="EQC_80Model.Role" Width="1.5" PointX="5.75" PointY="3.75" IsExpanded="true" />
@@ -16,7 +16,6 @@
         <EntityTypeShape EntityType="EQC_80Model.TreePlantEngType" Width="1.5" PointX="7.75" PointY="7.75" />
         <EntityTypeShape EntityType="EQC_80Model.TreePlantMain" Width="1.5" PointX="8.75" PointY="0.75" />
         <EntityTypeShape EntityType="EQC_80Model.TreePlantMonth" Width="1.5" PointX="0.75" PointY="8.75" />
-        <EntityTypeShape EntityType="EQC_80Model.TreePlantNumList" Width="1.5" PointX="2.75" PointY="8.75" />
         <EntityTypeShape EntityType="EQC_80Model.TreePlantType" Width="1.5" PointX="9.75" PointY="7.75" />
         <EntityTypeShape EntityType="EQC_80Model.SchProgressHeader" Width="1.5" PointX="5.375" PointY="14.625" />
         <EntityTypeShape EntityType="EQC_80Model.SchProgressHeaderHistory" Width="1.5" PointX="7.625" PointY="18" />
@@ -39,14 +38,12 @@
         <AssociationConnector Association="EQC_80Model.SupDailyDate_fk" />
         <AssociationConnector Association="EQC_80Model.FK_TreePlantMain_EngMain" />
         <AssociationConnector Association="EQC_80Model.FK_TreePlantMonth_TreePlantMain" />
-        <AssociationConnector Association="EQC_80Model.FK_TreePlantNumList_TreePlantMain" />
         <EntityTypeShape EntityType="EQC_80Model.ApprovalModuleList" Width="1.5" PointX="16.75" PointY="0.75" />
         <EntityTypeShape EntityType="EQC_80Model.ApprovingUnitType" Width="1.5" PointX="0.75" PointY="17.75" />
         <EntityTypeShape EntityType="EQC_80Model.EYCentralLocalAddressList" Width="1.5" PointX="17.375" PointY="16.75" />
         <EntityTypeShape EntityType="EQC_80Model.Gravelfieldcoord" Width="1.5" PointX="19.375" PointY="0.75" />
         <EntityTypeShape EntityType="EQC_80Model.NationalSupervisedActivity" Width="1.5" PointX="3.375" PointY="19.75" />
         <EntityTypeShape EntityType="EQC_80Model.PublicWorkFirmResume" Width="1.5" PointX="19.375" PointY="4.75" />
-        <EntityTypeShape EntityType="EQC_80Model.VendorHireWorkList" Width="1.5" PointX="19.375" PointY="11.75" />
         <EntityTypeShape EntityType="EQC_80Model.wraControlPlanNo" Width="1.5" PointX="19.375" PointY="16.75" />
         <EntityTypeShape EntityType="EQC_80Model.Country2WRAMapping" Width="1.5" PointX="21.375" PointY="0.75" />
         <EntityTypeShape EntityType="EQC_80Model.AmmeterRecord" Width="1.5" PointX="3" PointY="25" />
@@ -78,9 +75,7 @@
         <AssociationConnector Association="EQC_80Model.FK_ConstCheckUser_EngMain" />
         <EntityTypeShape EntityType="EQC_80Model.ToolPackage" PointX="17.25" PointY="26.375" Width="1.5" />
         <AssociationConnector Association="EQC_80Model.FK_ToolPackage_EngMain" />
-        <EntityTypeShape EntityType="EQC_80Model.ConstCheckRec" Width="1.5" PointX="23.375" PointY="5" />
         <EntityTypeShape EntityType="EQC_80Model.ConstCheckRecFile" Width="1.5" PointX="25.625" PointY="5.375" />
-        <AssociationConnector Association="EQC_80Model.FK_ConstCheckRecFile_ConstCheckRec" />
         <EntityTypeShape EntityType="EQC_80Model.CarbonReductionFactor" Width="1.5" PointX="23.375" PointY="10.75" />
         <EntityTypeShape EntityType="EQC_80Model.CarbonReductionNavvyFactor" Width="1.5" PointX="22.375" PointY="23.75" />
         <EntityTypeShape EntityType="EQC_80Model.CarbonReductionTruckFactor" Width="1.5" PointX="12.375" PointY="24.75" />
@@ -130,7 +125,6 @@
         <AssociationConnector Association="EQC_80Model.FK_EquOperTestList_EngMain" />
         <AssociationConnector Association="EQC_80Model.FK_OccuSafeHealthList_EngMain" />
         <EntityTypeShape EntityType="EQC_80Model.EngConstruction" Width="1.5" PointX="17.25" PointY="62.375" />
-        <AssociationConnector Association="EQC_80Model.FK_ConstCheckRec_EngConstruction" />
         <AssociationConnector Association="EQC_80Model.FK_EngConstruction_EngMain" />
         <EntityTypeShape EntityType="EQC_80Model.CarbonEmissionPayItem" Width="1.5" PointX="13.75" PointY="1" />
         <EntityTypeShape EntityType="EQC_80Model.constCheckSignatures" Width="1.5" PointX="27.375" PointY="9.75" />
@@ -169,7 +163,65 @@
         <EntityTypeShape EntityType="EQC_80Model.APIRecord" Width="1.5" PointX="21.375" PointY="28.75" />
         <EntityTypeShape EntityType="EQC_80Model.CarbonReductionCal" Width="1.5" PointX="14.375" PointY="28.75" />
         <AssociationConnector Association="EQC_80Model.FK_APIRecord_UserMain" />
-      </Diagram>
+        <EntityTypeShape EntityType="EQC_80Model.ConstCheckControlSt" Width="1.5" PointX="19.5" PointY="78.75" />
+        <EntityTypeShape EntityType="EQC_80Model.EnvirConsControlSt" Width="1.5" PointX="19.5" PointY="93.25" />
+        <EntityTypeShape EntityType="EQC_80Model.EquOperControlSt" Width="1.5" PointX="19.5" PointY="86" />
+        <AssociationConnector Association="EQC_80Model.FK_ConstCheckControlSt_ConstCheckList" />
+        <AssociationConnector Association="EQC_80Model.FK_EnvirConsControlSt_EnvirConsList" />
+        <AssociationConnector Association="EQC_80Model.FK_EquOperControlSt_EquOperTestList" />
+        <EntityTypeShape EntityType="EQC_80Model.OccuSafeHealthControlSt" Width="1.5" PointX="19.5" PointY="100.75" />
+        <AssociationConnector Association="EQC_80Model.FK_OccuSafeHealthControlSt_OccuSafeHealthList" />
+        <EntityTypeShape EntityType="EQC_80Model.PerformanceScore" Width="1.5" PointX="13.625" PointY="54.75" />
+        <EntityTypeShape EntityType="EQC_80Model.view_EngReportApprove" Width="1.5" PointX="30.375" PointY="1.125" />
+        <EntityTypeShape EntityType="EQC_80Model.view_EngReportList" Width="1.5" PointX="5.375" PointY="31.125" />
+        <EntityTypeShape EntityType="EQC_80Model.viewPrjXMLPlaneWeakness" Width="1.5" PointX="29.375" PointY="13.125" />
+        <AssociationConnector Association="EQC_80Model.FK_PerformanceScore_PrjXML" />
+        <EntityTypeShape EntityType="EQC_80Model.ConstCheckRec" Width="1.5" PointX="19.5" PointY="54.5" />
+        <AssociationConnector Association="EQC_80Model.FK_ConstCheckRec_EngConstruction" />
+        <AssociationConnector Association="EQC_80Model.FK_ConstCheckRecFile_ConstCheckRec" />
+        <EntityTypeShape EntityType="EQC_80Model.TreePlantNumList" Width="1.5" PointX="11" PointY="3" />
+        <AssociationConnector Association="EQC_80Model.FK_TreePlantNumList_TreePlantMain" />
+        <EntityTypeShape EntityType="EQC_80Model.PrjXMLExt" Width="1.5" PointX="13.625" PointY="62.125" />
+        <AssociationConnector Association="EQC_80Model.FK_PrjXMLExt_PrjXML" />
+        <EntityTypeShape EntityType="EQC_80Model.VendorHireWorkList" Width="1.5" PointX="17.375" PointY="11.75" />
+        <EntityTypeShape EntityType="EQC_80Model.ExpertCommittee" Width="1.5" PointX="7.375" PointY="30.75" />
+        <EntityTypeShape EntityType="EQC_80Model.SuperviseEng" Width="1.5" PointX="29.625" PointY="32.625" />
+        <AssociationConnector Association="EQC_80Model.SuperviseEng_PrjXML_fk" />
+        <AssociationConnector Association="EQC_80Model.FK_SuperviseEng_UserMain" />
+        <EntityTypeShape EntityType="EQC_80Model.PriceIndexItems" Width="1.5" PointX="16.375" PointY="29.75" />
+        <EntityTypeShape EntityType="EQC_80Model.AlertSetting" Width="1.5" PointX="31.375" PointY="12.75" />
+        <AssociationConnector Association="EQC_80Model.FK_AlertSetting_Menu" />
+        <EntityTypeShape EntityType="EQC_80Model.SystemProblem" Width="1.5" PointX="32.25" PointY="21.25" />
+        <EntityTypeShape EntityType="EQC_80Model.SystemProblemType" Width="1.5" PointX="30" PointY="43.25" />
+        <AssociationConnector Association="EQC_80Model.FK_SystemProblem_EngMain" />
+        <AssociationConnector Association="EQC_80Model.FK_SystemProblem_Menu" />
+        <AssociationConnector Association="EQC_80Model.FK_SystemProblem_SystemProblemType" />
+        <AssociationConnector Association="EQC_80Model.FK_SystemProblem_UserMain" />
+        <EntityTypeShape EntityType="EQC_80Model.SystemType" Width="1.5" PointX="0.75" PointY="26.25" />
+        <AssociationConnector Association="EQC_80Model.FK_Menu_SystemType" />
+        <EntityTypeShape EntityType="EQC_80Model.MenuRole" Width="1.5" PointX="14" PointY="33.375" />
+        <AssociationConnector Association="EQC_80Model.FK_MenuRole_Menu" />
+        <AssociationConnector Association="EQC_80Model.FK_MenuRole_Role" />
+        <EntityTypeShape EntityType="EQC_80Model.PackageDownloadAction" Width="1.5" PointX="3" PointY="38.25" />
+        <AssociationConnector Association="EQC_80Model.FK_PackageDownloadAction_PackageDownloadAction" />
+        <EntityTypeShape EntityType="EQC_80Model.ConstCheckRecResultStandard" Width="1.5" PointX="31.375" PointY="26.75" />
+        <EntityTypeShape EntityType="EQC_80Model.EngSupervisor" Width="1.5" PointX="30.25" PointY="0.75" />
+        <AssociationConnector Association="EQC_80Model.EngSupervisor_fk" />
+        <AssociationConnector Association="EQC_80Model.EngSupervisor_fk2" />
+        <AssociationConnector Association="EQC_80Model.EngSupervisor_fk3" />
+        <EntityTypeShape EntityType="EQC_80Model.EngApprovalImport" Width="1.5" PointX="32.375" PointY="0.75" />
+        <EntityTypeShape EntityType="EQC_80Model.EngMaterialDeviceControlSt" Width="1.5" PointX="19.5" PointY="48.375" />
+        <AssociationConnector Association="EQC_80Model.FK_EngMaterialDeviceControlSt_EngMaterialDeviceList" />
+        <EntityTypeShape EntityType="EQC_80Model.InteliAgencyMessage" Width="1.5" PointX="31.375" PointY="16.875" />
+        <EntityTypeShape EntityType="EQC_80Model.EC_SchEngProgressHeader" Width="1.5" PointX="17.25" PointY="76.75" />
+        <EntityTypeShape EntityType="EQC_80Model.EC_SchEngProgressPayItem" Width="1.5" PointX="21.75" PointY="47.375" />
+        <AssociationConnector Association="EQC_80Model.EC_SchEngProgressHeader_fk" />
+        <AssociationConnector Association="EQC_80Model.EC_SchEngProgressPayItem_fk" />
+        <AssociationConnector Association="EQC_80Model.EC_SchEngProgressPayItem_fk2" />
+        <AssociationConnector Association="EQC_80Model.EC_SchEngProgressPayItem_fk3" />
+        <AssociationConnector Association="EQC_80Model.EC_SchEngProgressPayItem_fk4" />
+        <EntityTypeShape EntityType="EQC_80Model.FarRegion" Width="1.5" PointX="16.375" PointY="6" />
+        </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>
 </edmx:Edmx>

@@ -282,17 +282,17 @@ namespace EQC.Controllers
         }
 
         //品質計畫範例
-        public ActionResult DownloadQualityPlan(int seq, int type)
+        public ActionResult DownloadQualityPlan(int seq, int type, DownloadArgExtension downloadArg = null)
         {
             switch (type)
             {
-                case 1: return DownloadQualityPlanExt(seq, "pdf");
-                case 2: return DownloadQualityPlanExt(seq, "odt");
-                default: return DownloadQualityPlanExt(seq, "docx");
+                case 1: return DownloadQualityPlanExt(seq, "pdf", downloadArg);
+                case 2: return DownloadQualityPlanExt(seq, "odt", downloadArg);
+                default: return DownloadQualityPlanExt(seq, "docx", downloadArg);
             }
 
         }
-        public ActionResult DownloadQualityPlanExt(int seq, string ext)
+        public ActionResult DownloadQualityPlanExt(int seq, string ext, DownloadArgExtension downloadArg = null)
         {
             List<EngMainEditVModel> engItems = new EngMainService().GetItemBySeq<EngMainEditVModel>(seq);
             if (engItems.Count == 0)
@@ -337,14 +337,14 @@ namespace EQC.Controllers
                     message = "無檔案資料"
                 }, JsonRequestBehavior.AllowGet);
             }
-            Stream iStream;
+            FileStream iStream;
             switch (ext)
             {
                 case "pdf": iStream = fileName.getFileStreamWithConvert(fileName.CreatePDF, ext); break;
                 case "odt": iStream = fileName.getFileStreamWithConvert(fileName.CreateODT, ext); break;
                 default: iStream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read); break;
             }
-
+            downloadArg?.targetPathSetting(iStream.Name);
             return File(iStream, "application/blob", engItems[0].EngNo + "_品質計畫書."+ext);
         }
         public ActionResult getFileStatus(int engMain)

@@ -34,7 +34,6 @@ namespace EQC.EDMXModel
         public virtual DbSet<TreePlantEngType> TreePlantEngType { get; set; }
         public virtual DbSet<TreePlantMain> TreePlantMain { get; set; }
         public virtual DbSet<TreePlantMonth> TreePlantMonth { get; set; }
-        public virtual DbSet<TreePlantNumList> TreePlantNumList { get; set; }
         public virtual DbSet<TreePlantType> TreePlantType { get; set; }
         public virtual DbSet<SchProgressHeader> SchProgressHeader { get; set; }
         public virtual DbSet<SchProgressHeaderHistory> SchProgressHeaderHistory { get; set; }
@@ -51,7 +50,6 @@ namespace EQC.EDMXModel
         public virtual DbSet<Gravelfieldcoord> Gravelfieldcoord { get; set; }
         public virtual DbSet<NationalSupervisedActivity> NationalSupervisedActivity { get; set; }
         public virtual DbSet<PublicWorkFirmResume> PublicWorkFirmResume { get; set; }
-        public virtual DbSet<VendorHireWorkList> VendorHireWorkList { get; set; }
         public virtual DbSet<wraControlPlanNo> wraControlPlanNo { get; set; }
         public virtual DbSet<Country2WRAMapping> Country2WRAMapping { get; set; }
         public virtual DbSet<AmmeterRecord> AmmeterRecord { get; set; }
@@ -68,7 +66,6 @@ namespace EQC.EDMXModel
         public virtual DbSet<EngRiskFrontSubProjectDetailTp> EngRiskFrontSubProjectDetailTp { get; set; }
         public virtual DbSet<ConstCheckUser> ConstCheckUser { get; set; }
         public virtual DbSet<ToolPackage> ToolPackage { get; set; }
-        public virtual DbSet<ConstCheckRec> ConstCheckRec { get; set; }
         public virtual DbSet<ConstCheckRecFile> ConstCheckRecFile { get; set; }
         public virtual DbSet<ConstCheckRecResult> ConstCheckRecResult { get; set; }
         public virtual DbSet<CarbonReductionFactor> CarbonReductionFactor { get; set; }
@@ -123,5 +120,34 @@ namespace EQC.EDMXModel
         public virtual DbSet<Menu> Menu { get; set; }
         public virtual DbSet<APIRecord> APIRecord { get; set; }
         public virtual DbSet<CarbonReductionCal> CarbonReductionCal { get; set; }
+        public virtual DbSet<ConstCheckControlSt> ConstCheckControlSt { get; set; }
+        public virtual DbSet<EnvirConsControlSt> EnvirConsControlSt { get; set; }
+        public virtual DbSet<EquOperControlSt> EquOperControlSt { get; set; }
+        public virtual DbSet<OccuSafeHealthControlSt> OccuSafeHealthControlSt { get; set; }
+        public virtual DbSet<PerformanceScore> PerformanceScore { get; set; }
+        public virtual DbSet<view_EngReportApprove> view_EngReportApprove { get; set; }
+        public virtual DbSet<view_EngReportList> view_EngReportList { get; set; }
+        public virtual DbSet<viewPrjXMLPlaneWeakness> viewPrjXMLPlaneWeakness { get; set; }
+        public virtual DbSet<ConstCheckRec> ConstCheckRec { get; set; }
+        public virtual DbSet<TreePlantNumList> TreePlantNumList { get; set; }
+        public virtual DbSet<PrjXMLExt> PrjXMLExt { get; set; }
+        public virtual DbSet<VendorHireWorkList> VendorHireWorkList { get; set; }
+        public virtual DbSet<ExpertCommittee> ExpertCommittee { get; set; }
+        public virtual DbSet<SuperviseEng> SuperviseEng { get; set; }
+        public virtual DbSet<PriceIndexItems> PriceIndexItems { get; set; }
+        public virtual DbSet<AlertSetting> AlertSetting { get; set; }
+        public virtual DbSet<SystemProblem> SystemProblem { get; set; }
+        public virtual DbSet<SystemProblemType> SystemProblemType { get; set; }
+        public virtual DbSet<SystemType> SystemType { get; set; }
+        public virtual DbSet<MenuRole> MenuRole { get; set; }
+        public virtual DbSet<PackageDownloadAction> PackageDownloadAction { get; set; }
+        public virtual DbSet<ConstCheckRecResultStandard> ConstCheckRecResultStandard { get; set; }
+        public virtual DbSet<EngSupervisor> EngSupervisor { get; set; }
+        public virtual DbSet<EngApprovalImport> EngApprovalImport { get; set; }
+        public virtual DbSet<EngMaterialDeviceControlSt> EngMaterialDeviceControlSt { get; set; }
+        public virtual DbSet<InteliAgencyMessage> InteliAgencyMessage { get; set; }
+        public virtual DbSet<EC_SchEngProgressHeader> EC_SchEngProgressHeader { get; set; }
+        public virtual DbSet<EC_SchEngProgressPayItem> EC_SchEngProgressPayItem { get; set; }
+        public virtual DbSet<FarRegion> FarRegion { get; set; }
     }
 }

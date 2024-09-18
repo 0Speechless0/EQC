@@ -28,6 +28,16 @@
         </div>
         <div class="row ">
             <div class="col-2 mt-3">
+                <button v-on:click.stop="delEng(2)" role="button" class="btn btn-color9-1 btn-xs mx-1">
+                    <i class="fas fa-trash-alt"></i>&nbsp;&nbsp;刪除
+                </button>
+            </div>
+            <div class="col mt-3">
+                刪除進度管理內工程變更資料
+            </div>
+        </div>
+        <div class="row ">
+            <div class="col-2 mt-3">
                 <button v-on:click.stop="engStateChange" role="button" class="btn btn-color9-1 btn-xs mx-1">
                     <i class="fas fa-pencil-alt"></i>&nbsp;&nbsp;狀態變更
                 </button>
@@ -36,16 +46,44 @@
                 工程狀態變更:&nbsp;編輯中 > 編輯
             </div>
         </div>
+        <hr style="border-top: 1px #aaa solid;" />
+        <div class="row ">
+            <div class="col-2 mt-3">
+                <button v-on:click.stop="delEngReport()" role="button" class="btn btn-color9-1 btn-xs mx-1">
+                    <i class="fas fa-trash-alt"></i>&nbsp;&nbsp;刪除
+                </button>
+            </div>
+
+            <div class="col mt-3">
+                刪除工程提報 <br /> <div class="form-inline">
+                    <label for="SeqInputLable" class="mr-2">識別碼</label> <input v-model="engReportId" class="form-control" id="SeqInputLable" type="number"/>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 <script>
     export default {
         data: function () {
             return {
+                engReportId : null, 
                 engNo:'',
             };
         },
         methods: {
+            delEngReport()
+            {
+                if(!this.engReportId) 
+                    alert("請輸入工程提報識別碼");
+                window.myAjax.post("DelEng/DelEngReport", {id :this.engReportId})
+                .then(resp => {
+                    if(resp.data.result == 0)
+                    {
+                        alert(resp.data.message);
+                        this.engReportId = null;
+                    }
+                })
+            },
             delEng(mode) {
                 if (this.engNo.length == 0) {
                     alert('請輸入工程編號');

@@ -64,15 +64,15 @@ function showModal(groupKey)
                     <option value="2">是(其他)</option>
                     <option value="3">否(災後緊急處理、搶修、搶險)</option>
                     <option value="4">否(災後原地復建)</option>
-                    <option value="5">否(原構造物範圍內之整建或改善)</option>
-                    <option value="6">否(已開發場所且經自評確認無涉及生態環境保育議題)</option>
+                    <option value="5">否(原構造物範圍內整建或改善之工程，且經上級機關審查確認)</option>
+                    <option value="6">否(已開發場所之工程，且經上級機關審查確認)</option>
                     <option value="7">否(劃取得綠建築標章並納入生態範疇相關指標之建築工程)</option>
                     <option value="8">否(維護相關工程)</option>
                 </select>
             </div>
         </div>
         <div v-if="tarRecord.ToDoChecklit > 2" class="form-group row">
-            <label class="col-md-4 col-form-label">選否：上傳「生態檢核前置作業確認表」檔案</label>
+            <label class="col-md-4 col-form-label">選否：上傳「上級機關文書」檔案</label>
             <div class="col-md-7">
                 <b-form-file v-model="ChecklistFilename"
                     v-bind:placeholder="filePlaceholder(tarRecord.ChecklistFilename)"></b-form-file>

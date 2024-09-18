@@ -17,8 +17,8 @@ namespace EQC.EDMXModel
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public ConstCheckRec()
         {
-            this.ConstCheckRecFile = new HashSet<ConstCheckRecFile>();
             this.ConstCheckRecResult = new HashSet<ConstCheckRecResult>();
+            this.ConstCheckRecFile = new HashSet<ConstCheckRecFile>();
         }
     
         public int Seq { get; set; }
@@ -38,11 +38,14 @@ namespace EQC.EDMXModel
         public Nullable<byte> FormConfirm { get; set; }
         public Nullable<int> SupervisorUserSeq { get; set; }
         public Nullable<int> SupervisorDirectorSeq { get; set; }
+        public string SupervisionComSignature { get; set; }
+        public string SupervisionDirectorSignature { get; set; }
+        public bool IsFromMobile { get; set; }
     
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<ConstCheckRecFile> ConstCheckRecFile { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<ConstCheckRecResult> ConstCheckRecResult { get; set; }
         public virtual EngConstruction EngConstruction { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<ConstCheckRecFile> ConstCheckRecFile { get; set; }
     }
 }

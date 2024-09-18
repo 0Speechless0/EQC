@@ -15,17 +15,17 @@
                         <div class="table-responsive">
                             <table border="0" class="table table2 mt-0">
                                 <tbody>
-                                    <tr>
+                                    <tr v-if="targetItem.edit">
                                         <th>廠商名稱</th>
                                         <td>
                                             <input type="text" class="form-control" v-model="targetItem.VendorName">
                                         </td>
                                     </tr>
-                                    <tr>
+                                    <tr v-if="targetItem.edit">
                                         <th>廠商統編</th>
                                         <td><input type="text" class="form-control" v-model="targetItem.VendorTaxId"></td>
                                     </tr>
-                                    <tr>
+                                    <tr v-if="targetItem.edit">
                                         <th>廠商地址</th>
                                         <td><input type="text" class="form-control" v-model="targetItem.VendorAddr"></td>
                                     </tr>

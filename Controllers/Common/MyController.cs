@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using EQC.Common;
+using EQC.Detection;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
@@ -15,6 +17,8 @@ namespace EQC.Controllers
         IsoDateTimeConverter isoConvert = new IsoDateTimeConverter { 
             DateTimeFormat = "yyyy-MM-dd"
         };
+
+
 
         protected void setAPIReturnSetting(JsonSerializerSettings _settings)
         {
@@ -41,5 +45,27 @@ namespace EQC.Controllers
             Response.BinaryWrite(memoryStream.ToArray());
         }
 
+        protected IEnumerable<T> ReadFromJsonFile<T>(string filePath)
+        {
+            using(var stm = new StreamReader(filePath))
+            {
+                var json = stm.ReadToEnd();
+                return JsonConvert.DeserializeObject<IEnumerable<T>>(json);
+            }
+        }
+        protected void WriteToJsonFile<T>(IEnumerable<T> list, string filePath)
+        {
+            using (var stm = new StreamWriter(filePath))
+            {
+                stm.Write(JsonConvert.SerializeObject(list));
+            }
+        }
+        protected void WriteToJsonFile<T>(T target, string filePath)
+        {
+            using (var stm = new StreamWriter(filePath))
+            {
+                stm.Write(JsonConvert.SerializeObject(target));
+            }
+        }
     }
 }

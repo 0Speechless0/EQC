@@ -1,9 +1,11 @@
 ﻿using EQC.Common;
+using EQC.EDMXModel;
 using EQC.Models;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.IO;
 using System.Linq;
 
 namespace EQC.Services
@@ -34,10 +36,13 @@ namespace EQC.Services
         //檢驗單清單 s20230520
         public List<T> GetList1<T>(int engConstructionSeq, int itemSeq)
         {
-            string sql = @"SELECT * FROM ConstCheckRec
-                where EngConstructionSeq=@EngConstructionSeq
-                and ItemSeq=@ItemSeq
-                order by CCRCheckType1,CCRCheckDate
+            string sql = @"SELECT c.*, e.EngName FROM ConstCheckRec c
+
+
+                inner join EngConstruction ec on ec.Seq = c.EngConstructionSeq
+                inner join EngMain e on e.Seq = ec.EngMainSeq
+                where c.EngConstructionSeq=@EngConstructionSeq and c.ItemSeq=@ItemSeq
+                order by c.CCRCheckType1, c.CCRCheckDate
                 ";
             SqlCommand cmd = db.GetCommand(sql);
             cmd.Parameters.AddWithValue("@EngConstructionSeq", engConstructionSeq);
@@ -1022,6 +1027,45 @@ namespace EQC.Services
                 return false;
             }
         }
+
+        public void UpdateRecResultStandard(List<ControlStVModel> items)
+        {
+            using(var context = new EQC_NEW_Entities())
+            {
+                var originResultGroup = context.ConstCheckRecResultStandard
+                    .GroupBy(r => r.ConstCheckRecResultSeq)
+                    .ToDictionary(r => r.Key, r => r.ToList()) ;
+                items.ForEach(item =>
+                {
+                    if (originResultGroup.TryGetValue(item.Seq, out List<ConstCheckRecResultStandard> standardValues))
+                    {
+                        int i = 0;
+                        item.StandardValuesStr.Split(',')
+                        .ToList()
+                        .ForEach(targetValue =>
+                        {
+                            standardValues[i++].Value = targetValue;
+                        });
+                    }
+                    else
+                    {
+                        item.StandardValuesStr?.Split(',')
+                         .Where(r => r != "")
+                         .ToList()
+                         .ForEach(targetValue =>
+                         {
+                             context.ConstCheckRecResultStandard.Add(new ConstCheckRecResultStandard
+                             {
+                                 ConstCheckRecResultSeq = item.Seq,
+                                 Value = targetValue
+                             });
+                         });
+                        
+                    }
+                });
+                context.SaveChanges();
+            }
+        }
         //更新
         public bool Update(ConstCheckRecModel recItem, List<ControlStVModel> items)
         {
@@ -1068,7 +1112,9 @@ namespace EQC.Services
                             CCRPosLong=@CCRPosLong,
                             CCRPosDesc=@CCRPosDesc,
                             ModifyTime=GetDate(),
-                            ModifyUserSeq=@ModifyUserSeq
+                            ModifyUserSeq=@ModifyUserSeq,
+                            SupervisionDirectorSignature = @SupervisionDirectorSignature,
+                            SupervisionComSignature = @SupervisionComSignature
 	                    where Seq=@Seq";
                 cmd = db.GetCommand(sql);
                 cmd.Parameters.Clear();
@@ -1078,8 +1124,9 @@ namespace EQC.Services
                 cmd.Parameters.AddWithValue("@CCRPosLong", this.NulltoDBNull(recItem.CCRPosLong));
                 cmd.Parameters.AddWithValue("@CCRPosDesc", recItem.CCRPosDesc);
                 cmd.Parameters.AddWithValue("@ModifyUserSeq", this.getUserSeq());
+                cmd.Parameters.AddWithValue("@SupervisionComSignature", recItem.SupervisionComSignature);
+                cmd.Parameters.AddWithValue("@SupervisionDirectorSignature", recItem.SupervisionDirectorSignature);
                 db.ExecuteNonQuery(cmd);
-
                 db.TransactionCommit();
 
                 return true;
@@ -1158,7 +1205,9 @@ namespace EQC.Services
                 CCRPosLati,
                 CCRPosLong,
                 CCRPosDesc,
-                FormConfirm
+                FormConfirm,
+                SupervisionComSignature,
+                SupervisionDirectorSignature
                 FROM ConstCheckRec
                 where Seq=@Seq
                 ";
@@ -1219,6 +1268,7 @@ namespace EQC.Services
                     a.CCRPosLong,  
                     a.CCRPosDesc,
                     a.FormConfirm,
+                    a.IsFromMobile,
                     b.ItemName
                 FROM EngConstruction b
                 inner join ConstCheckRec a on(a.EngConstructionSeq=b.Seq)

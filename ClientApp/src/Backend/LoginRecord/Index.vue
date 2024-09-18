@@ -14,7 +14,7 @@
                     天的資料
                 </div>
             </div>
-
+            <a :href="`LoginRecord/DownloadUserRecord?from=${dateFrom}&days=${days}`" download class="btn btn-color11-1 btn-xs mx-1"><i class="fas fa-download"></i><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">下載</font></font></a>
         </div>
 
         <div class="table-responsive">

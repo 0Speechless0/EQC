@@ -1,15 +1,15 @@
 ﻿<template>
     <div>
         <!--<ol class="breadcrumb">
-            <li class="breadcrumb-item">-->
+    <li class="breadcrumb-item">-->
         <!--<a href="/Users/Update" title="後台管理">後台管理</a>-->
         <!--後台管理
-            </li>
-            <li class="breadcrumb-item active" aria-current="page" title="使用者管理">
-                使用者管理
-            </li>
-        </ol>
-        <h1>使用者管理</h1>-->
+        </li>
+        <li class="breadcrumb-item active" aria-current="page" title="使用者管理">
+            使用者管理
+        </li>
+    </ol>
+    <h1>使用者管理</h1>-->
 
         <div class="row ">
             <div v-if="!isLastLevel && ( isOutSource || (!isOutSource && (isAdmin==true || isEQCAdmin==true) ))" class="col-12 col-sm-4 col-md-4 col-lg-4 col-xl-2 mt-3">
@@ -52,7 +52,7 @@
                             <!--<a href="javascript:void(0)" @click="onEdit(item)" class="a-blue underl" title="編輯">編輯</a>-->
                             <a @click="onEdit(item)" v-if="!item.edit" href="#" class="btn btn-color11-2 btn-xs m-1" title="編輯"><i class="fas fa-pencil-alt"></i>  編輯</a>
                         </td>
-                        <td  style="text-align: center;" v-if="!isLastLevel && ( isOutSource || (!isOutSource && (isAdmin==true || isEQCAdmin==true) )) && item.Seq != userInfo.Seq" >
+                        <td style="text-align: center;" v-if="!isLastLevel && ( isOutSource || (!isOutSource && (isAdmin==true || isEQCAdmin==true) )) && item.Seq != userInfo.Seq">
                             <!--<a href="javascript:void(0)" @click="onDelete(item.Seq)" class="a-blue underl a-red" ti="" a-redtle="刪除">刪除</a>-->
                             <a @click="onDelete(item.Seq)" href="#" class="btn btn-color9-1 btn-xs m-1" title="刪除"><i class="fas fa-trash-alt"></i> 刪除</a>
                         </td>
@@ -64,181 +64,206 @@
             </table>
 
         </div>
-        <div ref="divEditDialog" style="display:none;">
-            <div class="table-responsive">
-                <table border="0" class="table table2 min910" style="width: 95%!important;">
-                    <tbody>
-                        <tr>
-                            <th>帳號</th>
-                            <td colspan="3">
-                                <label v-if="userEdit.Seq==0 && !isLastLevel && isOutSource" type="text"  class="d-inline col-6">{{userInfo.UserNo}}</label>
-                                <input v-if="userEdit.Seq==0" v-model="userEdit.UserNo" type="text" class="form-control d-inline col-6">
-                                <label v-if="userEdit.Seq>0" type="text">{{userEdit.UserNo}}</label>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>密碼</th>
-                            <td>
-                                <input v-model="userEdit.PassWord" type="password" class="form-control col-6">
-                            </td>
-                            <th>確認密碼</th>
-                            <td>
-                                <input v-if="userEdit.Seq==0" v-model="userEdit.PassWordRV" type="password" class="form-control col-6">
-                                <input v-if="userEdit.Seq>0" v-model="userEdit.PassWordRV" type="password" class="form-control col-6">
-                            </td>
-                        </tr>
-                        <tr v-if="!isLastLevel && isOutSource">
-                            <th>單位</th>
-                            <td>
-                                <div  class="form-row">
-                                    <div class="col-12 col-sm-12 mt-12">
-                                        {{userInfo.UnitName1}}
-                                    </div>
-                                    <div v-if="userInfo.UnitName2 != null" class="col-12 col-sm-12 mt-12">
-                                        {{userInfo.UnitName2}}
-                                    </div>
-                                    <div v-if="userInfo.UnitName3 != null" class="col-12 col-sm-12 mt-12">
-                                        {{userInfo.UnitName3}}
-                                    </div>
-                                </div>
-                            </td>
-                            <th>職稱</th>
-                            <td>
-                                <select class="form-control" v-model="userEdit.PositionSeq">
-                                    <option v-bind:key="index" v-for="(item,index) in positions" v-bind:value="item.Value">{{item.Text}}</option>
-                                </select>
-                                <!-- <input class="form-control" type="text" v-model="posText" /> -->
-                            </td>
-                        </tr>
-                        <tr v-else >
-                            <th>單位</th>
-                            <td>
-                                <div v-if="isAdmin==true || isEQCAdmin==true" class="form-row">
-                                    <div class="col-12 col-sm-12 mt-12">
-                                        <select class="form-control" v-model="userEdit.UnitSeq1" @change="onChangeEditUnit1">
-                                            <option v-bind:key="index" v-for="(item,index) in unitsEdit1" v-bind:value="item.Value">{{item.Text}}</option>
-                                        </select>
-                                    </div>
-                                    <div v-if="unitsEdit2.length>1" class="col-12 col-sm-12 mt-12">
-                                        <select class="form-control" v-model="userEdit.UnitSeq2" @change="onChangeEditUnit2">
-                                            <option v-bind:key="index" v-for="(item,index) in unitsEdit2" v-bind:value="item.Value">{{item.Text}}</option>
-                                        </select>
-                                    </div>
-                                    <div v-if="unitsEdit3.length>1" class="col-12 col-sm-12 mt-12">
-                                        <select class="form-control" v-model="userEdit.UnitSeq3" @change="onChangeEditUnit3">
-                                            <option v-bind:key="index" v-for="(item,index) in unitsEdit3" v-bind:value="item.Value">{{item.Text}}</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div v-if="isAdmin==false && isEQCAdmin==false">
-                                    <label type="text">{{userEdit.UnitName1}}{{userEdit.UnitName2}}{{userEdit.UnitName3}}</label>
-                                </div>
-                            </td>
-                            <th>職稱</th>
-                            <td>
-                                <select class="form-control" v-model="userEdit.PositionSeq">
-                                    <option v-bind:key="index" v-for="(item,index) in positions" v-bind:value="item.Value">{{item.Text}}</option>
-                                </select>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>姓名</th>
-                            <td>
-                                <input v-model="userEdit.DisplayName" type="text" class="form-control col-6">
-                            </td>
-
-                            <th>連絡電話</th>
-                            <td>
-                                <input v-model="userEdit.TelRegion" type="text" class="form-control d-inline col-2">
-                                <input v-model="userEdit.Tel" type="text" class="form-control d-inline col-5"> 分機
-                                <input v-model="userEdit.TelExt" type="text" class="form-control d-inline col-3">
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>手機</th>
-                            <td>
-                                <input v-model="userEdit.Mobile" type="text" class="form-control col-6">
-                            </td>
-
-                            <th>電子信箱</th>
-                            <td>
-                                <input v-model="userEdit.Email" type="email" class="form-control">
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>上傳簽名檔</th>
-                            <td colspan="3">
-                                <div>
-                                    <div :class="['m-2 p-2', file ? '' : 'btn-color3']">
-                                        <div v-if="!file" :class="['dropZone ', dragging ? 'dropZone-over' : '']"
-                                             @dragestart="dragging = true"
-                                             @dragenter="dragging = true"
-                                             @dragleave="dragging = false">
-                                            <div class="dropZone-info align-self-center" @drag="onFileChange">
-                                                <span class="dropZone-title" style="margin-top:0px;">拖拉檔案至此區塊 或 點擊此處</span>
+        <!-- 編輯視窗 -->
+        <button id="openEditModal" data-toggle="modal" data-target="#view01" style="display:none"> 開啟編輯視窗 </button>
+        <div class="modal fade" id="view01" data-backdrop="static" data-keyboard="false">
+            <div class="modal-dialog modal-xl modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-0 text-white">
+                        <h6 class="modal-title font-weight-bold">編輯人員管理</h6>
+                        <button id="closeEditModal" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">×</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- -->
+                        <div class="table-responsive">
+                            <table border="0" class="table table2 min910" style="width: 95%!important;">
+                                <tbody>
+                                    <tr>
+                                        <th>帳號</th>
+                                        <td colspan="3">
+                                            <label v-if="userEdit.Seq==0 && !isLastLevel && isOutSource" type="text" class="d-inline col-6">{{userInfo.UserNo}}</label>
+                                            <input v-if="userEdit.Seq==0" v-model="userEdit.UserNo" type="text" class="form-control d-inline col-6">
+                                            <label v-if="userEdit.Seq>0" type="text">{{userEdit.UserNo}}</label>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>密碼</th>
+                                        <td>
+                                            <input v-model="userEdit.PassWord" type="password" class="form-control col-6">
+                                        </td>
+                                        <th>確認密碼</th>
+                                        <td>
+                                            <input v-if="userEdit.Seq==0" v-model="userEdit.PassWordRV" type="password" class="form-control col-6">
+                                            <input v-if="userEdit.Seq>0" v-model="userEdit.PassWordRV" type="password" class="form-control col-6">
+                                        </td>
+                                    </tr>
+                                    <tr v-if="!isLastLevel && isOutSource">
+                                        <th>單位</th>
+                                        <td>
+                                            <div class="form-row">
+                                                <div class="col-12 col-sm-12 mt-12">
+                                                    {{userInfo.UnitName1}}
+                                                </div>
+                                                <div v-if="userInfo.UnitName2 != null" class="col-12 col-sm-12 mt-12">
+                                                    {{userInfo.UnitName2}}
+                                                </div>
+                                                <div v-if="userInfo.UnitName3 != null" class="col-12 col-sm-12 mt-12">
+                                                    {{userInfo.UnitName3}}
+                                                </div>
                                             </div>
-                                            <input type="file" @change="onFileChange" />
-                                        </div>
-                                        <div v-if="file">
-                                            <div class="dropZone-uploaded">
-                                                <div class="dropZone-uploaded-info">
-                                                    <span class="dropZone-title">選取的檔案: {{ file.name }}</span>
-                                                    <div class="uploadedFile-info">
-                                                        <button @click="removeFile" type="button" class="col-1 btn btn-shadow btn-color9-1 " style="width: 120px !important;">
-                                                            <i class="fas fa-times"></i> 取消
-                                                        </button>
+                                        </td>
+                                        <th>職稱</th>
+                                        <td>
+                                            <select class="form-control" v-model="userEdit.PositionSeq">
+                                                <option v-bind:key="index" v-for="(item,index) in positions" v-bind:value="item.Value">{{item.Text}}</option>
+                                            </select>
+                                            <!-- <input class="form-control" type="text" v-model="posText" /> -->
+                                        </td>
+                                    </tr>
+                                    <tr v-else>
+                                        <th>單位</th>
+                                        <td>
+                                            <div v-if="isAdmin==true || isEQCAdmin==true" class="form-row">
+                                                <div class="col-12 col-sm-12 mt-12">
+                                                    <select class="form-control" v-model="userEdit.UnitSeq1" @change="onChangeEditUnit1">
+                                                        <option v-bind:key="index" v-for="(item,index) in unitsEdit1" v-bind:value="item.Value">{{item.Text}}</option>
+                                                    </select>
+                                                </div>
+                                                <div v-if="unitsEdit2.length>1" class="col-12 col-sm-12 mt-12">
+                                                    <select class="form-control" v-model="userEdit.UnitSeq2" @change="onChangeEditUnit2">
+                                                        <option v-bind:key="index" v-for="(item,index) in unitsEdit2" v-bind:value="item.Value">{{item.Text}}</option>
+                                                    </select>
+                                                </div>
+                                                <div v-if="unitsEdit3.length>1" class="col-12 col-sm-12 mt-12">
+                                                    <select class="form-control" v-model="userEdit.UnitSeq3" @change="onChangeEditUnit3">
+                                                        <option v-bind:key="index" v-for="(item,index) in unitsEdit3" v-bind:value="item.Value">{{item.Text}}</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div v-if="isAdmin==false && isEQCAdmin==false">
+                                                <label type="text">{{userEdit.UnitName1}}{{userEdit.UnitName2}}{{userEdit.UnitName3}}</label>
+                                            </div>
+                                        </td>
+                                        <th>職稱</th>
+                                        <td>
+                                            <select class="form-control" v-model="userEdit.PositionSeq">
+                                                <option v-bind:key="index" v-for="(item,index) in positions" v-bind:value="item.Value">{{item.Text}}</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>姓名</th>
+                                        <td>
+                                            <input v-model="userEdit.DisplayName" type="text" class="form-control col-6">
+                                        </td>
+
+                                        <th>連絡電話</th>
+                                        <td>
+                                            <input v-model="userEdit.TelRegion" type="text" class="form-control d-inline col-2">
+                                            <input v-model="userEdit.Tel" type="text" class="form-control d-inline col-5"> 分機
+                                            <input v-model="userEdit.TelExt" type="text" class="form-control d-inline col-3">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>手機</th>
+                                        <td>
+                                            <input v-model="userEdit.Mobile" type="text" class="form-control col-6">
+                                        </td>
+
+                                        <th>電子信箱</th>
+                                        <td>
+                                            <input v-model="userEdit.Email" type="email" class="form-control">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>上傳簽名檔</th>
+                                        <td colspan="3">
+                                            <div>
+                                                <div :class="['m-2 p-2', file ? '' : 'btn-color3']">
+                                                    <div v-if="!file" :class="['dropZone ', dragging ? 'dropZone-over' : '']"
+                                                            @dragestart="dragging = true"
+                                                            @dragenter="dragging = true"
+                                                            @dragleave="dragging = false">
+                                                        <div class="dropZone-info align-self-center" @drag="onFileChange">
+                                                            <span class="dropZone-title" style="margin-top:0px;">拖拉檔案至此區塊 或 點擊此處</span>
+                                                        </div>
+                                                        <input type="file" @change="onFileChange" />
+                                                    </div>
+                                                    <div v-if="file">
+                                                        <div class="dropZone-uploaded">
+                                                            <div class="dropZone-uploaded-info">
+                                                                <span class="dropZone-title">選取的檔案: {{ file.name }}</span>
+                                                                <div class="uploadedFile-info">
+                                                                    <button @click="removeFile" type="button" class="col-1 btn btn-shadow btn-color9-1 " style="width: 120px !important;">
+                                                                        <i class="fas fa-times"></i> 取消
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
+                                        </td>
+                                    </tr>
 
-                        <tr >
-                            <th>角色權限</th>
-                            <td v-if="!isLastLevel && isOutSource">
-                                {{userInfo.RoleName}}
-                            </td>
-                            <td v-else>
-                                <select v-if="isAdmin==true || isEQCAdmin==true" class="form-control" v-model="userEdit.RoleSeq">
-                                    <option v-bind:key="index" v-for="(item,index) in roles" v-bind:value="item.Value">{{item.Text}}</option>
-                                </select>
-                                <div v-if="isAdmin==false && isEQCAdmin==false">
-                                    <label type="text">{{userEdit.RoleName}}</label>
-                                </div>
-                            </td>
-                            <th>是否啟用</th>
-                            <td>
-                                <div v-if="isAdmin==true || isEQCAdmin==true" class="custom-control custom-radio custom-control-inline">
-                                    <input v-model="userEdit.IsEnabled" v-bind:value="true" type="radio" class="custom-control-input" id="enable_Yes" name="radio">
-                                    <label class="custom-control-label text-color1" for="enable_Yes">是</label>
-                                </div>
-                                <div v-if="isAdmin==true || isEQCAdmin==true" class="custom-control custom-radio custom-control-inline">
-                                    <input v-model="userEdit.IsEnabled" v-bind:value="false" type="radio" class="custom-control-input" id="enable_No" name="radio">
-                                    <label class="custom-control-label text-color1" for="enable_No">否</label>
-                                </div>
-                                <div v-if="isAdmin==false && isEQCAdmin==false">
-                                    <label type="text">是</label>
-                                </div>
-                            </td>
-                        </tr>
+                                    <tr>
+                                        <th>角色權限</th>
+                                        <td v-if="!isLastLevel && isOutSource">
+                                            {{userInfo.RoleName}}
+                                        </td>
+                                        <td v-else>
+                                            <select v-if="isAdmin==true || isEQCAdmin==true" class="form-control" v-model="userEdit.RoleSeq">
+                                                <option v-bind:key="index" v-for="(item,index) in rolesDefalut" v-bind:value="item.Value">{{item.Text}}</option>
+                                            </select>
+                                            <div v-if="isAdmin==false && isEQCAdmin==false">
+                                                <label type="text">{{userEdit.RoleName}}</label>
+                                            </div>
 
-                        <tr>
-                            <td colspan="4">
-                                <div class="row justify-content-center">
-                                        <a href="javascript:void(0)" @click="onSave" role="button" class="btn btn-color11-3 btn-xs mx-1">
-                                            <i class="fas fa-save"></i>&nbsp;儲存
-                                        </a>
-                                        <a href="javascript:void(0)" @click="onCancel" role="button" class="btn btn-color9-1 btn-xs mx-1">
-                                            <i class="fas fa-times"></i>&nbsp;關閉
-                                        </a>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                                            <select v-if="isAdmin==true || isEQCAdmin==true" class="form-control" v-model="userEdit.RoleSeq2">
+                                                <option :value="0" selected> --無-- </option>
+                                                <option v-bind:key="index" v-for="(item,index) in rolesNotDefalut" v-bind:value="item.Value">{{item.Text}}</option>
+                                            </select>
+                                            <div v-if="isAdmin==false && isEQCAdmin==false">
+                                                <label type="text">{{userEdit.RoleName2}}</label>
+                                            </div>
+                                        </td>
+                                        <th>是否啟用</th>
+                                        <td>
+                                            <div v-if="isAdmin==true || isEQCAdmin==true" class="custom-control custom-radio custom-control-inline">
+                                                <input v-model="userEdit.IsEnabled" v-bind:value="true" type="radio" class="custom-control-input" id="enable_Yes" name="radio">
+                                                <label class="custom-control-label text-color1" for="enable_Yes">是</label>
+                                            </div>
+                                            <div v-if="isAdmin==true || isEQCAdmin==true" class="custom-control custom-radio custom-control-inline">
+                                                <input v-model="userEdit.IsEnabled" v-bind:value="false" type="radio" class="custom-control-input" id="enable_No" name="radio">
+                                                <label class="custom-control-label text-color1" for="enable_No">否</label>
+                                            </div>
+                                            <div v-if="isAdmin==false && isEQCAdmin==false">
+                                                <label type="text">是</label>
+                                            </div>
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td colspan="4">
+                                            <div class="row justify-content-center">
+                                                <a href="javascript:void(0)" @click="onSave" role="button" class="btn btn-color11-3 btn-xs mx-1">
+                                                    <i class="fas fa-save"></i>&nbsp;儲存
+                                                </a>
+                                                <a href="javascript:void(0)" @click="onCancel" role="button" class="btn btn-color9-1 btn-xs mx-1" data-dismiss="modal" aria-label="Close">
+                                                    <i class="fas fa-times"></i>&nbsp;關閉
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- -->
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -246,7 +271,7 @@
 <script>
     import moment from 'moment';
     import {userStore as store} from "./userStore";
-    import {ref} from "vue";
+    import {ref, computed, onMounted} from "vue";
 
     // Suppress the warnings
     moment.suppressDeprecationWarnings = true;
@@ -265,19 +290,33 @@
             userInfo()
             {
                 return this.userStore.userInfo;
+            },
+            isOutSource()
+            {
+                return this.userStore.userInfo.RoleSeq == 4 || 
+                        this.userStore.userInfo.RoleSeq == 5 || 
+                        this.userStore.userInfo.RoleSeq== 6 || 
+                        this.userStore.userInfo.RoleSeq == 7
+            },
+            rolesNotDefalut()
+            {
+                return this.roles.filter(e => e.IsSelected  == false);
+            },
+            rolesDefalut()
+            {
+                return this.roles.filter(e => e.IsSelected  == true);
             }
         
         },
 
         data: function () {
             return {
+                Role: null,
                 // userStore : {},
                 subUnitSeq : 0,
                 nameSearch: null,
                 isAdmin: false,
                 isEQCAdmin: false,
-                isLastLevel : false,
-                isOutSource : false,
                 userSeq : null,
                 subUnit : ["", "", ""],
                 currentPage: 1,
@@ -513,6 +552,7 @@
                     self.userEdit.UnitSeq3 = '0';
                     self.userEdit.PositionSeq = '0';
                     self.userEdit.RoleSeq = '0';
+                    self.userEdit.RoleSeq2 = '0';
                     self.userEdit.IsEnabled = false;
                 } else {
                     self.userEdit = JSON.parse(JSON.stringify(item));
@@ -521,11 +561,10 @@
                 self.removeFile();
                 self.getEditUnitList2();
                 self.getEditUnitList3();
-                Vue.prototype.common.createDialog($(self.$refs.divEditDialog), "編輯人員資料", 1000, true);
+                document.getElementById("openEditModal").click();
             },
             onCancel() {
-                const self = this;
-                Vue.prototype.common.closeDialog(self.$refs.divEditDialog);
+                document.getElementById("closeEditModal").click();
             },
             // 人員資料編輯
             onSave() {
@@ -635,11 +674,6 @@
                 if (unitSeq == '0') {
                     unitSeq = self.unitSeq1;
                 }
-                
-                if( self.isLastLevel || (!self.isLastLevel && self.isOutSource) ) {
-                    this.getChildList();
-                }
-                else
                     this.getList();
             },
             onFileChange(e) {
@@ -663,15 +697,25 @@
                 this.file = '';
                 this.files = new FormData();
             },
+            getList()
+            {
+                this.userStore.getList();
+            }
         },
         setup()
         {
             const userStore = ref(store);
+            const isLastLevel  = computed(() => userStore.value.isLastLevel);
+            onMounted(() => {
+
+            });
+
             return {
-                userStore
+                userStore,
+                isLastLevel
             }
         },
-        async mounted() {
+        mounted() {
 
             const self = this;
             // 資料初始化
@@ -680,6 +724,8 @@
             self.isAdmin = localStorage.getItem('isAdmin') == 'True' ? true : false;
             self.isEQCAdmin = localStorage.getItem('isEQCAdmin') == 'True' ? true : false;
             self.userSeq = localStorage.getItem("userSeq") ;
+            this.Role = localStorage.getItem("Role"); 
+            console.log("fffAA", this.isLastLevel);
             this.getRoleList();
             this.getPositionList();
                 self.items = null;

@@ -23,6 +23,8 @@ namespace EQC.Services
             dbContext.Configuration.LazyLoadingEnabled = false;
             _user = new SessionManager().GetUser();
         }
+
+
         ~EngRiskFrontManagementService()
         {
             dbContext.Dispose();

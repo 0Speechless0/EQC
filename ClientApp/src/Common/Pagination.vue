@@ -69,10 +69,7 @@ addOutCommitte
                 }
             },
             onChange() {
-                if (this.fInit && this.recordTotal > 0) {//s20230627
-                    this.$emit('onPaginationChange', this.pageIndex, this.pageRecordCount);
-                } else
-                    this.fInit = true;
+                this.$emit('onPaginationChange', this.pageIndex, this.pageRecordCount);
             }
         },
         mounted() {

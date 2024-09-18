@@ -13,6 +13,7 @@
         public int? GreenFundingSeq { get; set; }
         public string GreenFundingMemo { get; set; }
 
+        public string Suggestion { get; set; }
         /*public string PayItem { get; set; }
         public string Description { get; set; }
         public string Unit { get; set; }

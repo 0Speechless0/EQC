@@ -4,14 +4,17 @@
             <div class="form-row">
                 <div class="col-1 mt-3">
                     <select v-model="selectYear" @change="onYearChange($event)" class="form-control">
-                        <!--<option selected="selected" :value="-1"> 全部</option>-->
+                        <option selected="selected" :value="-1"> 全部</option>
                         <option v-for="option in selectYearOptions" v-bind:value="option.Value" v-bind:key="option.Value">
                             {{ option.Text }}
                         </option>
                     </select>
                 </div>
-                <div class="col-12 col-sm-3 mt-3">
+                <div class="col-12 col-sm-2 mt-3">
                     <select v-model="selectUnit" @change="onUnitChange(selectUnit)" class="form-control">
+                        <option :value="-1">
+                            全部
+                        </option>
                         <option v-for="option in selectUnitOptions" v-bind:value="option.Value"
                                 v-bind:key="option.Value">
                             {{ option.Text }}
@@ -26,7 +29,7 @@
                         </option>
                     </select>
                 </div>
-                <div class="col-1 col-sm-2 mt-3">
+                <div class="col-1 col-sm-1 mt-3">
                     <select v-model="selectRptType" @change="onRptTypeChange($event)" class="form-control">
                         <option v-for="option in selectRptTypeOptions" v-bind:value="option.Value"
                                 v-bind:key="option.Value">
@@ -34,11 +37,17 @@
                         </option>
                     </select>
                 </div>
+                <div class="col-1 col-sm-2 mt-3 d-flex">
+                        <input class="form-control" v-model="keyWord" placeholder="可輸入關鍵字查詢工程名稱"/> 
+                        <button class="btn btn-color11-3 btn-xs sharp mx-1 mt-2" @click.prevent="getList(tab)">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
                 <div class="col-1-sm-3 mt-3 ml-auto bd-highlight align-self-center">
                     <div class="row">
                         <div class="col-6" style="padding-right: 60px;">
                             <a class="p-1" :href="`../EngReport/GetCollection?year=${this.selectYear}&unit=${this.selectUnit}&subUnit=${this.selectSubUnit}&rptType=${this.selectRptType}`" download>
-                                <button type="button" class="btn btn-color11-1 btn-block" style="width: max-content;"><i class="fas fa-download"></i>先前檢討會議_提報</button>
+                                <button type="button" class="btn btn-color11-1 " style="width: max-content;"><i class="fas fa-download"></i>先前檢討會議_提報</button>
                             </a>
                             <!--<button @click="onDownloadPreviousReviewMeeting" type="button" class="btn btn-color11-1 btn-block" style="width: max-content;"><i class="fas fa-download"></i>先前檢討會議_提報</button>-->
                         </div>
@@ -53,15 +62,16 @@
         </form>
         <!-- Nav tabs -->
         <ul class="nav nav-tabs" role="tablist">
-            <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#menu01">全部案件清單</a></li>
-            <li v-if="isAdmin==true||isEQCAdmin==true" class="nav-item"><a class="nav-link" data-toggle="tab" href="#menu02">提案填報清單</a></li>
-            <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#menu03">優先順序清單</a></li>
-            <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#menu04">暫緩清單</a></li>
+            <li class="nav-item" @click.prevent="onSelectTab(0)"><a class="nav-link active" data-toggle="tab" href="#menu01">全部案件清單</a></li>
+            <li v-if="isAdmin==true||isEQCAdmin==true" class="nav-item" @click.prevent="onSelectTab(1)"><a class="nav-link" data-toggle="tab" href="#menu02">提案填報清單</a></li>
+            <li class="nav-item" @click.prevent="onSelectTab(2)"><a class="nav-link" data-toggle="tab" href="#menu03">優先順序清單</a></li>
+            <li class="nav-item" @click.prevent="onSelectTab(3)"><a class="nav-link" data-toggle="tab" href="#menu04">暫緩清單</a></li>
         </ul>
         <div class="tab-content">
             <div id="menu01" class="tab-pane active">
                 <div class="row justify-content-between">
                     <comm-pagination class="col-10" :recordTotal="recordTotalA" v-on:onPaginationChange="onPaginationChangeA"></comm-pagination>
+
                 </div>
                 <div class="table-responsive">
                     <table border="0" class="table table1 min910" id="sort">
@@ -81,7 +91,7 @@
                             <tr v-for="(item, index) in itemsA" v-bind:key="item.Seq">
                                 <td>{{pageRecordCountA*(pageIndexA-1)+index+1}}</td>
                                 <td>{{item.RptYear}}</td>
-                                <td><a href="#" title="{{item.RptName}}" v-on:click.stop="onViewEng(item)">{{item.RptName}}</a></td>
+                                <td><a href="#" :title="item.RptName" v-on:click.stop="onViewEng(item)">{{item.RptName}}</a></td>
                                 <td>{{item.ExecUnit}}</td>
                                 <td>{{item.ExecSubUnit}}</td>
                                 <td>{{item.ExecUser}}</td>
@@ -91,7 +101,11 @@
                                         <button v-if="item.RptTypeSeq==2||item.RptTypeSeq==4||item.RptTypeSeq==5||item.RptTypeSeq==6" v-on:click.stop="onEditEng(item)" class="btn btn-color11-3 btn-xs mx-1" title="提案審查">
                                             <i class="fas fa-pencil-alt"></i> 提案審查
                                         </button>
+                                        <button class="btn btn-color11-4 btn-xs mx-1"  v-if="item.RptTypeSeq == 4 || item.RptTypeSeq == 5 || item.RptTypeSeq == 7 || item.RptTypeSeq == 8" @click="branchProposalReview(item.Seq)">
+                                             分案
+                                        </button>
                                     </div>
+
                                 </td>
                             </tr>
                             <tr v-if="itemsA==null||itemsA.length==0">
@@ -123,7 +137,7 @@
                             <tr v-for="(item, index) in itemsB" v-bind:key="item.Seq">
                                 <td>{{pageRecordCountB*(pageIndexB-1)+index+1}}</td>
                                 <td>{{item.RptYear}}</td>
-                                <td><a href="#" title="{{item.RptName}}" v-on:click.stop="onViewEng(item)">{{item.RptName}}</a></td>
+                                <td><a href="#" :title="item.RptName" v-on:click.stop="onViewEng(item)">{{item.RptName}}</a></td>
                                 <td>{{item.ExecUnit}}</td>
                                 <td>{{item.ExecSubUnit}}</td>
                                 <td>{{item.ExecUser}}</td>
@@ -152,7 +166,11 @@
                         <thead class="insearch">
                             <tr>
                                 <th class="sort">項次</th>
-                                <th style="width:40px;"></th>
+                                <th style="width:40px;">
+                                    <button class="btn btn-color11-4 btn-xs mx-1" @click="setAllChecked">
+                                        全
+                                    </button>
+                                </th>
                                 <th style="width:60px;">順序</th>
                                 <th style="width:80px;" class="number">年度</th>
                                 <th>工程名稱</th>
@@ -170,7 +188,7 @@
                                 <td><input type="checkbox" v-model.trim="item.IsCheck" v-bind:id="item.IsShow" class="cbItemChk"></td>
                                 <td><input v-model.trim="item.ReviewSort" type="text" class="cbItemSort form-control" /></td>
                                 <td>{{item.RptYear}}</td>
-                                <td><a href="#" title="{{item.RptName}}" v-on:click.stop="onViewEng(item)">{{item.RptName}}</a></td>
+                                <td><a href="#" :title="item.RptName" v-on:click.stop="onViewEng(item)">{{item.RptName}}</a></td>
                                 <td>{{item.ExecUnit}}</td>
                                 <td>{{item.ExecSubUnit}}</td>
                                 <td>{{item.ExecUser}}</td>
@@ -227,7 +245,7 @@
                             <tr v-for="(item, index) in itemsD" v-bind:key="item.Seq">
                                 <td>{{pageRecordCountD*(pageIndexD-1)+index+1}}</td>
                                 <td>{{item.RptYear}}</td>
-                                <td><a href="#" title="{{item.RptName}}" v-on:click.stop="onViewEng(item)">{{item.RptName}}</a></td>
+                                <td><a href="#" :title="item.RptName" v-on:click.stop="onViewEng(item)">{{item.RptName}}</a></td>
                                 <td>{{item.ExecUnit}}</td>
                                 <td>{{item.ExecSubUnit}}</td>
                                 <td>{{item.ExecUser}}</td>
@@ -250,7 +268,7 @@
         </div>
 
         <!-- 小視窗  -->
-        <div class="modal fade" id="prepare_edit01" ref="divEditDialog" style="display:none;">
+        <div class="modal fade" id="prepare_edit01" ref="divEditDialog" >
             <div class="modal-dialog modal-xl modal-dialog-centered " style="max-width: fit-content;">
                 <div class="modal-content">
                     <div class="card whiteBG mb-4 pattern-F colorset_1">
@@ -258,13 +276,13 @@
                             <div class="tab-pane active">
                                 <h5></h5>
                                 <div class="table table-responsive-md table-hover VA-middle">
-                                    預估當年度可支用經費：<input v-model="engReport.EstimatedExpenditureCurrentYear" type="text" style="border: 1px solid #ced4da;" value="">元。
+                                    預估當年度可支用經費：<input v-model="tarItem.EstimatedExpenditureCurrentYear" type="text" style="border: 1px solid #ced4da;" value="">元。
                                     <br>
-                                    跨以後年度經費：<input v-model="engReport.ExpensesSubsequentYears" type="text" style="border: 1px solid #ced4da;" value="">元。
+                                    跨以後年度經費：<input v-model="tarItem.ExpensesSubsequentYears" type="text" style="border: 1px solid #ced4da;" value="">元。
                                     <br>
-                                    預定辦理期程：<input v-model="engReport.BookingProcess_SY" type="text" style="border: 1px solid #ced4da; width: 50px;" maxlength="3">年 <input v-model="engReport.BookingProcess_SM" type="text" style="border: 1px solid #ced4da; width: 50px; " maxlength="2">月 ~ <input v-model="engReport.BookingProcess_EY" type="text" style="border: 1px solid #ced4da; width: 50px; " maxlength="3">年 <input v-model="engReport.BookingProcess_EM" type="text" style="border: 1px solid #ced4da; width: 50px;" maxlength="2">月
+                                    預定辦理期程：<input v-model="tarItem.BookingProcess_SY" type="text" style="border: 1px solid #ced4da; width: 50px;" maxlength="3">年 <input v-model="tarItem.BookingProcess_SM" type="text" style="border: 1px solid #ced4da; width: 50px; " maxlength="2">月 ~ <input v-model="tarItem.BookingProcess_EY" type="text" style="border: 1px solid #ced4da; width: 50px; " maxlength="3">年 <input v-model="tarItem.BookingProcess_EM" type="text" style="border: 1px solid #ced4da; width: 50px;" maxlength="2">月
                                     <br>
-                                    備註：<input v-model="engReport.Remark" type="text" style="border: 1px solid #ced4da;" value="">
+                                    備註：<input v-model="tarItem.Remark" type="text" style="border: 1px solid #ced4da;" value="">
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-color3" data-dismiss="modal">關閉</button>
@@ -282,6 +300,8 @@
 export default {
         data: function () {
             return {
+                tab : 0,
+                keyWord : "",
                 isAdmin: false,
                 isEQCAdmin: false,
                 //使用者單位資訊
@@ -328,9 +348,41 @@ export default {
                 itemsD: [],
                 // 新增工程資料
                 engReport: {},
+                check : false,
+                tarItem : {}
             };
         },
         methods: {
+            branchProposalReview(seq)
+            {
+                if(!confirm("是否確認分案?"))
+                {
+                    return 
+                }
+                window.myAjax.post("/ERProposalReview/BranchProposalReview", {seq : seq})
+                    .then(resp => {
+                        window.location.href = '../ERProposalReview/Edit?id=' + resp.data;
+                    });
+            },
+            onSelectTab(tab)
+            {
+                this.tab = tab;
+                this.getList(tab);
+            },
+            getList(tab)
+            {
+                switch (tab) {
+                    case 0 : this.getListA(); break;
+                    case 1 : this.getListB(); break;
+                    case 2 : this.getListC(); break;
+                    case 3 : this.getListD(); break;
+                }
+            },
+            setAllChecked()
+            {
+                this.itemsC.forEach(e =>  e.IsCheck = !this.check);
+                this.check = !this.check;
+            },
             //取得使用者單位資訊
             getUserUnit() {
                 window.myAjax.post('/EngReport/GetUserUnit')
@@ -490,7 +542,8 @@ export default {
                         subUnit: this.selectSubUnit,
                         rptType: this.selectRptType,
                         pageRecordCount: this.pageRecordCountA,
-                        pageIndex: this.pageIndexA
+                        pageIndex: this.pageIndexA,
+                        keyWord : this.keyWord
                     })
                     .then(resp => {
                         this.itemsA = resp.data.items;
@@ -510,7 +563,8 @@ export default {
                         subUnit: this.selectSubUnit,
                         rptType: this.selectRptType,
                         pageRecordCount: this.pageRecordCountB,
-                        pageIndex: this.pageIndexB
+                        pageIndex: this.pageIndexB,
+                        keyWord : this.keyWord
                     })
                     .then(resp => {
                         this.itemsB = resp.data.items;
@@ -530,7 +584,8 @@ export default {
                         subUnit: this.selectSubUnit,
                         rptType: this.selectRptType,
                         pageRecordCount: this.pageRecordCountC,
-                        pageIndex: this.pageIndexC
+                        pageIndex: this.pageIndexC,
+                        keyWord : this.keyWord
                     })
                     .then(resp => {
                         this.itemsC = resp.data.items;
@@ -550,7 +605,8 @@ export default {
                         subUnit: this.selectSubUnit,
                         rptType: this.selectRptType,
                         pageRecordCount: this.pageRecordCountD,
-                        pageIndex: this.pageIndexD
+                        pageIndex: this.pageIndexD,
+                        keyWord : this.keyWord
                     })
                     .then(resp => {
                         this.itemsD = resp.data.items;
@@ -574,7 +630,7 @@ export default {
             },
             //顯示工程
             onShowEng(item) {
-                this.tarItem = {};
+                this.tarItem = item;
                 window.myAjax.post('/ERNeedAssessment/GetEngReport', { id: item.Seq })
                     .then(resp => {
                         if (resp.data.result == 0) {
@@ -588,10 +644,16 @@ export default {
                     });
             },
             //儲存工程
-            onSaveEng() {
-                window.myAjax.post('/ERProposalReview/UpdateEngReportForPRO', { m: this.engReport })
+            onSaveEng(item) {
+
+
+                window.myAjax.post('/ERProposalReview/UpdateEngReportForPRO', { m: this.tarItem })
                     .then(resp => {
-                        alert(resp.data.msg);
+                        
+                       
+                        alert(resp.data.msg)
+                        this.tarItem.IsCheck = true;
+                        // this.getListC();
                     })
                     .catch(err => {
                         console.log(err);
@@ -607,7 +669,29 @@ export default {
                 window.comm.dnFile('/EngReport/DownloadNeedAssessment?year=' + this.selectYear + '&unit=' + this.selectUnit + '&subUnit=' + this.selectSubUnit + '&rptType=' + this.selectRptType);
             },
             onSave() {
-                window.myAjax.post('/ERProposalReview/UpdateEngReportSort', { list: this.itemsC })
+                //檢查經費填寫
+
+                var nonFillitems = this.itemsC.filter( (l,i) => {
+                    l.index = i +1;
+                    return (l.EstimatedExpenditureCurrentYear == null ||
+                    l.ExpensesSubsequentYears == null 
+                   
+                ) &&  l.IsCheck;
+
+                })
+                console.log("nonFillitems", nonFillitems);
+                if(nonFillitems.length > 0)
+                {
+                    alert( "項次 :"+ nonFillitems.reduce((a, c) => a + "[" + c.index+ "]" , "")+"\n經費未填寫" );
+                    return ;
+                }
+                var list = this.itemsC.filter(e => e.IsCheck);
+                if(list.length ==0 )
+                {
+                    alert("未勾選項目");
+                    return ;
+                }
+                window.myAjax.post('/ERProposalReview/UpdateEngReportSort', { list: list })
                     .then(resp => {
                         if (resp.data.result == 0) {
                             alert(resp.data.msg);
@@ -633,13 +717,13 @@ export default {
                 return window.comm.stringEmpty(str);
             },
         },
-        async mounted() {
+        mounted() {
             console.log('mounted() 提案審查');
             this.isAdmin = localStorage.getItem('isAdmin') == 'True' ? true : false;
             this.isEQCAdmin = localStorage.getItem('isEQCAdmin') == 'True' ? true : false;
             if (this.selectYearOptions.length == 0) {
                 this.getSelectYearOption();
-            }
+        }
     }
 }
 </script>

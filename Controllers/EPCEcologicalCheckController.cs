@@ -35,17 +35,19 @@ namespace EQC.Controllers
         public ActionResult OneDownload(int seq, string fileName)
         {
             string folder = Utils.GetEcologicalCheckRemoteFolder(seq, "FileUploads/EcologicalCheck2");
+            
             Stream iStream = new FileStream(Path.Combine(folder, "SelfEvalFiles", fileName), FileMode.Open, FileAccess.Read, FileShare.Read);
             return File(iStream, "application/blob", fileName);
         }
         //生態檢核下載
-        public ActionResult DownloadAll(int seq)
+        public ActionResult DownloadAll(int seq, DownloadArgExtension packageArg = null)
         {
             var m = iService.GetItemByEngMain<EcologicalChecklist2Model>(seq, 2).FirstOrDefault();
 
             string folder = Utils.GetEcologicalCheckRemoteFolder(seq, "FileUploads/EcologicalCheck2");
             string zipPath = Directory.GetFiles(Path.Combine(folder, "SelfEvalFiles")).ToList().downloadFilesByZip(folder, m.SelfEvalFilename);
             Stream stream = new FileStream(zipPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            packageArg?.targetPathSetting(zipPath);
             return File(stream, "application/blob", Path.GetFileName(m.SelfEvalFilename));
         }
 
@@ -74,16 +76,16 @@ namespace EQC.Controllers
             string folder = Utils.GetEcologicalCheckRemoteFolder(m.EngMainSeq, "FileUploads/EcologicalCheck2");
             var SelfEvalFiles = Request.Files.GetMultiple("SelfEvalFilename");
 
-            if(!SelfEvalFiles.UploadFilesTypeCheck(new string[] {
-                "image/jpeg", "application/pdf"
-            }) )
-            {
-                return Json(new
-                {
-                    result = -1,
-                    message = "生態檢核上傳檔案錯誤"
-                });
-            }
+            //if(!SelfEvalFiles.UploadFilesTypeCheck(new string[] {
+            //    "image/jpeg", "application/pdf"
+            //}) )
+            //{
+            //    return Json(new
+            //    {
+            //        result = -1,
+            //        message = "生態檢核上傳檔案錯誤"
+            //    });
+            //}
 
 
             int fCount = Request.Files.Count;
@@ -233,7 +235,7 @@ namespace EQC.Controllers
             }
         }
         //
-        public ActionResult Download(int id, string key)
+        public ActionResult Download(int id, string key, DownloadArgExtension downloadArg = null)
         {
             List<EcologicalChecklist2Model> items = iService.GetItem<EcologicalChecklist2Model>(id, 2);
             if (items.Count != 1)
@@ -268,6 +270,7 @@ namespace EQC.Controllers
             }
 
             Stream iStream = new FileStream(fName, FileMode.Open, FileAccess.Read, FileShare.Read);
+            downloadArg?.targetPathSetting(fName);
             return File(iStream, "application/blob", fileName.Substring(38));
         }
     }

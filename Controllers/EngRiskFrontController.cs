@@ -24,6 +24,7 @@ namespace EQC.Controllers
 
 
         EngRiskFrontManagementService iServiceM = new EngRiskFrontManagementService();
+
         public ActionResult Index()
         {
             Utils.setUserClass(this, 2);
@@ -270,7 +271,7 @@ namespace EQC.Controllers
             });
         }
 
-        public ActionResult Download(int id, string fileNo)
+        public ActionResult Download(int id, string fileNo, DownloadArgExtension downloadArg = null)
         {
             List<EngRiskFrontListVModel> items = iService.GetDownloadFile<EngRiskFrontListVModel>(id, fileNo);
             if (items.Count != 1)
@@ -292,7 +293,8 @@ namespace EQC.Controllers
                 }, JsonRequestBehavior.AllowGet);
             }
             m.FileName = items[0].FileName.Substring(items[0].FileName.LastIndexOf('}') + 1);
-            Stream iStream = new FileStream(fName, FileMode.Open, FileAccess.Read, FileShare.Read);
+            FileStream iStream = new FileStream(fName, FileMode.Open, FileAccess.Read, FileShare.Read);
+            downloadArg?.targetPathSetting(iStream.Name);
             return File(iStream, "application/blob", m.FileName);
         }
 
@@ -823,20 +825,22 @@ namespace EQC.Controllers
 
 
         #endregion
-        public void DownloadDocument(int id)
+        public void DownloadDocument(int id, DownloadArgExtension downloadArgExtension)
         {
 
-            var dir = HttpContext.Server.MapPath("/");
-            var fileDir = Path.Combine(dir, $"FileUploads/Eng/{id}/EngRiskDocument");
+
+            var fileDir = $"Eng/{id}/EngRiskDocument".getUploadDir();
             var file = Directory.GetFiles(fileDir)
                 .Select(f => new FileInfo(f))
                 .OrderByDescending(f => f.CreationTime)
                 .First();
             Stream iStream = $"Eng/{id}/EngRiskDocument".GetFileStream(file.Name);
+            downloadArgExtension?.targetPathSetting(Path.Combine(fileDir, file.Name));
             var ms = new MemoryStream();
             iStream.CopyTo(ms);
-            Response.AddHeader("Content-Disposition", $"attachment; filename={file.Name}");
-            Response.BinaryWrite(ms.ToArray());
+            Response?.AddHeader("Content-Disposition", $"attachment; filename={file.Name}");
+            Response?.BinaryWrite(ms.ToArray());
+
         }
 
 

@@ -12,43 +12,60 @@
         <h1>功能權限管理</h1>-->
         <form class="form-group">
             <div class="form-row">
-                <div class="col-12 col-sm-3 mt-3">
+
+            </div>
+        </form>
+        <div class="d-flex justify-content-start"> 
+
+            <div class="col-12 col-sm-3 mt-3">
                     <select class="form-control" @change="onChangeSystemType">
                         <option v-bind:key="index" v-for="(item,index) in systemTypeList" v-bind:value="item.Value">{{item.Text}}</option>
                     </select>
-                </div>
             </div>
-        </form>
+            <div class="col-12 col-sm-3 mt-3"> </div>
+            <div class="col-12 col-sm-3 mt-3">
+
+            <i  @click="(RoleListPage -1)*RoleListPerPage >= 0 ? RoleListPage -- : null" class="fas fa-angle-left btn btn-color9-1  btn-s m-1" style="
+                /* background-color: red; */
+            "></i>
+                            <i @click="RoleList.length   >  (RoleListPage + 1)*RoleListPerPage ? RoleListPage ++ : null" class="fas fa-angle-right btn btn-color9-1  btn-s m-1" style="
+                                /* background-color: red; */
+                            "></i>
+            </div>
+
+        </div>
         <div class="table-responsive">
             <table border="0" class="table table1 min910">
                 <thead>
                     <tr>
                         <th>項次</th>
-                        <th>功能選單</th>
-                        <th>系統管理者</th>
-                        <th>署管理者</th>
+                        <th style="width:150px">功能選單 </th>
+
+                        <th v-for="(r, index2) in RolePagination" :key="index2">{{r.Name}}</th>
+
+                        <!-- <th>署管理者</th>
                         <th>各局管理者</th>
                         <th>施工廠商</th>
                         <th>委外監造</th>
                         <th>委外設計</th>
                         <th>委員</th>
-                        <th>各局執行者</th>
+                        <th>各局執行者</th> -->
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-bind:key="index" v-for="(item,index) in menuRoleList">
                         <td style="text-align: center;">{{index+1}}</td>
                         <td style="text-align: center;">
-                            {{item.MenuName}}
+                            {{item.Name}}
                         </td>
-                        <td style="text-align: center;">
+                        <td style="text-align: center;" v-for="(r, index2) in RolePagination" :key="index2">
                             <div class="custom-control custom-checkbox">
-                                <input type="checkbox" class="custom-control-input" @change="onChangeRoleCheck(item.MenuSeq,1,item.Role1)" v-bind:id="'role1'+index" v-model="item.Role1" v-bind:value="true">
-                                <label class="custom-control-label" v-bind:for="'role1'+index">
+                                <input type="checkbox" class="custom-control-input" @change="onChangeRoleCheck(item.Seq, r.Seq, !item.Roles.has(r.Seq) )" v-bind:id="'role'+index+','+index2" :checked='item.Roles.has(r.Seq)' >
+                                <label class="custom-control-label" v-bind:for="'role'+index+','+index2">
                                 </label>
                             </div>
                         </td>
-                        <td style="text-align: center;">
+                        <!-- <td style="text-align: center;">
                             <div class="custom-control custom-checkbox">
                                 <input type="checkbox" class="custom-control-input" @change="onChangeRoleCheck(item.MenuSeq,2,item.Role2)" v-bind:id="'role2'+index" v-model="item.Role2" v-bind:value="true">
                                 <label class="custom-control-label" v-bind:for="'role2'+index">
@@ -96,10 +113,10 @@
                                 <label class="custom-control-label" v-bind:for="'role20'+index">
                                 </label>
                             </div>
-                        </td>
+                        </td> -->
                     </tr>
                     <tr v-if="menuRoleList==null||menuRoleList.length==0">
-                        <td colspan="7" class="text-center">--查無資料--</td>
+                        <td colspan="12" class="text-center">--查無資料--</td>
                     </tr>
                 </tbody>
             </table>
@@ -113,7 +130,6 @@
     </div>
 </template>
 <script>
-    import axios from 'axios';
     import moment from 'moment';
 
     // Suppress the warnings
@@ -125,6 +141,10 @@
                 return this.fields.filter(field => {
                     return field.editable == false
                 })
+            },
+            RolePagination()
+            {
+                return this.RoleList.slice(this.RoleListPage*this.RoleListPerPage, (this.RoleListPage +1)*this.RoleListPerPage );
             }
         },
         data: function () {
@@ -132,6 +152,9 @@
                 currentPage: 1,
                 perPage: 10,
                 totalRows: 0,
+                RoleListPage : 0,
+                RoleListPerPage : 10,
+                RoleList : [],
                 // 權限列表
                 menuRoleList: [],
                 // 系統下拉
@@ -145,7 +168,7 @@
             getSystemTypeList() {
                 const self = this;
                 let params = {};
-                axios.get('/Menu/GetSystemTypeList')
+                window.myAjax.get('/Menu/GetSystemTypeList')
                     .then(resp => {
                         self.systemTypeList = resp.data;
                         self.systemTypeList.splice(0, 0, { Text: '--請選擇--', Value: '0' });
@@ -154,14 +177,26 @@
                         console.log(err);
                     });
             },
+            getRoleList()
+            {
+                window.myAjax.post("Role/GetAll")
+                    .then(resp => {
+
+                        this.RoleList = resp.data.l;
+                    })
+            },
             // 取得權限列表
             getList() {
                 const self = this;
                 let params = { systemTypeSeq: self.systemTypeSeq };
-                axios.get('/Menu/GetList', { params: params })
+                window.myAjax.get('/Menu/GetList', { params: params })
                     .then(resp => {
                         self.menuRoleList = resp.data.l;
-                        //console.log(resp.data);
+
+                        self.menuRoleList.forEach(e => {
+
+                            e.Roles = new Set(e.RoleSeqs)
+                        })
                     })
                     .then(err => {
                         console.log(err);
@@ -177,7 +212,7 @@
             onChangeRoleCheck(menuSeq, roleSeq, checked) {
                 const self = this;
                 let params = { menuSeq: menuSeq, roleSeq: roleSeq, chk: checked };
-                axios.post('/Menu/Save', params)
+                window.myAjax.post('/Menu/Save', params)
                     .then(resp => {
                         //Vue.prototype.common.showResultMessage(resp);
                         if (resp.data.IsSuccess) {
@@ -193,6 +228,7 @@
             const self = this;
             // 資料初始化
             self.getSystemTypeList();
+            this.getRoleList();
         },
         watch: {
 

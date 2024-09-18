@@ -210,16 +210,23 @@ namespace EQC.Services
             }
         }
 
-        public int Del(int seq)
+        public int? Del(int seq)
         {
-            string sql = @"delete ExpertCommittee where Seq=@Seq";
+            string sql = @"delete e from ExpertCommittee e
+
+            left join OutCommittee o on o.ExpertCommitteeSeq = e.Seq
+            where e.Seq=@Seq and o.Seq is null;
+            select s.PrjXMLSeq  from  OutCommittee o 
+            inner join SuperviseEng s on o.SuperviseEngSeq = s.Seq
+             where o.ExpertCommitteeSeq=@Seq;
+            ";
 
             SqlCommand cmd = db.GetCommand(sql);
 
             cmd.Parameters.Clear();
             cmd.Parameters.AddWithValue("@Seq", seq);
 
-            return db.ExecuteNonQuery(cmd);
+            return (int?)db.ExecuteScalar(cmd);
         }
         //批次處裡
         public void ImportData(List<ExpertCommitteeModel> items, ref int iCnt, ref int uCnt, ref string errCnt)

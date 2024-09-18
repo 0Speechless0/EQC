@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Web.Mvc;
 
 namespace EQC.Controllers
@@ -55,10 +56,10 @@ namespace EQC.Controllers
                 var thsrService = new ThsrService();
                 var ll = l.Where(r => r.StartStationName.Contains(filter.start ?? "") || filter.start == null);
                 var startOptionList = l.GroupBy(r => r.StartStationName).Select(r => r.Key)
-                    .ToList().SortListByMap(r => r, Order.TrainOrderMap, true); 
+                    .ToList().SortListByMap(r => r, Order.TrainOrderMap); 
                 var lll  = ll.Where(r => r.EndingStationName.Contains(filter.end ?? "") || filter.end == null);
                 var endOptionList = ll.GroupBy(r => r.EndingStationName).Select(r => r.Key)
-                    .ToList().SortListByMap(r => r, Order.TrainOrderMap, true);
+                    .ToList().SortListByMap(r => r, Order.TrainOrderMap);
                 return Json(new
                 {
                     status = "success",
@@ -77,12 +78,14 @@ namespace EQC.Controllers
         public JsonResult SearchPhase(string keyWord)
         {
             List<SupervisePhaseModel> list = iService.GetPhaseCode(keyWord);
-            if(list.Count==1)
+            var phaseOption = iService.GetPhaseOptions(keyWord.Substring(0, 3));
+            if (list.Count > 0)
             {
                 return Json(new
                 {
                     result = 0,
-                    item = list[0]
+                    item = list[0],
+                    phaseOption = phaseOption
                 });
             }
             return Json(new
@@ -356,7 +359,19 @@ namespace EQC.Controllers
                 {
                     phaseCode = m.PhaseCode;
                     sheet.Cells[row, 1] = inx;
-                    sheet.Cells[row, 2] = m.OrganizerName;
+                    sheet.Cells[row, 2] = m.ExecUnitName;
+                    var rx = new Regex(@"[（,(](?<tag>\w+)[）,)]");
+
+                    rx.Matches(m.BelongPrj).Cast<Match>()
+                        .ToList()
+                        .ForEach(match =>
+                        {
+                            if (Utils.isNumber(match.Groups["tag"].Value))
+                            {
+                                m.BelongPrj =
+                                m.BelongPrj.Remove(match.Index, match.Value.Length);
+                            }
+                        });
                     sheet.Cells[row, 3] = m.BelongPrj;
                     sheet.Cells[row, 4] = m.TenderName;
                     sheet.Cells[row, 5] = m.Location;
@@ -364,16 +379,17 @@ namespace EQC.Controllers
                     if (m.SuperviseEndDate.HasValue)
                     {
                         sd = String.Format("{0}~{1}",
-                            !m.SuperviseDate.HasValue ? "" : String.Format("{0}{1}\n({2})", m.SuperviseDate.Value.Year - 1911, m.SuperviseDate.Value.ToString("MMdd"), toChsWeek(m.SuperviseDate.Value.DayOfWeek)),
-                            !m.SuperviseEndDate.HasValue ? "" : String.Format("{0}{1}\n({2})", m.SuperviseEndDate.Value.Year - 1911, m.SuperviseEndDate.Value.ToString("MMdd"), toChsWeek(m.SuperviseEndDate.Value.DayOfWeek)));
+                            !m.SuperviseDate.HasValue ? "" : String.Format("{0}/{1}\n({2})", m.SuperviseDate.Value.Year - 1911, m.SuperviseDate.Value.ToString("MM/dd"), toChsWeek(m.SuperviseDate.Value.DayOfWeek)),
+                            !m.SuperviseEndDate.HasValue ? "" : String.Format("{0}/{1}\n({2})", m.SuperviseEndDate.Value.Year - 1911, m.SuperviseEndDate.Value.ToString("MM/dd"), toChsWeek(m.SuperviseEndDate.Value.DayOfWeek)));
                     }
                     else
                     {
-                        sd = !m.SuperviseDate.HasValue ? "" : String.Format("{0}{1}\n({2})", m.SuperviseDate.Value.Year - 1911, m.SuperviseDate.Value.ToString("MMdd"), toChsWeek(m.SuperviseDate.Value.DayOfWeek));
+                        sd = !m.SuperviseDate.HasValue ? "" : String.Format("{0}/{1}\n({2})", m.SuperviseDate.Value.Year - 1911, m.SuperviseDate.Value.ToString("MM/dd"), toChsWeek(m.SuperviseDate.Value.DayOfWeek));
                     }
                     sheet.Cells[row, 6] = sd;
                     sheet.Cells[row, 7] = m.BidAmount;
-                    sheet.Cells[row, 8] = m.ScheCompletionDate;
+                    sheet.Cells[row, 8] =
+                        Utils.ChsDateFormat(m.ScheCompletionDate);
                     sheet.Cells[row, 9] = m.ActualProgress;
                     sheet.Cells[row, 10] =  m.DiffProgress;
                     sheet.Cells[row, 11] = m.LeaderName == null ? "" : m.LeaderName.Replace(",","\n");

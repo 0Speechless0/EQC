@@ -50,7 +50,23 @@ namespace EQC.Models
                     uuid = "職業安全";
                 else if (CCRCheckType1 == 4)
                     uuid = "環境保育";
-                uuid = String.Format("{0}-{1}{2:00}{3:00}-{4}.docx", uuid, CCRCheckDate.Year-1911, CCRCheckDate.Month, CCRCheckDate.Day, Seq);
+
+                string stage = "";
+                if (CCRCheckFlow == 1)
+                    stage = "施工前";
+                if (CCRCheckFlow == 2)
+                    stage = "施工中";
+                if (CCRCheckFlow == 3)
+                    stage = "施工後";
+                uuid = String.Format(
+                    "{0}_{1}{2:00}{3:00}_{4}-{5}.docx", 
+                        EngName, 
+                        CCRCheckDate.Year-1911, 
+                        CCRCheckDate.Month, 
+                        CCRCheckDate.Day, 
+                        stage,
+                        Seq
+                    );
                 
                 filePathName = Path.Combine(Path.GetTempPath(), uuidFolder);
                 if(!Directory.Exists(filePathName)) Directory.CreateDirectory(filePathName);
@@ -72,7 +88,22 @@ namespace EQC.Models
                     uuid = "職業安全";
                 else if (CCRCheckType1 == 4)
                     uuid = "環境保育";
-                uuid = String.Format("{0}-{1}{2:00}{3:00}-{4}.docx", uuid, CCRCheckDate.Year - 1911, CCRCheckDate.Month, CCRCheckDate.Day, Seq);
+                string stage = "";
+                if (CCRCheckFlow == 1)
+                    stage = "施工前";
+                if (CCRCheckFlow == 2)
+                    stage = "施工中";
+                if (CCRCheckFlow == 3)
+                    stage = "施工後";
+                uuid = String.Format(
+                "{0}_{1}{2:00}{3:00}_{4}-{5}.docx",
+                    EngName,
+                    CCRCheckDate.Year - 1911,
+                    CCRCheckDate.Month,
+                    CCRCheckDate.Day,
+                    stage,
+                    Seq
+                );
 
                 filePatdownloadhName = Path.Combine(Path.GetTempPath(), uuidFolder);
                 if (!Directory.Exists(filePatdownloadhName)) Directory.CreateDirectory(filePatdownloadhName);

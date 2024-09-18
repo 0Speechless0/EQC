@@ -2,10 +2,10 @@
     <div>
         <form class="form-group">
             <div v-if="Role == 2 || Role == 1|| Role == 3" class="form-row">
-                <unitFilter :maxUnitLevel="2" :startLevel="Role == 3 ? 1: 0"
-                            :initSubUnit="Role == 3 ? [UnitName1]: []"
+                <unitFilter :maxUnitLevel="2" :startLevel="Role >2 ? 1: 0"
+                            :initSubUnit="[ Role == 1 ? '' :UnitName1]"
                                     :newUnitLevelOptions="userStore.unitOptions" @afterUnitChange="afterUnitChange"  class="form-row col-10"></unitFilter>
-
+                
                 <div  class="col-10 col-sm-1 mt-3">
                     <input type="text" class="form-control" v-model="userStore.nameSearch"/>
                 </div>
@@ -19,7 +19,11 @@
             <ul class="nav nav-tabs" role="tablist">
                 <li class="nav-item"><a v-on:click="selectUserList" data-toggle="tab" href="" class="nav-link active">清單</a></li>
                 <li class="nav-item"  > <a v-on:click="selectUserSafety" data-toggle="tab" href="" class="nav-link">安全性</a></li>
+                <li>
+                    <a href="Users/DownloadUser" download class="btn btn-color11-1 btn-xs mx-1"><i class="fas fa-download"></i><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">下載</font></font></a>
+                </li>
             </ul>
+            
         </div>
 
         <div class="tab-content">
@@ -28,12 +32,12 @@
 
         </div>
         <div style="width:99%;" class="row justify-content-center">
-                <b-pagination id="pageControl" 
+                <b-pagination id="pageControl"
                     :total-rows="userStore.totalRows"
                     :per-page="userStore.perPage"
                     v-model="userStore.currentPage">
                 </b-pagination>
-
+               
             </div>
     </div>
 </template>
@@ -61,12 +65,13 @@ import UsersSaftety from "./UsersSafety.vue";
                 this.userlist = list;
             },
             search(){
-                this.currentPage = 1;
+                this.userStore.currentPage = 1;
                 this.userStore.getList();
+
             },
             afterUnitChange(newUnit)
             {
-                console.log(newUnit);
+                console.log("newUnit", newUnit);
                 this.userStore.subUnit = newUnit;
                 this.userStore.getList();
             },
@@ -74,12 +79,14 @@ import UsersSaftety from "./UsersSafety.vue";
             {
                 this.selectTab = "UsersSafty";
                 this.userStore.hasConstCheckApp = true;
+                this.userStore.currentPage = 1;
                 this.userStore.getList();
             },
             selectUserList()
             {
                 this.selectTab = "UsersList";
                 this.userStore.hasConstCheckApp = false;
+                this.userStore.currentPage = 1;
                 this.userStore.getList();
             }
         },
@@ -97,6 +104,7 @@ import UsersSaftety from "./UsersSafety.vue";
             const UnitName1 = computed(() => store.userInfo.UnitName1) ;
             watch(() => userStore.currentPage, () => {
                 userStore.getList();
+                console.log(3);
             })
             return {
                 userStore,
@@ -104,7 +112,7 @@ import UsersSaftety from "./UsersSafety.vue";
                 UnitName1
             }
         },
-        
+
         async mounted()
         {
 
@@ -118,14 +126,14 @@ import UsersSaftety from "./UsersSafety.vue";
             // let userSeq = localStorage.getItem("userSeq") ;
             await this.userStore.getUserInfo();
             console.log(this.userStore.userInfo);
-              
-            if(this.Role == 3) this.userStore.unitOptions = [this.userStore.userInfo.UnitName1 ];
+            this.selectUserList()
+            // if(this.Role == 3) this.userStore.unitOptions = [this.userStore.userInfo.UnitName1 ];
 
             // if( this.userStore.isLastLevel ||  (!this.userStore.isLastLevel && this.userStore.isOutSource) ) {
             //     this.userStore.getChildList();
             // }
             // else  if(this.Role != 3 )
-                this.userStore.getList();
+                // this.userStore.getList();
 
         }
 

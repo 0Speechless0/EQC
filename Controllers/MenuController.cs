@@ -10,6 +10,7 @@ using System.Data.SqlClient;
 using EQC.Common;
 using EQC.ViewModel.Common;
 
+
 namespace EQC.Controllers
 {
     public class MenuController : Controller
@@ -25,17 +26,39 @@ namespace EQC.Controllers
         /// <summary> 取得MENU權限列表 </summary>
         /// <param name="systemTypeSeq"></param>
         /// <returns> MenuRoleVM </returns>
-        [HttpGet]
         [SessionFilter]
         public JsonResult GetList(int systemTypeSeq)
         {
-            List<MenuRoleVM> list = menuService.GetList(systemTypeSeq);
+            //List<MenuRoleVM> list = menuService.GetList(systemTypeSeq);
+            List<Menu> list = menuService.GetListV2(systemTypeSeq);
             return Json(new
             {
                 l = list,
             }, JsonRequestBehavior.AllowGet); ;
         }
 
+        /// <summary> 取得MENU權限列表 </summary>
+        /// <param name="systemTypeSeq"></param>
+        /// <returns> MenuRoleVM </returns>
+        [SessionFilter]
+        public JsonResult GetMenuWithoutParentZero(int systemTypeSeq)
+        {
+            using (var context = new EDMXModel.EQC_NEW_Entities())
+            {
+                List<MenuRoleVM> list = 
+                    context.Menu.Where(r => r.SystemTypeSeq == systemTypeSeq && r.ParentSeq != 0)
+                    .Select(r => new MenuRoleVM { 
+                        MenuSeq = r.Seq,
+                        MenuName = r.Name
+                    }).ToList();
+    
+                return Json(new
+                {
+                    l = list,
+                }, JsonRequestBehavior.AllowGet);
+
+            }
+        }
         public JsonResult SetSession(int seq)
         {
             string pathName = menuService.GetMenuParentString(seq);
@@ -84,7 +107,6 @@ namespace EQC.Controllers
 
         /// <summary> 取得系統別下拉 </summary>
         /// <returns> SelectVM </returns>
-        [HttpGet]
         public JsonResult GetSystemTypeList()
         {
             List<SelectVM> list = menuService.GetSystemTypeList();
@@ -101,6 +123,31 @@ namespace EQC.Controllers
         {
             SaveChangeStatus result = menuService.Save(menuSeq, roleSeq, chk);
             return Json(result);
+        }
+
+        public JsonResult GetMenuSeqByUrl(string url)
+        {
+            using (var context = new EDMXModel.EQC_NEW_Entities())
+            {
+                var controllerName = url.Remove(0, 1).Split('/')[0];
+                var seq = controllerName != "" ? context.Menu.Where(r => 
+                r.ParentSeq != null  &&
+                (r.PathName.StartsWith(controllerName) )
+                
+                ).FirstOrDefault()?.Seq : 0;
+                return Json(seq);
+            }
+        }
+
+        public JsonResult GetMenuName(int seq)
+        {
+            using (var context = new EDMXModel.EQC_NEW_Entities())
+            {
+                var target = context.Menu.Find(seq);
+                if(target != null)
+                    return Json($"{target.SystemType.Name}-{target.Name}");
+                return Json("");
+            }
         }
     }
 }

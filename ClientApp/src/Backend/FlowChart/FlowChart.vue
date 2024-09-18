@@ -14,6 +14,9 @@
                 <button v-on:click.stop="addItem++" role="button" class="btn btn-outline-secondary btn-xs mx-1">
                     <i class="fas fa-plus"></i>&nbsp;&nbsp;新增
                 </button>
+                <a href="/FlowChartTp/DownloadExcel" download class="btn btn-color11-1 btn-xs m-1" >
+                    匯出excel
+                </a>
             </div>
         </div>
         <div>

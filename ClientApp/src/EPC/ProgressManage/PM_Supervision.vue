@@ -1,7 +1,7 @@
 <template>
     <div>
         <table>
-            <tr><td colspan="5">避免網路速度影響，僅提供下載30天報表</td></tr>
+            <tr><td colspan="5">避免網路速度影響，僅提供下載31天報表</td></tr>
             <tr>
                 <td style="width: 80px; background: #f2f2f2; text-align:center;">日期範圍</td>
                 <td class="pl-2">
@@ -13,7 +13,7 @@
                 </td>
                 <td>
                     <!-- button @click="downloadDailyMulti" type="button" class="btn btn-outline-secondary btn-sm" title="監造報表下載">下載多日監造報表<i class="fas fa-download"></i></button -->
-                    <button @click="dnClickEvent = 1" data-target="#refExportModal" title="下載多日監造日報" class="btn btn-outline-secondary btn-sm"
+                    <button :disabled="downloadTaskStore.isDownloading" @click="dnClickEvent = 1" data-target="#refExportModal" title="下載多日監造日報" class="btn btn-outline-secondary btn-sm"
                             role="button" data-toggle="modal">
                         下載多日監造日報<i class="fas fa-download"></i>
                     </button>
@@ -24,26 +24,43 @@
                         上傳施工日誌&nbsp;<i class="fas fa-upload"></i>
                     </label>
                 </td>
+                <td style="color:red" v-if="downloadTaskStore.isDownloading" class="pl-2">
+                        因資源超負荷使用，請等候....
+                </td>
             </tr>
         </table>
         <CalendarSetting ref="calendar" v-bind:tenderItem="tenderItem" v-bind:attrs="attrs"
                          v-on:onDayClickEvent="onCalDayClick"
                          v-on:onFromPageEvent="onCalFromPage"
-                         v-on:onDataChangeEvent="onCalDataChange"></CalendarSetting>
+                         :supervision="true"
+                    
+                         v-on:onDataChangeEvent="onCalDataChange">
+        <template #constructionBtn>
+            <slot name="constructionBtn">
+                
+            </slot>
+        </template>    
+        <template #constructionDaysSetting>
+        
+            <slot name="constructionDaysSetting">
+
+        </slot>
+    </template>            
+        </CalendarSetting>
         <h5>日誌日期:{{selectDay}}</h5>
         <div>
             <ul v-show="supDailyItem!=null" class="nav nav-tabs" role="tablist">
                 <li class="nav-item">
-                    <a v-on:click="selectTab=''" class="nav-link active" id="tabMenu01" data-toggle="tab" href="#menu01">一、依施工計畫執行按圖施工概況</a>
+                    <a v-on:click="selectTab=''" :class="`nav-link ${selectTab == '' ? 'active' : '' }`" id="tabMenu01" data-toggle="tab" href="#menu01">一、依施工計畫執行按圖施工概況</a>
                 </li>
                 <li class="nav-item">
-                    <a v-on:click="selectTab='menu02'" class="nav-link" id="tabMenu02" data-toggle="tab" href="#menu02">二、其它</a>
+                    <a v-on:click="selectTab='menu02'" :class="`nav-link ${selectTab == 'menu02' ? 'active' : '' }`" id="tabMenu02" data-toggle="tab" href="#menu02">二、其它</a>
                 </li>
             </ul>
             <!-- Tab panes -->
             <div class="tab-content">
                 <!-- 一 -->
-                <div id="menu01" class="tab-pane">
+                <div id="menu01" v-if="selectTab == ''">
                     <h5>一、依施工計畫執行按圖施工概況(含約定之重要施工項目及完成數量等)</h5>
                     <div class="row justify-content-between">
                         <div class="form-inline col-12 col-md-8 small">
@@ -58,7 +75,7 @@
                         </div>
                     </div>
                     <comm-pagination ref="pagination" :recordTotal="planItems.length" v-on:onPaginationChange="onPaginationChange"></comm-pagination>
-                    <div class="table-responsive">
+                    <div class="table-responsive tableFixHead ">
                         <table class="table table-responsive-md table-hover">
                             <thead class="insearch">
                                 <tr>
@@ -72,6 +89,7 @@
                                     <th class="text-right"><strong>單價</strong></th>
                                     <th style="width: 50px;" class="text-right"><strong>契約數量</strong></th>
                                     <th class="text-right"><strong>金額</strong></th>
+                                    <th style="min-width: 70px;"><strong>施工日至本日完成數量</strong></th>
                                     <th style="min-width: 70px;"><strong>本日完成數量</strong></th>
                                     <th><strong>總累計完成數量</strong></th>
                                     <th style="min-width: 100px;"><strong>備註</strong></th>
@@ -86,6 +104,7 @@
                                     <td class="text-right"><strong>{{item.Price}}</strong></td>
                                     <td class="text-right"><strong>{{item.Quantity}}</strong></td>
                                     <td class="text-right"><strong>{{item.Amount}}</strong></td>
+                                    <td :style="{color:item.ConstructionConfirm  != item.TodayConfirm ?  'red' : 'inherit' }">{{ item.ConstructionConfirm  }}</td>
                                     <td>
                                         <input v-bind:disabled="item.DayProgress==-1" v-model.number="item.TodayConfirm" type="text" class="form-control text-right">
                                         <label v-if="isTodayOver(item)" style="color:red; font-size:small">總累量已超過契約量</label>
@@ -97,7 +116,7 @@
                         </table>
                     </div>
                 </div>
-                <div id="menu02" class="tab-pane">
+                <div id="menu02" v-if="selectTab == 'menu02'">
                     <h5>二、監督依照設計圖說及核定施工圖說施工<small>(含約定之檢驗停留點及施工抽查等情形)</small></h5>
                     <textarea v-model="miscItem.DesignDrawingConst" rows="5" class="form-control"></textarea>
 
@@ -193,8 +212,16 @@
     </div>
 </template>
 <script>
+    import downloadTaskStore  from '../../store/downloadTaskStore';
     export default {
         props: ['tenderItem', 'canEditUser'],
+        setup()
+        {   
+            downloadTaskStore.getDonloadTaskTag();
+            return {
+                downloadTaskStore 
+            }
+        },
         data: function () {
             return {
                 supDailyItem: null,
@@ -247,9 +274,10 @@
                 } else if (this.dnClickEvent == 0) {
                     this.downloadDaily();
                 }
+                window.closeModal("#refExportModal");
             },
             //下載 多日期 監造報表 s20230228
-            downloadDailyMulti() {
+            async downloadDailyMulti() {
                 if (this.filterEndDate == '' || this.filterStartDate == '') {
                     alert('請輸入日期範圍');
                     return;
@@ -260,7 +288,11 @@
                 }
 
                 let action = '/EPCProgressManage/DownloadSDailyMulti?sd=' + this.filterStartDate + '&ed=' + this.filterEndDate + '&eId=' + this.tenderItem.Seq + '&eEM=' + this.dnDailyMode;
-                window.comm.dnFile(action, this.dnCallBack);
+                // window.comm.dnFile(action, this.dnCallBack);
+                let {data :res}  = await window.myAjax.get(action);
+                alert(res.message);
+                downloadTaskStore.isDownloading = res.downloadTaskTag;
+
             },
             //下載 監造報表
             downloadDaily() {
@@ -315,10 +347,11 @@
                                 alert('請繼續填寫 二、其它 頁面相關資料');
                                 //s20230908
                                 this.selectTab = 'menu02';
-                                document.getElementById('tabMenu01').classList.remove("active");
-                                document.getElementById('menu01').classList.remove("active");
-                                document.getElementById('tabMenu02').classList.add("active");
-                                document.getElementById('menu02').classList.add("active");
+                                // document.getElementById('tabMenu01').classList.remove("active");
+                                // document.getElementById('menu01').classList.remove("active");
+                                // document.getElementById('tabMenu02').classList.add("active");
+                                // document.getElementById('menu02').classList.add("active");
+                                window.scrollTo(0, 0);
                             } else {
                                 alert(resp.data.msg);
                             }
@@ -370,16 +403,14 @@
                             this.planItems = resp.data.planItems;
                             this.selectDay = sDay;
                             //s20230831
-                            document.getElementById('tabMenu02').classList.remove("active");
-                            document.getElementById('menu02').classList.remove("active");
-                            document.getElementById('tabMenu01').classList.add("active");
-                            document.getElementById('menu01').classList.add("active");
+                            // document.getElementById('tabMenu02').classList.remove("active");
+                            // document.getElementById('tabMenu01').classList.add("active");
 
-                            var that = this;
+                            // var that = this;
                             this.$refs.calendar.setSupDailyDateNote(this.supDailyItem);
-                            setTimeout(function greet() {
-                                that.$refs.pagination.setPagination();
-                            }, 500);
+                            // setTimeout(function greet() {
+                            //     that.$refs.pagination.setPagination();
+                            // }, 500);
                         } else
                             alert(resp.data.msg);
                     })
@@ -424,6 +455,12 @@
                 window.myAjax.post('/EPCProgressManage/CheckActiveDate', { id: this.tenderItem.Seq, tarDate: day.id })
                     .then(resp => {
                         if (resp.data.result == 0) {
+                            this.tenderItem.currentDate = {
+                                Date : day.id,
+                                ConstructionDateConfirmed : resp.data.ConstructionDateConfirmed,
+                                MiscDateConfirmed : resp.data.MiscDateConfirmed    
+                            };
+
                             this.getMiscItem(day.id);
                         } else
                             alert(resp.data.msg);
@@ -474,6 +511,7 @@
             },
         },
         mounted() {
+            this.tenderItem.currentDate = null;
             console.log('mounted() 監造日誌');
         }
     }
@@ -482,4 +520,26 @@
     .vc-highlight {
         width: 95% !important;
     }
+</style>
+<style scoped>
+
+    .tableFixHead          { overflow: auto; max-height: 500px;   }
+table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+.table {
+    margin : 0;
+}
+.tableFixHead thead  { position: sticky !important ; top: 0 !important ; z-index: 1 !important;     }
+th {
+    border : 0;
+    border-bottom: #ddd solid 1px !important; 
+    border-left : 0 !important;
+    border-right:0 !important;
+}
+td {
+    z-index: 0;
+    position: relative;
+}
 </style>

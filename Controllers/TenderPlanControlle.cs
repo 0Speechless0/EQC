@@ -145,11 +145,15 @@ namespace EQC.Controllers
             return Json(items);
         }
         //工程連結標案(PrjXML) shioulo 20220518
-        public JsonResult SetEngLinkTender(int id, int prj)
+        public JsonResult SetEngLinkTender(int id, int prj, int code)
         {
-            int state = engMainService.SetEngLinkTender(id, prj);
+            int state = code == 1 ? 
+                engMainService.SetEngLinkTender(id, prj) :
+                engMainService.SetEngLinkTempTender(id, prj);
+           
             if(state == -1)
             {
+
                 return Json(new
                 {
                     result = 1,
@@ -503,7 +507,7 @@ namespace EQC.Controllers
                 message = "上傳檔案失敗"
             });
         }
-        public ActionResult EngAttachmentDownload(int seq)
+        public ActionResult EngAttachmentDownload(int seq, DownloadArgExtension downloadArg = null)
         {
             EngAttachmentService service = new EngAttachmentService();
             List<EngAttachmentModel> items = service.GetItemFileInfoBySeq<EngAttachmentModel>(seq);
@@ -515,7 +519,7 @@ namespace EQC.Controllers
                     message = "無檔案資料"
                 }, JsonRequestBehavior.AllowGet);
             }
-            return DownloadFile(items[0]);
+            return DownloadFile(items[0], downloadArg);
         }
         private bool SaveFile(HttpPostedFileBase file, EngAttachmentModel m, string fileHeader)
         {
@@ -541,7 +545,7 @@ namespace EQC.Controllers
                 return false;
             }
         }
-        private ActionResult DownloadFile(EngAttachmentModel m)
+        private ActionResult DownloadFile(EngAttachmentModel m, DownloadArgExtension downloadArg = null)
         {
             string filePath = Utils.GetEngMainFolder(m.EngMainSeq);
 
@@ -552,8 +556,10 @@ namespace EQC.Controllers
                 if (System.IO.File.Exists(fullPath))
                 {
                     Stream iStream = new FileStream(fullPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                    downloadArg?.targetPathSetting(fullPath);
                     return File(iStream, "application/blob", m.OriginFileName);
                 }
+
             }
 
             return Json(new
@@ -805,6 +811,17 @@ namespace EQC.Controllers
                 系統預設帳號、密碼規則如下:<br>
                 帳號:代號+工程編號<br>
                 密碼:!統編!<br>
+                <p style='color:blue'>
+                (密碼的驚嘆號前後都要打)
+                </p>
+                <p style='color:blue'>
+                ex:設計廠商帳號:D112-B-011-05-01
+                </p>
+                <p style='color:blue'>
+                密碼:!25614852!) 
+                </p>
+
+‌
                 如果你是設計單位，代號為D；如果你是監造單位，代號為S；如果你是施工廠商，代號為C；登入系統後，請自行變更密碼。<br>
                 請依水利署工程品管作業規範，登入系統填報工程抽驗及缺失改善狀況", user, unit);
             return Utils.Email(toMail, "水利工程品管系統,帳號通知", body);
@@ -1000,7 +1017,7 @@ namespace EQC.Controllers
         }
 
         //下載 PccesXML shioulo 20220711
-        public ActionResult DownloadPccesXML(int id)
+        public ActionResult DownloadPccesXML(int id, DownloadArgExtension downloadArg = null)
         {
             List<EngMainEditVModel> items = engMainService.GetItemPccesFileBySeq<EngMainEditVModel>(id);
             if (items.Count != 1)
@@ -1023,6 +1040,7 @@ namespace EQC.Controllers
             }
 
             Stream iStream = new FileStream(fName, FileMode.Open, FileAccess.Read, FileShare.Read);
+            downloadArg?.targetPathSetting(fName);
             return File(iStream, "application/blob", m.PccesXMLFile);
         }
         //複製工程 s20230623

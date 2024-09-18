@@ -7,22 +7,23 @@ using System.Web.Mvc;
 using EQC.Services;
 using EQC.ViewModel;
 using System.Configuration;
-
+using EQC.Controllers;
 namespace EQC.Common
 {
     [Serializable]
     public class SessionManager
     {
-        private System.Web.SessionState.HttpSessionState _session;
+        public System.Web.SessionState.HttpSessionState _session;
         private UserService userService = new UserService();
         private MenuService menuService = new MenuService();
         static UserInfo _userInfo = new UserInfo();
         public SessionManager()
         {
+
             if (HttpContext.Current != null)
             {
                 _session = HttpContext.Current.Session;
-                if (_session["UserInfo"] == null)
+                if (_session["UserInfo"] == null && ConfigurationManager.AppSettings.Get("Debug") == null)
                 {
                     _session["UserInfo"] = new UserInfo();
                 }
@@ -32,7 +33,8 @@ namespace EQC.Common
         {
             if (HttpContext.Current != null)
             {
-                return HttpContext.Current.Session["UserhomeUrl"].ToString();
+                return HttpContext.Current.Session["UserhomeUrl"]?.ToString() ??
+                    LoginController.userHomeUrlSwitch(_userInfo);
             } else
                 return "";
         }
@@ -67,6 +69,9 @@ namespace EQC.Common
             }
         }
 
+
+        private static Dictionary<int, UserInfo> userDic = new Dictionary<int, UserInfo>();
+
         #region UserInfo
 
         /// <summary>
@@ -75,12 +80,25 @@ namespace EQC.Common
         /// <returns></returns>
         public UserInfo GetUser()
         {
+            if (_session == null)
+                return null;
             if (ConfigurationManager.AppSettings.Get("Debug") == null)
             {
                 return (UserInfo)_session["UserInfo"];
             }
             return _userInfo;
           
+        }
+
+        public string  currentSystemSeq
+        {
+            get
+            {
+                return _session["SystemTypeSeq"]?.ToString();
+            }
+            set {
+                _session["SystemTypeSeq"] = value;
+            }
         }
 
         /// <summary>
@@ -139,6 +157,7 @@ namespace EQC.Common
             if (sm.GetUser().UserNo != account )
             {
                 UserInfo userData = userService.GetUserByAccount(account).FirstOrDefault();
+                VUserMain vuserData = userService.GetListV2( (int)userData.UnitSeq1, userData.UserNo, false).FirstOrDefault();
                 List<Role> roleData = null; 
                 List<VMenu> menuData = null;
                 if (userData != null)
@@ -159,6 +178,41 @@ namespace EQC.Common
                     menuData.AddRange(menuService.LoadMenu(12, userData.Seq));//s20230311
                     menuData.AddRange(menuService.LoadMenu(20, userData.Seq));//alex20230327vm 
 
+                    using (var context = new EDMXModel.EQC_NEW_Entities())
+                    {
+                        menuData = menuData
+                            .GroupJoin(
+                            context.MenuRole.ToList(), r1 => r1.Seq, r2 => r2.MenuSeq,
+                            (r1, r2) =>
+                            {
+                                r1.MenuRoleSeqs = r2.Select(r => r.RoleSeq).ToHashSet();
+                                return r1;
+                            }
+                        )
+                        .Where(r => vuserData.RoleSeq2 == 0 || r.MenuRoleSeqs.Contains((byte)vuserData.RoleSeq2))
+                        .Where(r => r.ParentSeq != 0)
+                        .ToList();
+
+                        userData.SystemList =
+                            context.SystemType.ToList().Join(
+                                menuData
+                                    .GroupBy(r => r.SystemTypeSeq)
+                                    //.Where(r => r.Count() > 1 )
+                                    , r1 => r1.Seq, r2 => r2.Key,
+                                (r1, r2) => new VSystemMenu
+                                {
+                                    PathName = r2.OrderBy(r => r.OrderNo).FirstOrDefault()?.Url,
+                                    Name = r1.Name,
+                                    SystemType = r1.Seq,
+                                    OrderNo = (int)(r1.OrderNo ?? 0)
+                                })
+                                .OrderBy(r => r.OrderNo)
+                            .ToList();
+
+                        menuData = menuData.Where(r => r.IsEnabled.Value ).ToList();
+
+                    }
+
                     //在此新增節點進入權依據 menuData.AddRange(menuService.LoadMenu(20, userData.Seq))
                     SetSession(userData, roleData, menuData);
                 }
@@ -172,7 +226,7 @@ namespace EQC.Common
             //shioulo 20210707
             userData.Role = roleData;
             userData.MenuList = menuData;
-            userData.SystemList = menuService.LoadSystemMenu(userData.Seq);
+
             SetUser(userData);
             /*SetUser(new EQC.Common.UserInfo() 
             {

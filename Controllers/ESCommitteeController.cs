@@ -190,7 +190,7 @@ namespace EQC.Controllers
         public JsonResult SearchPhase(string keyWord)
         {
             List<SupervisePhaseModel> list = iServce.GetPhaseCode(keyWord);
-            if (list.Count == 1)
+            if (list.Count > 0)
             {
                 return Json(new
                 {

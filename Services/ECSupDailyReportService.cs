@@ -73,7 +73,7 @@ namespace EQC.Services
                         @KgCo2e,
                         GetDate(),
                         @ModifyUserSeq,
-                        GetDate(),
+                        0,
                         @ModifyUserSeq
                     )";
                     foreach (EC_SupDailyReportConstructionEquipmentModel m in equipments)
@@ -82,8 +82,8 @@ namespace EQC.Services
                         cmd = db.GetCommand(sql);
                         cmd.Parameters.Clear();
                         cmd.Parameters.AddWithValue("@EC_SupDailyDateSeq", supDailyItem.Seq);
-                        cmd.Parameters.AddWithValue("EquipmentName", m.EquipmentName);
-                        cmd.Parameters.AddWithValue("EquipmentModel", m.EquipmentModel);
+                        cmd.Parameters.AddWithValue("@EquipmentName", m.EquipmentName);
+                        cmd.Parameters.AddWithValue("@EquipmentModel", m.EquipmentModel);
                         cmd.Parameters.AddWithValue("@TodayQuantity", m.TodayQuantity);
                         cmd.Parameters.AddWithValue("@TodayHours", this.NulltoDBNull(m.TodayHours));
                         cmd.Parameters.AddWithValue("@KgCo2e", this.NulltoDBNull(m.KgCo2e)); //s20230502
@@ -115,7 +115,7 @@ namespace EQC.Services
                         @TodayQuantity,
                         GetDate(),
                         @ModifyUserSeq,
-                        GetDate(),
+                        0,
                         @ModifyUserSeq
                     )";
 
@@ -164,7 +164,7 @@ namespace EQC.Services
                         @Memo,
                         GetDate(),
                         @ModifyUserSeq,
-                        GetDate(),
+                        0,
                         @ModifyUserSeq
                     )";
 
@@ -227,7 +227,7 @@ namespace EQC.Services
                         @FillinDate,
                         GetDate(),
                         @ModifyUserSeq,
-                        GetDate(),
+                        DATEADD(second, 1, getdate()),
                         @ModifyUserSeq
                     )";
                 cmd = db.GetCommand(sql);
@@ -248,8 +248,10 @@ namespace EQC.Services
                 int supDailyDateSeq = Convert.ToInt32(dt.Rows[0]["NewSeq"].ToString());
 
                 //施工日誌_雜項
-                Null2Empty(miscItem);
-                sql = @"
+                if(miscItem != null)
+                {
+                    Null2Empty(miscItem);
+                    sql = @"
                     insert into EC_SupDailyReportMiscConstruction(
                         EC_SupDailyDateSeq,
                         IsFollowSkill,
@@ -279,19 +281,21 @@ namespace EQC.Services
                         GetDate(),
                         @ModifyUserSeq
                     )";
-                cmd = db.GetCommand(sql);
-                cmd.Parameters.Clear();
-                cmd.Parameters.AddWithValue("@EC_SupDailyDateSeq", supDailyDateSeq);
-                cmd.Parameters.AddWithValue("@IsFollowSkill", this.NulltoDBNull(miscItem.IsFollowSkill));
-                cmd.Parameters.AddWithValue("@SafetyHygieneMattersOther", miscItem.SafetyHygieneMattersOther);
-                cmd.Parameters.AddWithValue("@SafetyHygieneMatters01", this.NulltoDBNull(miscItem.SafetyHygieneMatters01));
-                cmd.Parameters.AddWithValue("@SafetyHygieneMatters02", this.NulltoDBNull(miscItem.SafetyHygieneMatters02));
-                cmd.Parameters.AddWithValue("@SafetyHygieneMatters03", this.NulltoDBNull(miscItem.SafetyHygieneMatters03));
-                cmd.Parameters.AddWithValue("@SamplingTest", miscItem.SamplingTest);
-                cmd.Parameters.AddWithValue("@NoticeManufacturers", miscItem.NoticeManufacturers);
-                cmd.Parameters.AddWithValue("ImportantNotes", miscItem.ImportantNotes);
-                cmd.Parameters.AddWithValue("@ModifyUserSeq", getUserSeq());
-                db.ExecuteNonQuery(cmd);
+                    cmd = db.GetCommand(sql);
+                    cmd.Parameters.Clear();
+                    cmd.Parameters.AddWithValue("@EC_SupDailyDateSeq", supDailyDateSeq);
+                    cmd.Parameters.AddWithValue("@IsFollowSkill", this.NulltoDBNull(miscItem.IsFollowSkill));
+                    cmd.Parameters.AddWithValue("@SafetyHygieneMattersOther", miscItem.SafetyHygieneMattersOther);
+                    cmd.Parameters.AddWithValue("@SafetyHygieneMatters01", this.NulltoDBNull(miscItem.SafetyHygieneMatters01));
+                    cmd.Parameters.AddWithValue("@SafetyHygieneMatters02", this.NulltoDBNull(miscItem.SafetyHygieneMatters02));
+                    cmd.Parameters.AddWithValue("@SafetyHygieneMatters03", this.NulltoDBNull(miscItem.SafetyHygieneMatters03));
+                    cmd.Parameters.AddWithValue("@SamplingTest", miscItem.SamplingTest);
+                    cmd.Parameters.AddWithValue("@NoticeManufacturers", miscItem.NoticeManufacturers);
+                    cmd.Parameters.AddWithValue("@ImportantNotes", miscItem.ImportantNotes);
+                    cmd.Parameters.AddWithValue("@ModifyUserSeq", getUserSeq());
+                    db.ExecuteNonQuery(cmd);
+                }
+
 
                 //依施工計畫執行按圖施工概況
                 sql = @"insert into EC_SupPlanOverview(
@@ -360,8 +364,8 @@ namespace EQC.Services
                     cmd = db.GetCommand(sql);
                     cmd.Parameters.Clear();
                     cmd.Parameters.AddWithValue("@EC_SupDailyDateSeq", supDailyDateSeq);
-                    cmd.Parameters.AddWithValue("EquipmentName", m.EquipmentName);
-                    cmd.Parameters.AddWithValue("EquipmentModel", m.EquipmentModel);
+                    cmd.Parameters.AddWithValue("@EquipmentName", m.EquipmentName);
+                    cmd.Parameters.AddWithValue("@EquipmentModel", m.EquipmentModel);
                     cmd.Parameters.AddWithValue("@TodayQuantity", m.TodayQuantity);
                     cmd.Parameters.AddWithValue("@TodayHours", this.NulltoDBNull(m.TodayHours));
                     cmd.Parameters.AddWithValue("@KgCo2e", this.NulltoDBNull(m.KgCo2e)); //s20230502
@@ -483,8 +487,10 @@ namespace EQC.Services
                 db.ExecuteNonQuery(cmd);
 
                 //施工日誌_雜項
-                Null2Empty(miscItem);
-                sql = @"
+                if (miscItem != null)
+                {
+                    Null2Empty(miscItem);
+                    sql = @"
                     update EC_SupDailyReportMiscConstruction set
                         IsFollowSkill=@IsFollowSkill,
                         SafetyHygieneMattersOther=@SafetyHygieneMattersOther,
@@ -497,19 +503,21 @@ namespace EQC.Services
                         ModifyTime=GetDate(),
                         ModifyUserSeq=@ModifyUserSeq
                     where Seq=@Seq";
-                cmd = db.GetCommand(sql);
-                cmd.Parameters.Clear();
-                cmd.Parameters.AddWithValue("@Seq", miscItem.Seq);
-                cmd.Parameters.AddWithValue("@IsFollowSkill", this.NulltoDBNull(miscItem.IsFollowSkill));
-                cmd.Parameters.AddWithValue("@SafetyHygieneMattersOther", miscItem.SafetyHygieneMattersOther);
-                cmd.Parameters.AddWithValue("@SafetyHygieneMatters01", this.NulltoDBNull(miscItem.SafetyHygieneMatters01));
-                cmd.Parameters.AddWithValue("@SafetyHygieneMatters02", this.NulltoDBNull(miscItem.SafetyHygieneMatters02));
-                cmd.Parameters.AddWithValue("@SafetyHygieneMatters03", this.NulltoDBNull(miscItem.SafetyHygieneMatters03));
-                cmd.Parameters.AddWithValue("@SamplingTest", miscItem.SamplingTest);
-                cmd.Parameters.AddWithValue("@NoticeManufacturers", miscItem.NoticeManufacturers);
-                cmd.Parameters.AddWithValue("ImportantNotes", miscItem.ImportantNotes);
-                cmd.Parameters.AddWithValue("@ModifyUserSeq", getUserSeq());
-                db.ExecuteNonQuery(cmd);
+                    cmd = db.GetCommand(sql);
+                    cmd.Parameters.Clear();
+                    cmd.Parameters.AddWithValue("@Seq", miscItem.Seq);
+                    cmd.Parameters.AddWithValue("@IsFollowSkill", this.NulltoDBNull(miscItem.IsFollowSkill));
+                    cmd.Parameters.AddWithValue("@SafetyHygieneMattersOther", miscItem.SafetyHygieneMattersOther);
+                    cmd.Parameters.AddWithValue("@SafetyHygieneMatters01", this.NulltoDBNull(miscItem.SafetyHygieneMatters01));
+                    cmd.Parameters.AddWithValue("@SafetyHygieneMatters02", this.NulltoDBNull(miscItem.SafetyHygieneMatters02));
+                    cmd.Parameters.AddWithValue("@SafetyHygieneMatters03", this.NulltoDBNull(miscItem.SafetyHygieneMatters03));
+                    cmd.Parameters.AddWithValue("@SamplingTest", miscItem.SamplingTest);
+                    cmd.Parameters.AddWithValue("@NoticeManufacturers", miscItem.NoticeManufacturers);
+                    cmd.Parameters.AddWithValue("@ImportantNotes", miscItem.ImportantNotes);
+                    cmd.Parameters.AddWithValue("@ModifyUserSeq", getUserSeq());
+                    db.ExecuteNonQuery(cmd);
+                }
+
 
                 //依施工計畫執行按圖施工概況
                 sql = @"update EC_SupPlanOverview set
@@ -630,6 +638,17 @@ namespace EQC.Services
         public List<T> GetSupDailyDateAndCount<T>(int dataType, int engMainSeq, DateTime sDate, DateTime eDate)
         {
             string sql = @"
+			    declare @DayCount as int = 
+			    (
+					    select Count(*) from SupDailyDate sp
+					    where sp.EngMainSeq = @engMainSeq and sp.DataType = @DataType 
+				    )
+				declare @MinItemDate as datetime = 
+				(
+                    select Min(ItemDate) from EC_SupDailyDate
+				    WHERE engMainSeq=@engMainSeq
+                    and DataType=@DataType and CreateTime != ModifyTime
+                )
 				SELECT
                     a.Seq,
 					a.EngMainSeq,
@@ -639,7 +658,7 @@ namespace EQC.Services
                     a.Weather1,
                     a.Weather2,
                     a.FillinDate,
-                    count(b.Seq) dailyCount
+					DATEDIFF(DAY,  @MinItemDate, a.ItemDate) +1 + @DayCount  OrderNo
 				FROM EC_SupDailyDate a
                 inner join EC_SupDailyDate b on(b.EngMainSeq=a.EngMainSeq)
 				WHERE a.engMainSeq=@engMainSeq
@@ -678,6 +697,19 @@ namespace EQC.Services
         public List<T> GetSupDailyDateAndCount<T>(int seq)
         {
             string sql = @"
+				declare @MinItemDate as datetime = 
+				(
+                    select Min(ec.ItemDate) from EC_SupDailyDate e
+					inner join EC_SupDailyDate ec on  (ec.EngMainSeq = e.EngMainSeq and ec.DataType=e.DataType)
+				    WHERE e.Seq = @Seq
+                     and e.CreateTime != e.ModifyTime
+                )
+			    declare @DayCount as int = 
+			    (
+					    select Count(*) from EC_SupDailyDate sp
+					    inner join SupDailyDate spp on (sp.EngMainSeq = spp.EngMainSeq and sp.DataType = spp.DataType )
+					    where sp.Seq = @Seq
+				    )
 				SELECT
                     a.Seq,
 					a.EngMainSeq,
@@ -687,7 +719,7 @@ namespace EQC.Services
                     a.Weather1,
                     a.Weather2,
                     a.FillinDate,
-                    count(b.Seq) dailyCount
+					DATEDIFF(DAY,  @MinItemDate, a.ItemDate) +1 + @DayCount  OrderNo
 				FROM EC_SupDailyDate a
                 inner join EC_SupDailyDate b on(b.EngMainSeq=a.EngMainSeq)
 				WHERE a.Seq=@Seq
@@ -1097,10 +1129,12 @@ namespace EQC.Services
                        +
                       ISNULL((
                           SELECT sum(b.TodayConfirm) FROM SupDailyDate a
-                          inner join SupPlanOverview b on(b.SupDailyDateSeq=a.Seq and b.TodayConfirm>0 )
+                          
+                         inner join SupPlanOverview b on(b.SupDailyDateSeq=a.Seq and b.TodayConfirm>0 )
                           inner join SchEngProgressPayItem b1 on(b1.Seq=b.SchEngProgressPayItemSeq and b1.Seq=z2.ParentSchEngProgressPayItemSeq)
-                          where a.EngMainSeq=z.EngMainSeq
-                          and a.DataType=z.DataType
+                        left join EC_SupDailyDate e on e.ItemDate = a.ItemDate and e.DataType = a.DataType and e.EngMainSeq = a.EngMainSeq  
+                        where a.EngMainSeq=z.EngMainSeq
+                          and a.DataType=z.DataType and e.Seq is null
                       ),0) 
                     ) TotalAccConfirm
                 FROM EC_SupDailyDate z

@@ -12,8 +12,19 @@ namespace EQC.Services
         public List<T> GetImportantEventSta<T>(string execName = null)
         {
             string sql = @"
+                DECLARE @tmp_PrjXML table (Seq INT)
+
+                INSERT INTO @tmp_PrjXML(Seq)
+                select a.Seq from PrjXML a
+                left outer join PrjXMLExt b on(b.PrjXMLSeq=a.Seq )
+                CROSS APPLY dbo.fPrjXMLProgress(a.Seq) d --20230510
+                where a.TenderYear>106 and ISNULL(b.ActualCompletionDate,'')=''
+                and ISNULL(d.PDAccuActualProgress,0)<100 and d.PDExecState<>'已結案' and d.PDExecState<>'驗收完成'
+                order by a.Seq
+
                 select 1 mode, '1. 標案歸屬計畫名稱未填報或填報錯誤' level, count(a.Seq) engCount
                 from PrjXML a
+                inner join @tmp_PrjXML a1 ON(a1.Seq=a.Seq)
                 left join PrjXMLTag pt on  ( pt.PrjXMLSeq = a.Seq  )
                 left outer join PrjXMLExt b on(b.PrjXMLSeq=a.Seq )
                 CROSS APPLY dbo.fPrjXMLProgress(a.Seq) d --20230517
@@ -31,6 +42,7 @@ namespace EQC.Services
                 from(
                     select count(a.Seq) cnt
                     from PrjXML a
+                    inner join @tmp_PrjXML a1 ON(a1.Seq=a.Seq)
                     left join PrjXMLTag pt on  ( pt.PrjXMLSeq = a.Seq  )
                     left outer join PrjXMLExt b on(b.PrjXMLSeq=a.Seq )
                     CROSS APPLY dbo.fPrjXMLProgress(a.Seq) d --20230517
@@ -50,6 +62,7 @@ namespace EQC.Services
             
                     select count(a.Seq) cnt
                     from PrjXML a
+                    inner join @tmp_PrjXML a1 ON(a1.Seq=a.Seq)
                     left join PrjXMLTag pt on  ( pt.PrjXMLSeq = a.Seq  )
                     inner join Country2WRAMapping c on(
                         substring(a.ExecUnitName,1,3)=c.Country
@@ -71,6 +84,7 @@ namespace EQC.Services
                 union all
                 select 3 mode, '3. 標案未填XY座標' level, count(a.Seq) engCount
                 from PrjXML a
+                inner join @tmp_PrjXML a1 ON(a1.Seq=a.Seq)
                 left join PrjXMLTag pt on  ( pt.PrjXMLSeq = a.Seq  )
                 left outer join PrjXMLExt b on(b.PrjXMLSeq=a.Seq )
                 CROSS APPLY dbo.fPrjXMLProgress(a.Seq) d --20230517
@@ -84,6 +98,7 @@ namespace EQC.Services
                 union all
                 select 4 mode, '4. 已屆預定開工日期，實際開工日期未填' level, count(a.Seq) engCount
                 from PrjXML a
+                inner join @tmp_PrjXML a1 ON(a1.Seq=a.Seq)
                 left join PrjXMLTag pt on  ( pt.PrjXMLSeq = a.Seq  )
                 left outer join PrjXMLExt b on(b.PrjXMLSeq=a.Seq )
                 CROSS APPLY dbo.fPrjXMLProgress(a.Seq) d --20230517
@@ -126,6 +141,7 @@ namespace EQC.Services
                 /*union all
                 select 7 mode, '7.  請至署內水利工程計畫透明網-生態檢核專區公開生態檢核(設計階段)資料' level, count(a.Seq) engCount
                 from PrjXML a
+                inner join @tmp_PrjXML a1 ON(a1.Seq=a.Seq)
                 inner join EngMain c1 on(c1.PrjXMLSeq=a.Seq)
                 left outer join EcologicalChecklist c2 on(c2.EngMainSeq=c1.Seq and c2.Stage=1)
                 left outer join PrjXMLExt b on(b.PrjXMLSeq=a.Seq )
@@ -152,6 +168,7 @@ namespace EQC.Services
                 union all
                 select 8 mode, '7. 請至標管系統填寫「公共工程生態檢核自評表」' level, count(a.Seq) engCount
                 from PrjXML a
+                inner join @tmp_PrjXML a1 ON(a1.Seq=a.Seq)
                 left join PrjXMLTag pt on  ( pt.PrjXMLSeq = a.Seq  )
                 inner join PrjXMLExt b on(b.PrjXMLSeq=a.Seq )
                 CROSS APPLY dbo.fPrjXMLProgress(a.Seq) d --20230517
@@ -164,6 +181,7 @@ namespace EQC.Services
                 union all
                 select 9 mode, '8.品管人員即將到期，尚未回訓' level, count(a.Seq) engCount
                 from PrjXML a
+                inner join @tmp_PrjXML a1 ON(a1.Seq=a.Seq)
                 left join PrjXMLTag pt on  ( pt.PrjXMLSeq = a.Seq  )
                 inner join EngMain c on(c.PrjXMLSeq=a.Seq and DATEDIFF(day, GETDATE(), c.SupervisorCommPerson4LicenseExpires) <= 90 )
                 where a.TenderYear>106 and a.ExecUnitName=@ExecUnitName
@@ -172,6 +190,7 @@ namespace EQC.Services
                 union all
                 select 10 mode, '9.職安人員即將到期，尚未回訓' level, count(a.Seq) engCount
                 from PrjXML a
+                inner join @tmp_PrjXML a1 ON(a1.Seq=a.Seq)
                 left join PrjXMLTag pt on  ( pt.PrjXMLSeq = a.Seq  )
                 inner join EngMain c on(c.PrjXMLSeq=a.Seq and DATEDIFF(day, GETDATE(), c.SupervisorCommPerson3LicenseExpires) <= 90 )
                 where a.TenderYear>106 and a.ExecUnitName=@ExecUnitName
@@ -180,6 +199,7 @@ namespace EQC.Services
                 union all
                 select 11 mode, '10.標案保固期限即將到期，請處理保固金發還作業' level, count(a.Seq) engCount
                 from PrjXML a
+                inner join @tmp_PrjXML a1 ON(a1.Seq=a.Seq)
                 left join PrjXMLTag pt on  ( pt.PrjXMLSeq = a.Seq  )
                 inner join EngMain c on(c.PrjXMLSeq=a.Seq
                 	and DATEDIFF(day, GETDATE(), c.WarrantyExpires) > 0
@@ -189,11 +209,12 @@ namespace EQC.Services
                 and ISNULL(pt.ExcludeControlCode & 2048, 0 ) = 0     
                 union all
                 select 12 mode, '11.設計階段未上傳生態檢核相關文件，均會出現提醒，尚未上傳', count(a.Seq) engCount
-                from EngMain a 
+                from EngMain a
+                inner join @tmp_PrjXML a1 ON(a1.Seq=a.PrjXMLSeq)
                 inner join PrjXML p on (a.PrjXMLSeq = p.Seq and p.TenderYear>106)
                 left join PrjXMLTag pt on  ( pt.PrjXMLSeq = p.Seq  )
                 inner join EcologicalChecklist ec on ec.EngMainSeq = a.Seq
-                where ec.Stage = 2  and (
+                where ec.Stage = 1  and (
                     ec.SelfEvalFilename is null or
                     ec.PlanDesignRecordFilename is null or
                     ec.ConservMeasFilename is null
@@ -204,6 +225,7 @@ namespace EQC.Services
                 union all
                 select 13 mode, '12.施工進度達10%，未上傳(施工階段)生態檢核相關文件，均會出現提醒，尚未上傳', count(a.Seq) engCount
                 from EngMain a 
+                inner join @tmp_PrjXML a1 ON(a1.Seq=a.PrjXMLSeq)
                 inner join PrjXML p on (a.PrjXMLSeq = p.Seq and p.TenderYear>106)
                 left join PrjXMLTag pt on  ( pt.PrjXMLSeq = p.Seq  )
                 inner join EcologicalChecklist ec on ec.EngMainSeq = a.Seq
@@ -215,7 +237,10 @@ namespace EQC.Services
                     ec.PlanDesignRecordFilename is null or
                     ec.ConservMeasFilename is null
                 )
-                and ec.ToDoChecklit <= 2
+                and exists(
+                    select ec2.ToDoChecklit from EcologicalChecklist ec2
+                    where ec2.ToDoChecklit <=2 and ec2.Stage = 1 and ec2.EngMainSeq = a.Seq
+                )
                 and p.ExecUnitName=@ExecUnitName
                 and ISNULL(pt.ExcludeControlCode & 8192, 0 ) = 0     
                 ";
@@ -419,12 +444,13 @@ namespace EQC.Services
                     from EngMain a 
                     inner join PrjXML p on (a.PrjXMLSeq = p.Seq and p.TenderYear>106)
                     inner join EcologicalChecklist ec on ec.EngMainSeq = a.Seq
-                    where ec.Stage = 2 and (
+                    where ec.Stage = 1 and (
                         ec.SelfEvalFilename is null or
                         ec.PlanDesignRecordFilename is null or
                         ec.ConservMeasFilename is null
                     )
                     and p.ExecUnitName=@ExecUnitName
+                    and ec.ToDoChecklit <= 2
 
                 ";
             }
@@ -444,12 +470,27 @@ namespace EQC.Services
                         ec.ConservMeasFilename is null
                     )
 
-                    and ec.ToDoChecklit <= 2 --20230705
+                    and exists(
+                        select ec2.ToDoChecklit from EcologicalChecklist ec2
+                        where ec2.ToDoChecklit <=2 and ec2.Stage = 1 and ec2.EngMainSeq = a.Seq
+                    )
                     and p.ExecUnitName=@ExecUnitName
 
                 ";
             }
+            string prjXMLFilter = "";
+            if (mode != 5 && mode != 6) prjXMLFilter = "inner join @tmp_PrjXML a1 ON(a1.Seq=a.Seq)";// 20230709
             string sql = @"
+                DECLARE @tmp_PrjXML table (Seq INT) --20230709
+
+                INSERT INTO @tmp_PrjXML(Seq)
+                select a.Seq from PrjXML a
+                left outer join PrjXMLExt b on(b.PrjXMLSeq=a.Seq )
+                CROSS APPLY dbo.fPrjXMLProgress(a.Seq) d --20230510
+                where a.TenderYear>106 and ISNULL(b.ActualCompletionDate,'')=''
+                and ISNULL(d.PDAccuActualProgress,0)<100 and d.PDExecState<>'已結案' and d.PDExecState<>'驗收完成'
+                order by a.Seq;
+
                 select
                     a.Seq,
                     a.TenderNo,
@@ -462,6 +503,7 @@ namespace EQC.Services
                     a.ScheCompletionDate,
                     c.Seq EngSeq
                 from PrjXML a
+                " + prjXMLFilter + @"
                 left outer join PrjXMLExt b on(b.PrjXMLSeq=a.Seq )
                 left outer join EngMain c on(c.PrjXMLSeq=a.Seq )
                 left join PrjXMLTag pt on (pt.PrjXMLSeq = a.Seq )

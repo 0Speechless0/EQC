@@ -38,7 +38,7 @@
                         <th><strong>工程名稱</strong></th>
                         <th style="width: 120px;"><strong>執行機關</strong></th>
                         <th style="width: 120px;"><strong>設計單位</strong></th>
-                        <th><strong>監造單位</strong></th>
+                        <th style="width: 120px;"><strong>監造單位</strong></th>
                         <th style="width: 95px;"><strong>狀態</strong></th>
                         <th style="width: 42px;"><strong>功能</strong></th>
                     </tr>
@@ -50,7 +50,7 @@
                         <td>{{item.EngName}}</td>
                         <td>{{item.ExecUnit}}</td>
                         <td>{{item.DesignUnitName}}</td>
-                        <td>{{item.SupervisorUnitName}}</td>
+                        <td>{{item.SupervisionUnitName}}</td>
                         <td><i v-bind:class="getStateCss(item.ExecState)"></i>{{item.ExecState}}</td>
                         <td>
                             <div class="d-flex">
@@ -224,7 +224,7 @@
                                 </tr>
                                 <tr>
                                     <th>
-                                        河川局聯絡人
+                                        分署聯絡人
                                         <!-- span class="small text-R d-block">由工程會標案管理系統自動帶入</span -->
                                     </th>
                                     <td>
@@ -326,7 +326,7 @@
                                                 <div class="row">
                                                     <div class="col-3 list-group-item">{{ item.StartTime }} ~ {{ item.EndTime }}</div>
                                                     <div class="col-2 list-group-item"><input v-model.number="item.ActivityTime" @change="adjScheduleTime" type="number" class="form-control" /></div>
-                                                    <div class="col-7 list-group-item"><textarea v-model.trim="item.Summary" maxlength="200" class="col-12"></textarea></div>
+                                                    <div class="col-7 list-group-item"><textarea  v-model.trim="item.Summary" maxlength="200" :rows="(item.Summary.match(/\n/g) || []).length +1" class="col-12 form-control"></textarea></div>
                                                 </div>
                                             </div>
                                         </draggable>
@@ -522,7 +522,7 @@
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td class="text-left">督導人員記錄表</td>
+                                        <td class="text-left">督導人員紀錄表</td>
                                         <td>
                                             <select v-model="fileType" class="form-control my-1 mr-sm-2">
                                                 <option value="4">docx</option>
@@ -843,6 +843,7 @@
                     .then(resp => {
                         if (resp.data.result == 0) {
                             this.targetPhase = resp.data.item;
+                            this.yearPhaseItems = resp.data.phaseOption;
                             this.getPhaseEngItems('');
                             window.sessionStorage.setItem(window.window.esKeyword, this.keyWord);
                         } else {

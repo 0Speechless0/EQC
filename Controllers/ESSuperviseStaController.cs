@@ -26,13 +26,16 @@ namespace EQC.Controllers
         //期別查詢
         public JsonResult SearchPhase(string keyWord)
         {
-            List<SupervisePhaseModel> list = iService.GetPhaseCode(keyWord);
-            if (list.Count == 1)
+            var service = new SupervisePhaseService();
+            List<SupervisePhaseModel> list = service.GetPhaseCode(keyWord);
+            var phaseOption = service.GetPhaseOptions(keyWord.Substring(0, 3));
+            if (list.Count > 0)
             {
                 return Json(new
                 {
                     result = 0,
-                    item = list[0]
+                    item = list[0],
+                    phaseOption = phaseOption
                 });
             }
             return Json(new
@@ -59,19 +62,24 @@ namespace EQC.Controllers
         }
 
         //施工錯誤態樣統計
-        public ActionResult GetStaList(int docNo, DateTime sDate, DateTime eDate)
+        public ActionResult GetStaList(List<string> docNo, DateTime sDate, DateTime eDate)
         {
             List<ESStaListVModel> items = iService.GetStaList<ESStaListVModel>(docNo, sDate, eDate);
+            int num = iService.GetStaNum(docNo, sDate, eDate);
+            int total = iService.GetStaTotal(sDate, eDate);
             return Json(new
             {
                 result = 0,
-                items = items
+                items = items,
+                staNum = num,
+                staTotal = total
             });
         }
 
-        public void DownloadStaExcel(int docNo, int docType, DateTime sDate, DateTime eDate)
+        public void DownloadStaExcel(string docNo, int docType, DateTime sDate, DateTime eDate)
         {
-            List<ESStaListVModel> items = iService.GetStaList<ESStaListVModel>(docNo, sDate, eDate);
+            List<string> docNoList = docNo.Split(',').ToList();
+            List<ESStaListVModel> items = iService.GetStaList<ESStaListVModel>(docNoList, sDate, eDate);
             var excelProcess = new ExcelProcesser(0, (workBook) =>
             {
                 var sheet = workBook.GetSheetAt(0);
@@ -102,21 +110,31 @@ namespace EQC.Controllers
             excelProcess.insertOneCol(items.Select(r => r.MissingCnt), 2);
             excelProcess.insertOneCol(items.Select(r => r.MissingRate), 3);
             excelProcess.evaluateSheet(0);
-            if(docType == 1) 
+            string filename = "";
+            int year = sDate.Year-1911;
+            int month = sDate.Month;
+            string season = "第4季";
+            if (month < 4) season = "第1季";
+            else if (month < 7) season = "第2季";
+            else if (month < 10) season = "第3季";
+            if (docType == 1) 
             {
-                base.DownloadFile(excelProcess.getConvertedTemplateStream(), "督導統計.ods");
+                filename = String.Format("{0}年{1}督導統計.ods.docx", year, season);
+                base.DownloadFile(excelProcess.getConvertedTemplateStream(), filename);
             }
             if (docType == 0)
             {
-                base.DownloadFile(excelProcess.getTemplateStream(), "督導統計.xlsx");
+                filename = String.Format("{0}年{1}督導統計.xlsx", year, season);
+                base.DownloadFile(excelProcess.getTemplateStream(), filename);
             }
 
 
 
         }
-        public ActionResult DownloadSta(int docNo, int docType, DateTime sDate, DateTime eDate)
+        public ActionResult DownloadSta(string docNo, int docType, DateTime sDate, DateTime eDate)
         {
-            List<ESStaListVModel> items = iService.GetStaList<ESStaListVModel>(docNo, sDate, eDate);
+            List<string> docNoList = docNo.Split(',').ToList();
+            List<ESStaListVModel> items = iService.GetStaList<ESStaListVModel>(docNoList, sDate, eDate);
             if(items.Count == 0)
             {
                 return Json(new
@@ -125,22 +143,35 @@ namespace EQC.Controllers
                     message = "查無資料"
                 }, JsonRequestBehavior.AllowGet);
             }
-            string total = ((int)items[0].Total).ToString();
+            int total = iService.GetStaTotal(sDate, eDate);
 
             Microsoft.Office.Interop.Word.Application wordApp = null;
             Document doc = null;
-            string filename;
-            if (docNo == 1)
+            string filename = "";
+            string tableName = "";
+
+            if (docNoList.Count > 1)
+            {
+                filename = "品質管制與施工品質";
+                tableName = "品質管理制度缺失與施工品質缺失";
+            }
+            else if (docNoList[0] == "1")
+            {
                 filename = "品質管制";
-            else
-                filename = "施工品質"; 
+                tableName = "品質管理制度缺失";
+            }
+            else if (docNoList[0] == "2")
+            {
+                filename = "施工品質";
+                tableName = "施工品質缺失";
+            }
             try
             {
                 string tarfile = CopyTemplateFile("督導統計-公共工程施工查核常見缺失態樣統計表.docx", ".docx");
                 wordApp = new Microsoft.Office.Interop.Word.Application();
                 doc = wordApp.Documents.Open(tarfile);
                 Table table = doc.Tables[1];
-                table.Cell(1, 1).Range.Text = String.Format("（{0}）", (docNo == 1) ? "品質管理制度缺失" : "施工品質缺失");
+                table.Cell(1, 1).Range.Text = String.Format("（{0}）", tableName);
                 table.Cell(2, 1).Range.Text = String.Format("期間：自{1}年{2}月{3}日至{4}年{5}月{6}日　　總件數　{0}件"
                     , total
                     , sDate.Year - 1911, sDate.Month, sDate.Day
@@ -156,7 +187,7 @@ namespace EQC.Controllers
                     table.Cell(row, 2).Range.Text = m.MissingNo;
                     table.Cell(row, 3).Range.Text = m.Content;
                     table.Cell(row, 4).Range.Text = ((int)m.MissingCnt).ToString();
-                    table.Cell(row, 5).Range.Text = m.MissingRate.ToString();
+                    table.Cell(row, 5).Range.Text = m.MissingRate.ToString() +"%";
                     row++;
                     inx++;
                 }
@@ -170,17 +201,17 @@ namespace EQC.Controllers
                 doc.Save();
                 if (docType == 1)
                 {
-                    filename = String.Format("110年第4季施工錯誤態樣統計-{0}.docx", filename);
+                    filename = String.Format("{1}年{2}施工錯誤態樣統計-{0}.docx", filename, sDate.Year - 1911, season);
                 }
                 else if (docType == 2)
                 {
-                    filename = String.Format("110年第4季施工錯誤態樣統計-{0}.pdf", filename);
+                    filename = String.Format("{1}年{2}施工錯誤態樣統計-{0}.pdf", filename, sDate.Year - 1911, season);
                     tarfile = Path.Combine(Utils.GetTempFolder(), Guid.NewGuid().ToString("B").ToUpper()+".pdf");
                     doc.ExportAsFixedFormat(tarfile, WdExportFormat.wdExportFormatPDF);
                 }
                 else if (docType == 3)
                 {
-                    filename = String.Format("110年第4季施工錯誤態樣統計-{0}.odt", filename);
+                    filename = String.Format("{1}年{2}施工錯誤態樣統計-{0}.odt", filename, sDate.Year - 1911, season);
                     tarfile = Path.Combine(Utils.GetTempFolder(), Guid.NewGuid().ToString("B").ToUpper()+".odt");
                     doc.SaveAs2(tarfile, Microsoft.Office.Interop.Word.WdSaveFormat.wdFormatOpenDocumentText);
                 }

@@ -136,6 +136,7 @@
                     .then(resp => {
                         if (resp.data.result == 0) {
                             this.targetPhase = resp.data.item;
+                            this.yearPhaseItems = resp.data.phaseOption;
                             this.getPhaseEngItems('');
                             window.sessionStorage.setItem(window.window.esKeyword, this.keyWord);
                         } else {

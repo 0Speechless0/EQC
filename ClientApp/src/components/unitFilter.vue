@@ -81,6 +81,7 @@ export default {
     mounted()
     {
         this.unitLevel = this._startLevel - 1 ;
+
         if(this.initSubUnit )
         {
             this.subUnit =  this.initSubUnit 
@@ -92,10 +93,7 @@ export default {
         {
             for(var i = this._startLevel;i <= this.maxUnitLevel; i++) this.subUnit[i]= "";
         }
-
         this.$emit("afterUnitChange",  this.subUnit);
-        console.log(this.subUnit, this._startLevel);
-
     }
 
 }

@@ -34,7 +34,7 @@ namespace EQC.EDMXModel
             // 紀錄
             RecordEntity();
             var change = base.SaveChanges();
-            RecordEntityAfterInsert();
+            //RecordEntityAfterInsert();
             if(changeText.Length > 0)
                 changeTextSetter?.Invoke(changeText.ToString(), changeDbTable.ToString() );
             return change;
@@ -115,10 +115,14 @@ namespace EQC.EDMXModel
                 .ToList()
                 .ForEach(entry =>
                 {
-                    var primaryKeyName =
+                    string primaryKeyName =
                     entry.Key.OriginalValues.PropertyNames.Where(r => myPrimaryCol.Contains(r)).FirstOrDefault();
-                    string replacement = $"{primaryKeyName}[{entry.Key.CurrentValues[primaryKeyName]}]";
-                    changeText = changeText.Replace($"{primaryKeyName}[0]", replacement, matchIndex[i++] - primaryKeyName.Length, $"{primaryKeyName}[0]".Length);
+                    if(primaryKeyName != null)
+                    {
+                        string replacement = $"{primaryKeyName}[{entry.Key.CurrentValues[primaryKeyName]}]";
+                        changeText = changeText.Replace($"{primaryKeyName}[0]", replacement, matchIndex[i++] - primaryKeyName.Length, $"{primaryKeyName}[0]".Length);
+                    }
+                    
                 });
             }
 

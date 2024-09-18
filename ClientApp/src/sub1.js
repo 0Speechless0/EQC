@@ -135,53 +135,54 @@ Vue.component("eng-approvalimport-list", require("./Backend/EngApprovalImport/EA
 //更告欄modal
 Vue.component("ptt-modal", require("./components/pttModal.vue").default )
 
-window.myAjax = axios.create({ baseURL: window.location.origin });
-// response 攔截器
-window.myLoader = null;
-//攔截請求
-window.myAjax.interceptors.request.use(
-    (config) => {
-        //console.log('攔截請求');
+// window.myAjax = axios.create({ baseURL: window.location.origin });
+// // response 攔截器
+// window.myLoader = null;
+// //攔截請求
+// window.myAjax.interceptors.request.use(
+//     (config) => {
+//         console.log('攔截請求');
 
-        if (!window.myLoader) {
-            if(config.url != "/SupervisionPlan/CreatePlan")
-                window.myLoader = Vue.$loading.show();
-        }
-        return config;
-    },
-    (error) => {
-        //console.log('攔截器request失敗');
-        myhideLoader();
-        return Promise.reject(error);
-    }
-);
+//         if (!window.myLoader) {
+//             if(config.url != "/SupervisionPlan/CreatePlan")
+//                 window.myLoader = Vue.$loading.show();
+//         }
+//         return config;
+//     },
+//     (error) => {
+//         console.log('攔截器request失敗');
+//         myhideLoader();
+//         return Promise.reject(error);
+//     }
+// );
 
-function myhideLoader() {
-    window.myLoader && window.myLoader.hide();
-    window.myLoader = null;
-}
-//攔截回應
-window.myAjax.interceptors.response.use(
-    (response) => {
-        //console.log('攔截回應');
-        //console.log(response);
-        myhideLoader();
-        if (response.data.result == -1919) {
-            window.location.href = response.data.url;
-            return null;
-        }
-        return response;
-    },
-    (error) => {
-        //console.log('攔截器response失敗')
-        myhideLoader();
-        return Promise.reject(error);
-    }
-);
+// function myhideLoader() {
+//     window.myLoader && window.myLoader.hide();
+//     window.myLoader = null;
+// }
+// //攔截回應
+// window.myAjax.interceptors.response.use(
+//     (response) => {
+//         //console.log('攔截回應');
+//         //console.log(response);
+//         window.ReadyCapture = true;
+//         myhideLoader();
+//         if (response.data.result == -1919) {
+//             window.location.href = response.data.url;
+//             return null;
+//         }
+//         return response;
+//     },
+//     (error) => {
+//         //console.log('攔截器response失敗')
+//         myhideLoader();
+//         return Promise.reject(error);
+//     }
+// );
 
 import common from './Common/Common';
 window.comm = common;
 window.epcSelectTrenderSeq = 'EPC_SelectTrenderSeq';//PrjXML 標案
-window.eqSelTrenderPlanSeq = 'EQ_SelectTrenderPlanSeq';//系統建立的標案
+window.eqSelTrenderPlanSeq = 'EPC_SelectTrenderSeq';//系統建立的標案
 window.esKeyword = 'ES_Keyword';//工程督導
 import './google_map_api.js';

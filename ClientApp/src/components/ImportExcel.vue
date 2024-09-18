@@ -81,7 +81,7 @@ export default {
           this.files.append("file", this.file, this.file.name);
       },
       async upload() {
-        let res = await axios.post(this.route_, this.files, {
+        let res = await window.myAjax.post(this.route_, this.files, {
             headers: {
               "Content-Type": "multipart/form-data"
             }

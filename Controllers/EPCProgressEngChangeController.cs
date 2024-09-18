@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 
@@ -21,6 +22,21 @@ namespace EQC.Controllers
             Utils.setUserClass(this);
             return View("Index");
         }
+
+        public JsonResult CheckInit(int engSeq)
+        {
+            EPCProgressManageService srv = new EPCProgressManageService();
+            ECSupDailyReportService supDailyReportService = new ECSupDailyReportService();
+            EPCTendeVModel tender = srv.GetEngLinkTenderBySeq<EPCTendeVModel>(engSeq).FirstOrDefault();
+            if(tender.SchCompDate != null)
+            {
+                var planItems = supDailyReportService.GetPayitemList<ECSupPlanOverviewVModel>(engSeq, tender.SchCompDate.Value).FirstOrDefault();
+
+                return Json(planItems != null);
+            }
+            return Json(false);   
+        }
+
         //刪除工程變更 s20230927
         public JsonResult DelEngChange(EPCProgressEngChangeListVModel ec)
         {
@@ -1149,25 +1165,26 @@ namespace EQC.Controllers
             EngMainEditVModel engMain = items[0];
             decimal? co2Total = null;
             decimal? co2ItemTotal = null;
-            decimal? dismantlingRate = null;
+            decimal dismantlingRate ;
             //s20230528
             decimal? co2TotalDesign = null;
             decimal? greenFunding = null;
-            decimal? greenFundingRate = null;
+            decimal greenFundingRate ;
             new CarbonEmissionPayItemService().CalCarbonTotal(eng, ref co2TotalDesign, ref co2ItemTotal, ref greenFunding);
 
             co2Total = null;
             co2ItemTotal = null;
-            dismantlingRate = null;
+            dismantlingRate = 0;
             greenFunding = null;
-            greenFundingRate = null;
+            greenFundingRate = 0;
             if (total > 0)
             {
-                iService.CalCarbonTotal(eng, ref co2Total, ref co2ItemTotal, ref greenFunding);
+                Utils.GetEngDismantlingRate(engMain.Seq, (e) => e.EC_SchEngProgressHeader.FirstOrDefault()?.EC_SchEngProgressPayItem , ref dismantlingRate, ref greenFundingRate);
+                iService.CalCarbonTotal(engMain.Seq, ref co2Total, ref co2ItemTotal, ref greenFunding);
                 if (engMain.SubContractingBudget.HasValue && engMain.SubContractingBudget.Value > 0)
                 {
-                    dismantlingRate = Math.Round(co2ItemTotal.Value * 100 / engMain.SubContractingBudget.Value);
                     greenFundingRate = Math.Round(greenFunding.Value * 100 / engMain.SubContractingBudget.Value);
+
                 }
             }
             return Json(new
@@ -1183,7 +1200,7 @@ namespace EQC.Controllers
             });
         }
         //下載工程範本(excel)
-        public ActionResult DnSchProgress(int id)
+        public ActionResult DnSchProgress(int id, DownloadArgExtension downloadArg = null)
         {
             List<EC_SchEngProgressHeaderModel> engChanges = iService.GetEngChange<EC_SchEngProgressHeaderModel>(id);
             if (engChanges.Count != 1)
@@ -1229,9 +1246,9 @@ namespace EQC.Controllers
                     msg = "查無資料"
                 }, JsonRequestBehavior.AllowGet);
             }
-            return CreateExcel(eng, spList, dateList, engChangeHeader);
+            return CreateExcel(eng, spList, dateList, engChangeHeader, downloadArg);
         }
-        private ActionResult CreateExcel(EngMainEditVModel eng, List<EC_SchProgressPayItem1Model> spList, List<EPCSchProgressVModel> dateList, EC_SchEngProgressHeaderModel engChangeHeader)
+        private ActionResult CreateExcel(EngMainEditVModel eng, List<EC_SchProgressPayItem1Model> spList, List<EPCSchProgressVModel> dateList, EC_SchEngProgressHeaderModel engChangeHeader, DownloadArgExtension downloadArg = null)
         {
             string filename = Utils.CopyTemplateFile("進度管理-工程範本-工變.xlsx", ".xlsx");
             Dictionary<string, Worksheet> dict = new Dictionary<string, Worksheet>();
@@ -1255,7 +1272,7 @@ namespace EQC.Controllers
                 workbook.Save();
                 workbook.Close();
                 appExcel.Quit();
-
+                downloadArg?.targetPathSetting(filename, $"進度管理-工程範本-工變-{dateList.FirstOrDefault()?.ItemDate}-{dateList.LastOrDefault()?.ItemDate}.xlsx");
                 return DownloadFile(filename, eng.EngNo);
             }
             catch (Exception e)

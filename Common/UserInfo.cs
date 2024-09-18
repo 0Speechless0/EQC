@@ -1,7 +1,9 @@
-﻿using EQC.Models;
+﻿
+using EQC.Models;
 using EQC.ViewModel;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace EQC.Common
 {
@@ -59,6 +61,8 @@ namespace EQC.Common
         /// </summary>
         public List<VSystemMenu> SystemList { get; set; }
 
+
+
         /// <summary>
         /// 是否為 系統管理者
         /// </summary>
@@ -69,7 +73,7 @@ namespace EQC.Common
                 try
                 {
                     SessionManager sm = new SessionManager();
-                    return sm.GetUser().Role.Exists(x => x.Seq == 1);
+                    return sm.GetUser().RoleSeq == 1;
                 }
                 catch
                 {
@@ -114,7 +118,7 @@ namespace EQC.Common
             }
 
         }
-
+        public int PositionSeq { get; internal set; }
         public int RoleSeq { get; internal set; }
 
         /// <summary>

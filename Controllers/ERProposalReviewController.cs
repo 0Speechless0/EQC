@@ -1,4 +1,5 @@
 ﻿using EQC.Common;
+using EQC.EDMXModel;
 using EQC.Models;
 using EQC.Services;
 using EQC.ViewModel;
@@ -24,14 +25,83 @@ namespace EQC.Controllers
             return View();
         }
 
+        public JsonResult GetProposalReviwCopyId(int seq)
+        {
+            using (var context = new EQC_NEW_Entities())
+            {
+
+                var str = context.EngReportList.Where(r => r.ProposalReviewEngReportSeq == seq)
+                            .ToList().Select(r => r.Seq).Aggregate("", (a, c) => a + "," + c);
+                return Json(str.Length > 0 ? str.Substring(1) : "");
+            }
+
+        }   
+        public JsonResult BranchProposalReview(int seq)
+        {
+            using (var context = new EQC_NEW_Entities())
+            {
+                var source = context.EngReportList.Find(seq);
+                var target = new EDMXModel.EngReportList();
+                context.EngReportList.Add(target);
+                context.Entry(target).CurrentValues.SetValues(source);
+                target.RptTypeSeq = 4;
+                target.IsProposalReview = 0;
+                target.ProposalReviewEngReportSeq = seq;
+
+                context.importToOther(source.EngReportEstimatedCost, target.EngReportEstimatedCost);
+                context.importToOther(source.EngReportLocalCommunication, target.EngReportLocalCommunication);
+                context.importToOther(source.EngReportMainJobDescription, target.EngReportMainJobDescription);
+                context.importToOther(source.EngReportOnSiteConsultation, target.EngReportOnSiteConsultation);
+
+                source.EngReportApprove
+                    .ToList()
+                    .ForEach(e => {
+                        var engReportApprove = new EngReportApprove();
+
+                        target.EngReportApprove.Add(engReportApprove);
+                        context.Entry(engReportApprove).CurrentValues.SetValues(e);
+
+                    });
+
+                context.SaveChanges();
+                foreach(var srcPath in Directory.GetFiles(Path.Combine(Utils.GetEngReportFolder(source.Seq))))
+                {
+
+                    System.IO.File.Copy(
+                        srcPath,
+                        Path.Combine(Utils.GetEngReportFolder(target.Seq), System.IO.Path.GetFileName(srcPath)),
+                        true
+                    );
+                }
+
+                return Json(target.Seq);
+            }
+      
+        }
+        public JsonResult UpdateProposalReview(int seq, int proposalAuditOption)
+        {
+            using(var context = new EQC_NEW_Entities())
+            {
+                var target = context.EngReportList.Find(seq);
+                target.ProposalAuditOpinion = proposalAuditOption;
+                if(proposalAuditOption == 1)
+                    target.RptTypeSeq = 5;
+                if (proposalAuditOption == 2)
+                    target.RptTypeSeq = 6;
+                context.SaveChanges();
+                return Json(true);
+            }
+            return Json(false);
+        }
+
         //工程清單A - 全部案件清單
-        public JsonResult GetListA(int year, int unit, int subUnit, int rptType, int pageRecordCount, int pageIndex)
+        public JsonResult GetListA(int year, int unit, int subUnit, int rptType, int pageRecordCount, int pageIndex, string keyWord = null )
         {
             List<EngReportVModel> engList = new List<EngReportVModel>();
-            int total = engReportService.GetEngListCount(year, unit, subUnit, rptType, 3);
+            int total = engReportService.GetEngListCount(year, unit, subUnit, rptType, 3, keyWord);
             if (total > 0)
             {
-                engList = engReportService.GetEngList<EngReportVModel>(year, unit, subUnit, rptType, pageRecordCount, pageIndex, 3);
+                engList = engReportService.GetEngList<EngReportVModel>(year, unit, subUnit, rptType, pageRecordCount, pageIndex, 3, keyWord);
             }
             return Json(new
             {
@@ -41,13 +111,13 @@ namespace EQC.Controllers
         }
 
         //工程清單B - 提案審查清單
-        public JsonResult GetListB(int year, int unit, int subUnit, int rptType, int pageRecordCount, int pageIndex)
+        public JsonResult GetListB(int year, int unit, int subUnit, int rptType, int pageRecordCount, int pageIndex, string keyWord = null)
         {
             List<EngReportVModel> engList = new List<EngReportVModel>();
-            int total = engReportService.GetEngListCount(year, unit, subUnit, 0, 12);
+            int total = engReportService.GetEngListCount(year, unit, subUnit, 0, 12, keyWord);
             if (total > 0)
             {
-                engList = engReportService.GetEngList<EngReportVModel>(year, unit, subUnit, 0, pageRecordCount, pageIndex, 12);
+                engList = engReportService.GetEngList<EngReportVModel>(year, unit, subUnit, 0, pageRecordCount, pageIndex, 12, keyWord);
                 int iCount = 0;
                 foreach (EngReportVModel vm in engList)
                 {
@@ -64,13 +134,13 @@ namespace EQC.Controllers
         }
 
         //工程清單C - 核可清單
-        public JsonResult GetListC(int year, int unit, int subUnit, int rptType, int pageRecordCount, int pageIndex)
+        public JsonResult GetListC(int year, int unit, int subUnit, int rptType, int pageRecordCount, int pageIndex, string keyWord = null)
         {
             List<EngReportVModel> engList = new List<EngReportVModel>();
-            int total = engReportService.GetEngListCount(year, unit, subUnit, 5, 0);
+            int total = engReportService.GetEngListCount(year, unit, subUnit, 5, 14, keyWord);
             if (total > 0)
             {
-                engList = engReportService.GetEngList<EngReportVModel>(year, unit, subUnit, 5, pageRecordCount, pageIndex, 0);
+                engList = engReportService.GetEngList<EngReportVModel>(year, unit, subUnit, 5, pageRecordCount, pageIndex, 14, keyWord);
                 int iCount = 0;
                 foreach (EngReportVModel vm in engList)
                 {
@@ -88,13 +158,13 @@ namespace EQC.Controllers
         }
 
         //工程清單D - 暫緩清單
-        public JsonResult GetListD(int year, int unit, int subUnit, int rptType, int pageRecordCount, int pageIndex)
+        public JsonResult GetListD(int year, int unit, int subUnit, int rptType, int pageRecordCount, int pageIndex, string keyWord = null)
         {
             List<EngReportVModel> engList = new List<EngReportVModel>();
-            int total = engReportService.GetEngListCount(year, unit, subUnit, 6, 0);
+            int total = engReportService.GetEngListCount(year, unit, subUnit, 6, 0, keyWord);
             if (total > 0)
             {
-                engList = engReportService.GetEngList<EngReportVModel>(year, unit, subUnit, 6, pageRecordCount, pageIndex, 0);
+                engList = engReportService.GetEngList<EngReportVModel>(year, unit, subUnit, 6, pageRecordCount, pageIndex, 0, keyWord);
                 int iCount = 0;
                 foreach (EngReportVModel vm in engList)
                 {
@@ -179,6 +249,8 @@ namespace EQC.Controllers
 
                 items[0].HistoricalCatastrophe = items[0].HistoricalCatastrophe == null ? 2 : items[0].HistoricalCatastrophe;
 
+                EngReportVModel.GetRefCarbonEmission(items[0]);
+                
                 return Json(new
                 {
                     result = 0,
@@ -398,6 +470,13 @@ namespace EQC.Controllers
                         case "D4": m.EcologicalConservationD04 = GUID + file.FileName; fullPath = Path.Combine(folder, m.EcologicalConservationD04); break;
                         case "D5": m.EcologicalConservationD05 = GUID + file.FileName; fullPath = Path.Combine(folder, m.EcologicalConservationD05); break;
                         case "D6": m.EcologicalConservationD06 = GUID + file.FileName; fullPath = Path.Combine(folder, m.EcologicalConservationD06); break;
+                        case "A1": m.LocationMap = GUID + file.FileName; fullPath = Path.Combine(folder, m.LocationMap); break;
+                        case "A2": m.AerialPhotography = GUID + file.FileName; fullPath = Path.Combine(folder, m.AerialPhotography); break;
+                        case "A3": m.ScenePhoto = GUID + file.FileName; fullPath = Path.Combine(folder, m.ScenePhoto); break;
+                        case "A4": m.BaseMap = GUID + file.FileName; fullPath = Path.Combine(folder, m.BaseMap); break;
+                        case "A5": m.EngPlaneLayout = GUID + file.FileName; fullPath = Path.Combine(folder, m.EngPlaneLayout); break;
+                        case "A6": m.LongitudinalSection = GUID + file.FileName; fullPath = Path.Combine(folder, m.LongitudinalSection); break;
+                        case "A7": m.StandardSection = GUID + file.FileName; fullPath = Path.Combine(folder, m.StandardSection); break;
                     }
 
                     file.SaveAs(fullPath);

@@ -29,5 +29,6 @@ namespace EQC.EDMXModel
         public Nullable<int> CreateUserSeq { get; set; }
         public Nullable<System.DateTime> ModifyTime { get; set; }
         public Nullable<int> ModifyUserSeq { get; set; }
+        public Nullable<int> PrjXMLSeq { get; set; }
     }
 }

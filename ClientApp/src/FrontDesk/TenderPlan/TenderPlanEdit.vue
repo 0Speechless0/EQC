@@ -47,7 +47,7 @@
                 </div>
             </div>
             <div v-show="step>1">
-                <div v-if="fCanEdit" class="form-row" role="toolbar">
+                <div v-if="fCanEdit &&( engMain.chsAwardDate == null  || engMain.chsAwardDate.length == 0 )  " class="form-row" role="toolbar">
                     <div class="col-12 col-sm-6 col-md-auto mb-3 mb-sm-0 mt-sm-2 mt-md-0">
                         <label class="btn btn-block btn-outline-secondary btn-sm" >
                             <input v-on:change="onUpdatePccesChange($event)" type="file" name="file" multiple="" style="display:none;">
@@ -87,28 +87,29 @@
                         </div>
                         <div class="col-12 col-md-6 form-inline my-2 justify-content-md-between">
                             <label class="my-2 mx-2">工程年度<span class="small-red">&nbsp;*</span></label>
-                            <input v-model="engMain.EngYear" type="number" class="form-control" />
+                            <input v-model="engMain.EngYear" type="number" class="form-control" :disabled=" userRole > 2 && ( engMain.chsAwardDate != null && engMain.chsAwardDate.length != 0 )" />
                         </div>
                     </div>
                     <div class="form-row">
 
                         <div class="col-12 col-md-6 form-inline my-2 justify-content-md-between">
                             <label class="my-2 mx-2">工程編號<span class="small-red">&nbsp;*</span></label>
-                            <input v-model.trim="engMain.EngNo" type="text"
+                            <input v-model.trim="engMain.EngNo" type="text" :disabled="userRole != 1"
                                    class="form-control my-1 mr-0 mr-md-4 WidthasInput" placeholder="PCCES帶入">
                         </div>
                         <div class="col-12 col-md-6 form-inline my-2 justify-content-md-between">
-                            <label class="my-2 mx-2">工程會標案編號</label>
+                            <label class="my-2 mx-2">工程會標案編號                                 <span style="color:red" v-if="!this.engMain.EngYear">(請先設定年度)</span></label>
                             <div role="group" class="input-group">
                                 <input v-model.trim="engMain.TenderNo" disabled type="text" class="form-control">
-                                <button v-on:click="onTenderSearch()" v-bind:disabled="(this.engMain.Seq == -1)"
+                                <button v-on:click="onTenderSearch()" v-bind:disabled="(this.engMain.Seq == -1) || !this.engMain.EngYear"
                                         title="標案查詢" class="btn btn-sm bg-gray" data-toggle="modal"
-                                        data-target="#refTenderListModal">
+                                        data-target="#refTenderListModal"  >
                                     <i class="fas fa-search"></i>
                                 </button>
-                                <button v-on:click="onCancelTenderLink()" title="清除" class="btn btn-sm bg-gray">
+                                <button v-on:click="onCancelTenderLink()" title="清除" class="btn btn-sm bg-gray"  :disabled="!this.engMain.EngYear">
                                     <i class="fas fa-times"></i>
                                 </button>
+
                             </div>
 
                         </div>
@@ -213,13 +214,22 @@
                     <div class="form-row">
                         <div class="col-12 col-md-6 form-inline my-2 justify-content-md-between">
                             <label class="my-2 mx-2">決標日期</label>
-                            <input v-if="!fCanEdit" v-bind:value="engMain.chsAwardDate" ref="chsAwardDate" type="text" class="form-control my-1 mr-0 mr-md-4" placeholder="yyy/mm/dd">
-                            <b-input-group v-if="fCanEdit">
-                                <input v-bind:value="engMain.chsAwardDate" ref="chsAwardDate" @change="onDateChange(engMain.chsAwardDate, $event, 'AwardDate')" type="text" class="form-control mydatewidth" placeholder="yyy/mm/dd">
-                                <b-form-datepicker v-if="fCanEdit" v-model="chsAwardDate" :hide-header="hideHeader"
+                            <input v-if="!fCanEdit" 
+                                :disabled="!(engMain.chsAwardDate == null || engMain.chsAwardDate.length == 0)"
+                                v-bind:value="engMain.chsAwardDate" ref="chsAwardDate" type="text" class="form-control my-1 mr-0 mr-md-4" placeholder="yyy/mm/dd">
+                          
+                            <b-input-group v-if="fCanEdit ">
+                                <input  :disabled="!(engMain.chsAwardDate == null || engMain.chsAwardDate.length == 0 )" 
+                                v-bind:value="engMain.chsAwardDate" ref="chsAwardDate" @change="onDateChange(engMain.chsAwardDate, $event, 'AwardDate')" type="text" class="form-control mydatewidth" placeholder="yyy/mm/dd">
+                             
+                                <b-form-datepicker v-show="fCanEdit  &&  AwardYearChangeStep == 1" :hide-header="hideHeader"
+
                                                    button-only right size="sm" @context="onDatePicketChange($event, 'AwardDate')">
                                 </b-form-datepicker>
+
                             </b-input-group>
+                            <button class="btn btn-color11-2 btn-xs  mx-1" v-show="userRole == 1 &&   AwardYearChangeStep == 0" @click="engMain.chsAwardDate = null">清除</button>
+
                         </div>
                     </div>
                     <div class="form-row">
@@ -415,7 +425,7 @@
                     </table>
                 </div>
                 <hr class="my-5">
-                <h2>Step5. 上傳監造計畫附件</h2>
+                <h2>Step5. 上傳監造計畫附件(檔名須為jpg)</h2>
                 <div>
                     第一章需上傳工程平面圖及標準斷面圖<br />
                     第四章需上傳主要工項預定進度表<br />
@@ -515,13 +525,13 @@
                                     </td>
                                     <td>
                                         <div v-if="fCanEdit" class="d-flex">
-                                            <a href="#" v-if="!item.edit" v-on:click.stop="item.edit=!item.edit"
+                                            <a href="#" v-if="!item.edit" v-on:click.prevent="item.edit=!item.edit"
                                                class="btn btn-color11-3 btn-xs mx-1" title="編輯">
                                                 <i class="fas fa-pencil-alt"></i> 編輯
                                             </a>
-                                            <a href="#" v-if="item.edit" v-on:click.stop="saveAttachment(item)"
+                                            <a href="#" v-if="item.edit" v-on:click.prevent="saveAttachment(item)"
                                                class="btn btn-color11-2 btn-xs mx-1"><i class="fas fa-save"></i> 儲存</a>
-                                            <a href="#" v-on:click.stop="delAttachment(index, item.Seq)"
+                                            <a href="#" v-on:click.prevent="delAttachment(index, item.Seq)"
                                                class="btn btn-color9-1 btn-xs mx-1" title="刪除">
                                                 <i class="fas fa-trash-alt"></i> 刪除
                                             </a>
@@ -529,7 +539,7 @@
                                     </td>
                                     <td>
                                         <div class="d-flex">
-                                            <a v-on:click.stop="download(item)" href="#"
+                                            <a v-on:click.prevent="download(item)" href="#"
                                                class="btn btn-color11-1 btn-xs mx-1" title="下載">
                                                 <i class="fas fa-download"></i> 下載
                                             </a>
@@ -542,9 +552,13 @@
                 </div>
                 <div class="row justify-content-center mt-5">
                     <div class="d-flex">
-                        <button v-on:click.stop="updateData()" v-bind:disabled="!fCanEdit" role="button"
+                        <button v-on:click="updateData()" role="button"
                                 class="btn btn-color11-2 btn-xs mx-1">
-                            <i class="fas fa-save">&nbsp;儲存</i>
+                            <i class="fas fa-save">&nbsp;暫存</i>
+                        </button>
+                        <button v-on:click="updateData(true)" v-bind:disabled="!fCanEdit" role="button"
+                                class="btn btn-color11-2 btn-xs mx-1">
+                            <i class="fas fa-save">&nbsp;儲存並確認</i>
                         </button>
                     </div>
                     <div v-if="engMain.PCCESSMainSeq >0 && importShow" class="d-flex">
@@ -687,7 +701,8 @@
                                         v-bind:key="item.Seq">
                                         <td>{{item.TenderNo}}</td>
                                         <td colspan="2">
-                                            {{item.TenderName}}<font style="color:blue"> {{item.PrjXMLSeq==null ? '' : '(已勾稽)' }} </font>
+                                            {{item.TenderName}}<font style="color:blue">  {{item.PrjXMLSeq==null ? '' : '(已勾稽)' }} </font>
+                                            <font style="color:lightblue">  {{item.code==1 ? '' : '(暫存)' }} </font>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -745,8 +760,38 @@
 </template>
 <script>
 export default {
+    watch:{
+        "engMain.chsAwardDate" :{
+            handler(value, oldValue)
+            {
+                if(this.userRole == 1 )
+                {
+                    if(  !(value == null || value.length ==0 ))
+                    {
+                        this.AwardYearChangeStep = 0;
+                    }
+                    else{
+                        this.AwardYearChangeStep = 1;
+                    }
+                }
+                else
+                {
+                    this.AwardYearChangeStep = 1;
+                }
+                console.log("AwardYearChangeStep", this.AwardYearChangeStep)
+                if(value !=null  && value != "" )
+                {
+                  
+                    this.engMain.EngYear = value.split("/")[0]
+                }
+                
+            }
+        }
+    },
     data: function () {
         return {
+            AwardYearChangeStep : 0 ,
+            Role : null,
             fSendMail: false,//防止連續發送
             fSendMailSupervisorUnit: false,
             fSendMailBuildContractor: false,
@@ -805,7 +850,9 @@ export default {
             importShow : false
         };
     },
+
         methods: {
+
         //s20230327 可自行新增工程會工程
         addPrjXMLEng() {
             var execUnitName = ''
@@ -816,7 +863,7 @@ export default {
 
                 this.prjXMLEng = { Seq: -1, TenderNo: '', TenderYear: -1, TenderName: '', ExecUnitName: '' };
                 this.prjXMLEng.ExecUnitName = execUnitName;
-                this.prjXMLEng.TenderYear = this.engMain.EngYear;
+                this.prjXMLEng.TenderYear = this.engMain.EngYear ;
                 this.prjXMLEng.TenderNo = this.engMain.EngNo;
                 this.prjXMLEng.TenderName = this.engMain.EngName;
                 this.fAddPrjXMLEng = true;
@@ -926,6 +973,7 @@ export default {
                         this.getExecSubUnit(this.engMain.ExecUnitSeq);
                         this.getEngSupervisor();
                         this.checkEngItemPayItemAdded();
+                        // this.engMain.EngYear  = this.engMain.chsAwardDate.split('/')[0]; 
                         if (this.engMain.DocState == null || this.engMain.DocState == -1) {
                             this.fCanEdit = true;
                             //this.chsStartDate = this.toYearDate(this.engMain.chsStartDate);
@@ -934,6 +982,7 @@ export default {
                             //this.chsApproveDate = this.toYearDate(this.engMain.chsApproveDate);//shioulo 20220
                             this.chsAwardDate = this.toYearDate(this.engMain.chsAwardDate);
                         }
+
                     } else {
                         alert(resp.data.message);
                     }
@@ -1108,6 +1157,8 @@ export default {
             }
         },
         onDateChange(srcDate, event, mode) {
+
+
             if (event.target.value.length == 0) {
                 /*if (mode == 'SchCompDate') this.chsSchCompDate = '';
                 else if (mode == 'PostCompDate') this.chsPostCompDate = '';
@@ -1129,6 +1180,8 @@ export default {
         },
         onDatePicketChange(ctx, mode) {
             //console.log(ctx);
+
+
             if (ctx.selectedDate != null) {
                 var d = ctx.selectedDate;
                 var dd = (d.getFullYear() - 1911) + '/' + (d.getMonth() + 1) + '/' + d.getDate();
@@ -1346,24 +1399,29 @@ export default {
                 });
         },
         //
-        updateData() {
+        updateData(check) {
             ///*this.engMain.OrganizerSubUnitSeq == null ||
-            if (this.engMain.EngName == null || this.engMain.EngName.length == 0
+            // this.engMain.ExecUnitSeq = null;
+            if(check)
+            {
+                if (this.engMain.EngName == null || this.engMain.EngName.length == 0
                 || this.engMain.CitySeq == null || this.engMain.EngTownSeq == null
                 || this.engMain.EngNo == null || this.engMain.EngNo.length == 0
                 || this.engMain.OrganizerUnitSeq == null || this.engMain.OrganizerUserSeq == null
                 || this.engMain.ExecUnitSeq == null || this.engMain.ExecSubUnitSeq == null) {
                 alert('* 欄位必須選填');
                 return;
+                }
+                if (this.engMain.BuildContractorTaxId && this.engMain.BuildContractorTaxId.length > 0 && !this.checkCompanyNo(this.engMain.BuildContractorTaxId)) {
+                    alert('施工廠商統編錯誤');
+                    return;
+                }
+                if (this.engMain.SupervisorTaxid && this.engMain.SupervisorTaxid.length > 0 && !this.checkCompanyNo(this.engMain.SupervisorTaxid)) {
+                    alert('監造單位統編錯誤');
+                    return;
+                }
             }
-            if (this.engMain.BuildContractorTaxId && this.engMain.BuildContractorTaxId.length > 0 && !this.checkCompanyNo(this.engMain.BuildContractorTaxId)) {
-                alert('施工廠商統編錯誤');
-                return;
-            }
-            if (this.engMain.SupervisorTaxid && this.engMain.SupervisorTaxid.length > 0 && !this.checkCompanyNo(this.engMain.SupervisorTaxid)) {
-                alert('監造單位統編錯誤');
-                return;
-            }
+
             //this.engMain.chsStartDate = this.$refs['chsStartDate'].value;
             //this.engMain.chsSchCompDate = this.$refs['chsSchCompDate'].value;
             //this.engMain.chsPostCompDate = this.$refs['chsPostCompDate'].value;
@@ -1525,10 +1583,10 @@ export default {
         },
         //工程連結標案 shioulo 20220518
         onSelectTrender(item) {
-            window.myAjax.post('/TenderPlan/SetEngLinkTender', { id: this.engMain.Seq, prj: item.Seq })
+            window.myAjax.post('/TenderPlan/SetEngLinkTender', { id: this.engMain.Seq, prj: item.Seq , code: item.code})
                 .then(resp => {
                     if (resp.data.result == 0) {
-                        this.engMain.PrjXMLSeq = item.Seq;
+                        this.engMain.PrjXMLSeq = item.code == 1 ?  item.Seq : -item.Seq;
                         this.engMain.TenderNo = item.TenderNo;
                         this.engMain.TenderName = item.TenderName;
                         document.getElementById("closeTenderListModal").click();
@@ -1552,6 +1610,10 @@ export default {
                 .catch(err => {
                     console.log(err);
                 });
+        },
+        async getUserRole()
+        {
+            this.Role = (await window.myAjax.post("Users/GetUserInfo")).userInfo.RoleSeq;
         }
     },
     computed: {
@@ -1571,11 +1633,12 @@ export default {
                 return false;
             else
                 return true;
-        },
+        }
     },
     async mounted() {
         console.log('mounted() 標案編輯 ' + window.location.href);
         let urlParams = new URLSearchParams(window.location.search);
+        this.getUserRole();
         if (urlParams.has('id')) {
             if (this.units.length == 0) this.getUnits();
             if (this.cities.length == 0) this.getCities();

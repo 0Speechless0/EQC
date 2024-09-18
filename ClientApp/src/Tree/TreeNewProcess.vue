@@ -20,6 +20,7 @@
                             :tender="selectTender"
                             :createType="type"
                             :treeMain="treeMain"
+                            :user="user"
                             @assignToTreeProperty="(name, value) => $refs.TreeStep3.setTreeMainProperty(name, value)"
                             > </TreeStep2>
                         <div v-if="type == 3">
@@ -179,7 +180,7 @@
                                 :Eng="Eng"
                                 :treePlantMainEngSeq="treePlantMainEngSeq"
                                 :treePlantMainSeq="treePlantMainSeq "
-   
+                                :EngType="EngType"
                                 @afterSave="afterSave"
                                 @afterCancel="afterCancel"
                                 @treeMainLoaded="EngLoad"
@@ -357,7 +358,7 @@ export default{
             if(this.type == 3 )
                 this.Eng =  treeMain ;
             else{
-                let data = ( await window.myAjax.post("Tree/GetEng", { engSeq : this.treePlantMainEngSeq , createType: this.type }) ).data;
+                let data = ( await window.myAjax.post("Tree/GetEng", { engSeq : this.treePlantMainEngSeq  ?? this.selectTender.Seq, createType: this.type }) ).data;
                 this.Eng = data.eng;
                 this.treeMain.execUnitName = this.Eng.execUnitName; 
                 this.EngTypeOptions = data.engTypeOption;
@@ -400,14 +401,13 @@ export default{
                 .data; 
             
         }
-
+        this.user = (await window.myAjax.post("Users/GetUserInfo")).data.userInfo;
         if(this.type == 3)
         {
             let data = ( await window.myAjax.post("Tree/GetEng", { engSeq : 0, createType: this.type }) ).data;
-
             this.EngTypeOptions = data.engTypeOption;
             this.TreeTypeOptions = data.treeTypOption;
-            this.user = (await window.myAjax.post("Users/GetUserInfo")).data.userInfo;
+
             const store = useLevelSelectionStore("Unit/GetUnitList", "parentSeq");
             this.unitList = await   store.GetOneLevelSelection(null, 0);
             this.cityList = await citySelectionStore.Get();

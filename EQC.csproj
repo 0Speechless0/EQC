@@ -1,6 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="packages\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.1.11.1\build\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.props" Condition="Exists('packages\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.1.11.1\build\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.props')" />
   <Import Project="packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props')" />
   <!-- <Import Project="..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" /> -->
@@ -29,8 +28,6 @@
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
     <TypeScriptToolsVersion>3.9</TypeScriptToolsVersion>
-    <DockerLaunchAction>LaunchBrowser</DockerLaunchAction>
-    <DockerLaunchUrl>http://{ServiceIPAddress}</DockerLaunchUrl>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -108,12 +105,6 @@
     <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=2.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
       <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Configuration.ConfigurationBuilders.Base, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.Configuration.ConfigurationBuilders.Base.2.0.0\lib\Net471\Microsoft.Configuration.ConfigurationBuilders.Base.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Configuration.ConfigurationBuilders.UserSecrets, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.Configuration.ConfigurationBuilders.UserSecrets.2.0.0\lib\Net471\Microsoft.Configuration.ConfigurationBuilders.UserSecrets.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.IO.RecyclableMemoryStream, Version=2.3.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -264,15 +255,106 @@
     <Compile Include="Common\APITokenFilter.cs" />
     <Compile Include="Common\CalUtils.cs" />
     <Compile Include="Common\DistinctExtensions.cs" />
+    <Compile Include="Common\DownloadArgExtension.cs" />
     <Compile Include="Common\Encryption.cs" />
-    <Compile Include="Common\ExcelController.cs" />
+    <Compile Include="Common\EngReportUtils.cs" />
     <Compile Include="Common\ExcelProcesser.cs" />
-    <Compile Include="Common\IExcelImportService.cs" />
+    <Compile Include="Common\ReflectionExtensions.cs" />
+    <Compile Include="Controllers\AlertSettingController.cs" />
+    <Compile Include="Controllers\Common\ExcelImportController.cs" />
+    <Compile Include="Controllers\InteliAgency\InteliAgencyController.cs" />
+    <Compile Include="Controllers\ESTempController.cs" />
+    <Compile Include="Controllers\FarRegionController.cs" />
+    <Compile Include="Controllers\PackageDownloadActionController.cs" />
+    <Compile Include="Controllers\SystemProblemController.cs" />
+    <Compile Include="EDMXModel\EDMXModel_\AlertSetting.cs" />
+    <Compile Include="Controllers\Common\DownloadTaskController.cs" />
+    <Compile Include="Controllers\Common\ExcelImportController.cs" />
+    <Compile Include="Detection\DownloadTaskDetection.cs" />
+    <Compile Include="EDMXModel\EDMXModel_\CarbonEmissionPayItem.cs" />
+    <Compile Include="EDMXModel\EDMXModel_\constCheckSignatures.cs" />
+    <Compile Include="EDMXModel\EDMXModel_\EC_SchEngProgressPayItem.cs" />
+    <Compile Include="EDMXModel\EDMXModel_\ExpertCommittee.cs" />
+    <Compile Include="EDMXModel\EDMXModel_\InterFace\PayItem.cs" />
+    <Compile Include="EDMXModel\EDMXModel_\Menu.cs" />
+    <Compile Include="EDMXModel\EDMXModel_\PackageDownloadAction.cs" />
+    <Compile Include="EDMXModel\EDMXModel_\SchEngProgressPayItem.cs" />
+    <Compile Include="EDMXModel\EDMXModel_\SuperviseEng.cs" />
+    <Compile Include="EDMXModel\AlertSetting.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\ConstCheckRecResultStandard.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\EDMXModel_\SystemProblem.cs" />
+    <Compile Include="EDMXModel\EC_SchEngProgressHeader.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\EC_SchEngProgressPayItem.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\EDMXModel_\SystemProblem.cs" />
+    <Compile Include="EDMXModel\EngApprovalImport.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\EngMaterialDeviceControlSt.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\EngSupervisor.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\ExpertCommittee.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\FarRegion.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\InteliAgencyMessage.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\MenuRole.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\Model21.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\PackageDownloadAction.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\PriceIndexItems.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\PrjXMLExt.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\SuperviseEng.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\SystemProblem.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\SystemProblemType.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\SystemType.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\VendorHireWorkList.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\ESTempModel.cs" />
+    <Compile Include="Services\Common\ExcelImportService2.cs" />
+    <Compile Include="Services\Interface\IExcelImportService.cs" />
     <Compile Include="Common\NotificationProcesser.cs" />
     <Compile Include="Common\OfficeExtension.cs" />
     <Compile Include="Common\Order.cs" />
     <Compile Include="Common\PccesXMLUpdatedOuput.cs" />
+    <Compile Include="Common\SessionFilterBase.cs" />
     <Compile Include="Controllers\APIRecordController.cs" />
+    <Compile Include="Controllers\InterFaceForFrontEnd\IExcelImport.cs" />
+    <Compile Include="Controllers\PerformanceScoreController.cs" />
     <Compile Include="Detection\APIDetection.cs" />
     <Compile Include="Detection\SuggestionDectection.cs" />
     <Compile Include="Controllers\AmmeterRecordController.cs" />
@@ -284,8 +366,6 @@
     <Compile Include="Controllers\CarbonReductionCalController.cs" />
     <Compile Include="Controllers\CarbonReductionController.cs" />
     <Compile Include="Controllers\CEExportController.cs" />
-    <Compile Include="Controllers\Common\WebBaseController.cs" />
-    <Compile Include="Controllers\Common\WebBaseWithFileController.cs" />
     <Compile Include="Controllers\ConstCheckUserController.cs" />
     <Compile Include="Controllers\CourtVerdictController.cs" />
     <Compile Include="Controllers\DelEngReportController.cs" />
@@ -343,9 +423,6 @@
     <Compile Include="EDMXModel\APIRecord.cs">
       <DependentUpon>Model2.tt</DependentUpon>
     </Compile>
-    <Compile Include="EDMXModel\APIUser.cs">
-      <DependentUpon>Model2.tt</DependentUpon>
-    </Compile>
     <Compile Include="EDMXModel\ApprovalModuleList.cs">
       <DependentUpon>Model2.tt</DependentUpon>
     </Compile>
@@ -391,6 +468,9 @@
     <Compile Include="EDMXModel\ConstCheckAppLock.cs">
       <DependentUpon>Model2.tt</DependentUpon>
     </Compile>
+    <Compile Include="EDMXModel\ConstCheckControlSt.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
     <Compile Include="EDMXModel\ConstCheckList.cs">
       <DependentUpon>Model2.tt</DependentUpon>
     </Compile>
@@ -418,6 +498,12 @@
     <Compile Include="EDMXModel\EC_SupDailyDate.cs">
       <DependentUpon>Model2.tt</DependentUpon>
     </Compile>
+    <Compile Include="EDMXModel\EDMXModel_\ConstCheckControlSt.cs" />
+    <Compile Include="EDMXModel\EDMXModel_\ConstCheckRecResult.cs" />
+    <Compile Include="EDMXModel\EDMXModel_\EnvirConsControlSt.cs" />
+    <Compile Include="EDMXModel\EDMXModel_\EquOperControlSt.cs" />
+    <Compile Include="EDMXModel\EDMXModel_\InterFace\ControlSt.cs" />
+    <Compile Include="EDMXModel\EDMXModel_\OccuSafeHealthControlSt.cs" />
     <Compile Include="EDMXModel\EngConstruction.cs">
       <DependentUpon>Model2.tt</DependentUpon>
     </Compile>
@@ -472,6 +558,9 @@
     <Compile Include="EDMXModel\EngRiskFrontSubProjectListTp.cs">
       <DependentUpon>Model2.tt</DependentUpon>
     </Compile>
+    <Compile Include="EDMXModel\EnvirConsControlSt.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
     <Compile Include="EDMXModel\EnvirConsList.cs">
       <DependentUpon>Model2.tt</DependentUpon>
     </Compile>
@@ -479,6 +568,9 @@
       <DependentUpon>Model2.tt</DependentUpon>
     </Compile>
     <Compile Include="EDMXModel\EQC_NEW_Entities.cs" />
+    <Compile Include="EDMXModel\EquOperControlSt.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
     <Compile Include="EDMXModel\EquOperTestList.cs">
       <DependentUpon>Model2.tt</DependentUpon>
     </Compile>
@@ -499,11 +591,6 @@
     <Compile Include="EDMXModel\Model2.cs" />
     <Compile Include="EDMXModel\Model2.Designer.cs">
       <DependentUpon>Model2.cs</DependentUpon>
-    </Compile>
-    <Compile Include="EDMXModel\Model21.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Model2.tt</DependentUpon>
     </Compile>
     <Compile Include="EDMXModel\Model21.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -531,6 +618,9 @@
     <Compile Include="EDMXModel\Notification.cs">
       <DependentUpon>Model2.tt</DependentUpon>
     </Compile>
+    <Compile Include="EDMXModel\OccuSafeHealthControlSt.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
     <Compile Include="EDMXModel\OccuSafeHealthList.cs">
       <DependentUpon>Model2.tt</DependentUpon>
     </Compile>
@@ -543,10 +633,16 @@
     <Compile Include="EDMXModel\PCCESWorkItem.cs">
       <DependentUpon>Model2.tt</DependentUpon>
     </Compile>
+    <Compile Include="EDMXModel\PerformanceScore.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
     <Compile Include="EDMXModel\Position.cs">
       <DependentUpon>Model2.tt</DependentUpon>
     </Compile>
     <Compile Include="EDMXModel\PrjXML.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\PrjXMLExt.cs">
       <DependentUpon>Model2.tt</DependentUpon>
     </Compile>
     <Compile Include="EDMXModel\PrjXMLTag.cs">
@@ -665,7 +761,13 @@
     <Compile Include="EDMXModel\UserUnitPosition.cs">
       <DependentUpon>Model2.tt</DependentUpon>
     </Compile>
-    <Compile Include="EDMXModel\VendorHireWorkList.cs">
+    <Compile Include="EDMXModel\viewPrjXMLPlaneWeakness.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\view_EngReportApprove.cs">
+      <DependentUpon>Model2.tt</DependentUpon>
+    </Compile>
+    <Compile Include="EDMXModel\view_EngReportList.cs">
       <DependentUpon>Model2.tt</DependentUpon>
     </Compile>
     <Compile Include="EDMXModel\wraControlPlanNo.cs">
@@ -1095,7 +1197,7 @@
     <Compile Include="Services\EPCProgressManageService.cs" />
     <Compile Include="Services\EPCProgressReportService.cs" />
     <Compile Include="Services\EPCQualityVerifyService.cs" />
-    <Compile Include="Services\ExcelImportService.cs" />
+    <Compile Include="Services\Common\ExcelImportService.cs" />
     <Compile Include="Services\ExpertCommitteeService.cs" />
     <Compile Include="Services\EYCentralLocalAddressListService.cs" />
     <Compile Include="Services\GravelFieldCoordService.cs" />
@@ -1169,6 +1271,7 @@
     <Compile Include="Services\SuperviseUnitCodeService.cs" />
     <Compile Include="Services\SupervisionProjectListService.cs" />
     <Compile Include="Services\QualityProjectTpService.cs" />
+    <Compile Include="Services\ESTempService.cs" />
     <Compile Include="Services\SupervisionProjectTpService.cs" />
     <Compile Include="Services\TechnicalService.cs" />
     <Compile Include="Services\TenderCalFormService.cs" />
@@ -1217,6 +1320,7 @@
     <Compile Include="ViewModel\EADManufacturerEngScoreVModel.cs" />
     <Compile Include="ViewModel\EADManufacturerEngVerdictVModel.cs" />
     <Compile Include="ViewModel\EADManufacturerEngVModel.cs" />
+    <Compile Include="ViewModel\EADPlaneWeaknessEngExcelVModel.cs" />
     <Compile Include="ViewModel\EADPlaneWeaknessEngVModel.cs" />
     <Compile Include="ViewModel\EADPrjXML2VModel.cs" />
     <Compile Include="ViewModel\EADPrjXMLVModel.cs" />
@@ -1446,6 +1550,9 @@
   <ItemGroup>
     <Content Include="bin\EQC.dll" />
     <Content Include="bin\EQC.pdb" />
+    <Content Include="bin\Microsoft.Vbe.Interop.dll" />
+    <Content Include="bin\office.dll" />
+    <Content Include="bin\office.xml" />
     <Content Include="ClientApp\.gitignore" />
     <Content Include="ClientApp\babel.config.js" />
     <Content Include="ClientApp\src\assets\css\all.css" />
@@ -1565,9 +1672,6 @@
     <Content Include="ClientApp\src\Backend\RiskManagement\lookup.vue" />
     <Content Include="ClientApp\src\Backend\RiskManagement\RiskList.vue" />
     <Content Include="ClientApp\src\Backend\DelEngReport\DelEngReport.vue" />
-    <None Include=".dockerignore">
-      <DependentUpon>Dockerfile</DependentUpon>
-    </None>
     <None Include="ClientApp\src\components\grid1-component.vue" />
     <None Include="ClientApp\src\Backend\City\CityList.vue" />
     <Content Include="ClientApp\src\Common\Common.js" />
@@ -1595,6 +1699,7 @@
     <Content Include="Content\css1\bootstrap.min.css" />
     <Content Include="Content\css1\drag - 複製.css" />
     <Content Include="Content\css1\drag.css" />
+    <Content Include="Content\css1\element-ui.css" />
     <Content Include="Content\css1\fontawesome.css" />
     <Content Include="Content\css1\fontawesome.min.css" />
     <Content Include="Content\css1\layout - 複製.css" />
@@ -1621,6 +1726,7 @@
     <Content Include="Content\dist\js\app.js" />
     <Content Include="Content\fonts\fontawesome-webfont.svg" />
     <Content Include="Content\images1\0203_menu-bg.png" />
+    <Content Include="Content\images1\agent_people.png" />
     <Content Include="Content\images1\banner.png" />
     <Content Include="Content\images1\eqc.wra.gov.tw_AppInstall.png" />
     <Content Include="Content\images1\icon-001-manager.png" />
@@ -1712,11 +1818,18 @@
     <Content Include="Content\images\工程提案命名原則.jpg" />
     <Content Include="Content\images\登入頁_v2.jpg" />
     <Content Include="Content\images\風險值風險等級.png" />
+    <Content Include="Content\js\alertPosHandler.js" />
+    <Content Include="Content\js\alertPosRender.js" />
+    <Content Include="Content\js\asyncSupport.js" />
+    <Content Include="Content\js\axios.js" />
     <Content Include="Content\js\bootstrap.min.js" />
+    <Content Include="Content\js\captureHTML.js" />
+    <Content Include="Content\js\captureHTMLConfig.js" />
     <Content Include="Content\js\html5shiv.min.js" />
     <Content Include="Content\js\jquery-3.3.1.min.js" />
     <Content Include="Content\js\jquery-3.6.0.min.js" />
     <Content Include="Content\js\jquery.blockUI.js" />
+    <Content Include="Content\js\popper.min.js" />
     <Content Include="Content\js\respond.min.js" />
     <Content Include="Content\js\script-1.js" />
     <Content Include="Content\js\script.js" />
@@ -1776,6 +1889,7 @@
       <DependentUpon>Model3.edmx</DependentUpon>
       <LastGenOutput>Model3.cs</LastGenOutput>
     </Content>
+    <Content Include="ExcelTemplate\PerformanceScore.xlsx" />
     <Content Include="Models\EntitiesForTechnical.Context.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <DependentUpon>EntitiesForTechnical.edmx</DependentUpon>
@@ -1872,8 +1986,6 @@
     <Content Include="ClientApp\src\EngAD\Risk\RiskAnalysis.vue" />
     <Content Include="ExcelTemplate\CarbonEmissionFactor.xlsx" />
     <Content Include="ExcelTemplate\ExpertCommittee.xlsx" />
-    <Content Include="ExcelTemplate\RejectCompany.xls" />
-    <Content Include="ClientApp\src\EPC\ProgressManage\CalenderSetting.vue" />
     <Content Include="ClientApp\src\EPC\ProgressReport\PR_Chart1.vue" />
     <Content Include="ClientApp\src\EPC\ProgressReport\PR_Chart2.vue" />
     <Content Include="ClientApp\src\EPC\ProgressReport\PR_Chart3.vue" />
@@ -1924,10 +2036,11 @@
     <Content Include="Models\Model1.edmx.diagram">
       <DependentUpon>Model1.edmx</DependentUpon>
     </Content>
-    <None Include="Dockerfile" />
-    <None Include="Properties\PublishProfiles\FolderProfile.pubxml" />
-    <None Include="Properties\PublishProfiles\registry.hub.docker.com_kbb37038106.pubxml" />
-    <None Include="Properties\PublishProfiles\registry.hub.docker.com_kbb370381061.pubxml" />
+    <Content Include="ClientApp\src\EPC\ProgressManage\PM_EngChange_Construction.vue" />
+    <Content Include="ExcelTemplate\RejectCompany.xlsx" />
+    <Content Include="ExcelTemplate\FarRegion.xlsx" />
+    <Content Include="Content\css1\fonts\element-icons.ttf" />
+    <Content Include="Content\css1\fonts\element-icons.woff" />
     <None Include="Scripts\jquery-3.6.0.intellisense.js" />
     <Content Include="Scripts\jquery-3.6.0.js" />
     <Content Include="Scripts\jquery-3.6.0.min.js" />
@@ -1986,7 +2099,6 @@
     <Content Include="Scripts\assets\libs\jquery\jquery.js" />
     <Content Include="Scripts\assets\libs\popper.js\popper.min.js" />
     <Content Include="Scripts\CountDown.js" />
-    <Content Include="ClientApp\src\test1.vue" />
     <Content Include="Scripts\assets\css\bootstrap.css.map" />
     <Content Include="Scripts\assets\css\plugins\ag-grid\ag-grid.css.map" />
     <Content Include="Scripts\assets\css\plugins\ag-grid\ag-theme-bootstrap.css.map" />
@@ -2463,9 +2575,23 @@
     <Content Include="Views\CarbonReduction\ViewIndex2.cshtml" />
     <Content Include="Views\TreeManagement\Index.cshtml" />
     <Content Include="Views\APIRecord\Index.cshtml" />
+    <Content Include="Views\APIRecord\ChangeHTML.cshtml" />
+    <Content Include="TemplateFile\管制填報表詳細.xlsx" />
+    <Content Include="Views\PerformanceScore\Index.cshtml" />
+    <Content Include="Views\AlertSetting\Index.cshtml" />
+    <Content Include="Views\AlertSetting\Setting.cshtml" />
+    <Content Include="Views\SystemProblem\Index.cshtml" />
+    <Content Include="Views\SystemProblem\AdminIndex.cshtml" />
+    <Content Include="Views\Login\NoPermission.cshtml" />
+    <Content Include="Views\ESTemp\ESTemp.cshtml" />
+    <Content Include="TemplateFile\隱私權及個人資料保護政策.pdf" />
+    <Content Include="TemplateFile\工程弱面.xlsx" />
+    <Content Include="Views\FarRegion\Index.cshtml" />
+    <Content Include="TemplateFile\專家委員匯出資料範本.xlsx" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="ClientApp\src\Backend\ESTemp\" />
     <Folder Include="Download\" />
     <Folder Include="FileUploads\Technical\TechnicalArticals\" />
     <Folder Include="FileUploads\Technical\TechnicalComments\" />
@@ -2476,7 +2602,10 @@
     <Folder Include="Views\EngAPI\" />
     <Folder Include="Views\EngRiskFrontFlowChart\" />
     <Folder Include="Views\EngRiskFrontManagement\" />
+    <Folder Include="Views\ExcelImport\" />
+    <Folder Include="Views\InteliAgency\" />
     <Folder Include="Views\MobileAPI\" />
+    <Folder Include="Views\PackageDownloadAction\" />
     <Folder Include="Views\PttInfo\" />
     <Folder Include="Views\Ptt\" />
     <Folder Include="Views\Suggestion\" />
@@ -2523,11 +2652,6 @@
   <ItemGroup>
     <WCFMetadata Include="Connected Services\" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="connectionStrings.config">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </None>
-  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
@@ -2564,8 +2688,6 @@
     <!-- <Error Condition="!Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" /> -->
     <Error Condition="!Exists('packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" />
     <Error Condition="!Exists('packages\NETStandard.Library.2.0.0\build\netstandard2.0\NETStandard.Library.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\NETStandard.Library.2.0.0\build\netstandard2.0\NETStandard.Library.targets'))" />
-    <Error Condition="!Exists('packages\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.1.11.1\build\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.1.11.1\build\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.props'))" />
-    <Error Condition="!Exists('packages\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.1.11.1\build\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.1.11.1\build\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.targets'))" />
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
@@ -2581,5 +2703,9 @@
     <Copy SourceFiles="@(RoslynFiles)" DestinationFolder="$(WebProjectOutputDir)\bin\roslyn" SkipUnchangedFiles="true" Retries="$(CopyRetryCount)" RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)" />
   </Target>
   <Import Project="packages\NETStandard.Library.2.0.0\build\netstandard2.0\NETStandard.Library.targets" Condition="Exists('packages\NETStandard.Library.2.0.0\build\netstandard2.0\NETStandard.Library.targets')" />
-  <Import Project="packages\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.1.11.1\build\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.targets" Condition="Exists('packages\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.1.11.1\build\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.targets')" />
+  <PropertyGroup>
+    <PreBuildEvent>
+xcopy  /y "$(ProjectDir)_bin" $(TargetDir)
+</PreBuildEvent>
+  </PropertyGroup>
 </Project>

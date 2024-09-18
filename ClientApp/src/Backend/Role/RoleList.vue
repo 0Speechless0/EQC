@@ -11,7 +11,7 @@
         <h1>角色管理</h1>-->
         <div class="row ">
             <div class="col-12 col-sm-4 col-md-4 col-lg-4 col-xl-2 mt-3">
-                <a href="javascript:void(0)" @click="onEdit(0)" role="button" class="btn btn-outline-secondary btn-xs mx-1">
+                <a href="javascript:void(0)" @click="onAdd()" role="button" class="btn btn-outline-secondary btn-xs mx-1">
                     <i class="fas fa-plus"></i>&nbsp;新增
                 </a>
             </div>
@@ -31,11 +31,20 @@
                 <tbody>
                     <tr v-bind:key="index" v-for="(item,index) in roles">
                         <td style="text-align: center;">{{item.Rows}}</td>
-                        <td style="text-align: center;">{{item.Name}}</td>
-                        <td>{{item.RoleDesc}}</td>
-                        <td style="text-align: center;">{{item.IsDefault ? '是' : '否'}}</td>
-                        <td style="text-align: center;">
+                        <td style="text-align: center;" v-if="item.Seq != -1">{{item.Name}}</td>
+                        <td style="text-align: center;" v-else>
+                            <input class="form-control" v-model="item.Name"/>
+                        </td>
+                        <td v-if="item.Seq != -1">{{item.RoleDesc}}</td>
+                        <td style="text-align: center;" v-else>
+                            <input class="form-control" v-model="item.RoleDesc"/>
+                        </td>
+                        <td style="text-align: center;">{{item.IsDefault  ? '是' : '否'}}</td>
+                        <td style="text-align: center;" v-if="item.Seq != -1">
                             <a href="javascript:void(0)" @click="onEdit(item)" class="btn btn-color11-2 btn-xs m-1" title="編輯"><i class="fas fa-pencil-alt"></i>  編輯</a>
+                        </td>
+                        <td style="text-align: center;" v-else>
+                            <a href="javascript:void(0)" @click="onInsert(item)" class="btn btn-color11-2 btn-xs m-1" title="儲存"><i class="fas fa-save"></i>  儲存 </a>
                         </td>
                         <td style="text-align: center;">
                             <a v-if="item.IsDefault==false" href="javascript:void(0)" @click="onDelete(item.Seq)" class="btn btn-color9-1 btn-xs m-1" title="刪除"><i class="fas fa-trash-alt"></i> 刪除</a>
@@ -58,7 +67,7 @@
                 </div>-->
             </div>
         </div>
-        <div ref="divEditDialog" style="display:none;">
+        <div ref="divEditDialog" v-show="false">
             <div class="table-responsive">
                 <table border="0" class="table table2" style="width: 95%!important;">
                     <tbody>
@@ -97,7 +106,7 @@
     </div>
 </template>
 <script>
-    import axios from 'axios';
+    // import axios from 'axios';
     import moment from 'moment';
 
     // Suppress the warnings
@@ -129,7 +138,7 @@
                 var formData = new FormData();
                 const self = this;
                 let params = { page: self.currentPage, per_page: self.perPage };
-                axios.post('/Role/GetList', params)
+                window.myAjax.post('/Role/GetList', params)
                     .then(resp => {
                         self.roles = resp.data.l;
                         self.totalRows = resp.data.t;
@@ -137,6 +146,19 @@
                     .catch(err => {
                         console.log(err);
                     });
+            },
+            onAdd()
+            {
+                this.roles.push({
+                    Seq : -1,
+                    IsDefault : false
+                });
+            },
+            onInsert(item)
+            {   
+                window.myAjax.post("Role/Insert", { role :item })
+                .then(resp => { if(resp.data == true) this.getList() });
+
             },
             onEdit(item) {
                 const self = this;
@@ -160,7 +182,7 @@
                     return false;
                 }
                 let params = JSON.parse(JSON.stringify(self.roleEdit));
-                axios.post('/Role/Save', params)
+                window.myAjax.post('/Role/Save', params)
                     .then(resp => {
                         //console.log(resp.data);
                         Vue.prototype.common.showResultMessage(resp);
@@ -178,7 +200,7 @@
                 const self = this;
                 if (confirm("確定要刪除?")) {
                     let params = { 'seq': seq }
-                    axios.post('/Role/DeleteRole', params)
+                    window.myAjax.post('/Role/DeleteRole', params)
                         .then(resp => {
                             Vue.prototype.common.showResultMessage(resp);
                             if (resp.data.IsSuccess) {

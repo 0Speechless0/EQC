@@ -65,6 +65,7 @@
                         <th>執行機關</th>
                         <th>執行單位</th>
                         <th>勾稽工程會</th>
+                        <th>生態檢核</th>
                         <th>Pcces檔案</th>
                         <th class="text-center">明細</th>
                     </tr>
@@ -77,6 +78,7 @@
                         <td>{{item.ExecUnit}}</td>
                         <td>{{item.ExecSubUnit}}</td>
                         <td><span v-html="hasCouncil(item)"></span></td>
+                        <td>{{ item.IsEcPrepare ? '是' : '否' }}</td>
                         <td>
                             <button v-if="item.PccesXMLDateStr != ''" @click="download(item)"
                                     class="btn btn-color11-1 btn-xs mx-1">
@@ -94,6 +96,7 @@
                                     <i class="fas fa-pencil-alt"></i> 編輯
                                 </button>
                                 <button v-on:click.stop="editTenderPlan(item)" class="btn btn-color11-3 btn-xs mr-1 mt-1"><i class="fas fa-pencil-alt"> 管考</i></button>
+                                <PackageDownload  btnclass="btn btn-color11-3 btn-xs mr-1 mt-1" :systemType="10" :seq="item.Seq"></PackageDownload>
                             </div>
                         </td>
                     </tr>
@@ -135,8 +138,10 @@
     </div>
 </template>
 <script>
+
     export default {
         components: {
+            PackageDownload : require("../../FilePackage/Modal.vue").default,
             EngApprovalList: require('./EngApprovalList.vue').default, //s20231006
         },
         data: function () {

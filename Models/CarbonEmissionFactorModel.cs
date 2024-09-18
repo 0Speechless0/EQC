@@ -19,6 +19,7 @@ namespace EQC.Models
         public string KeyCode1 { get; set; }
         public string KeyCode2 { get; set; }
         public string KeyCode3 { get; set; }
+        public bool Green { get; set; }
         public DateTime? CreateTime { get; set; }
         public DateTime? ModifyTime { get; set; }
     }

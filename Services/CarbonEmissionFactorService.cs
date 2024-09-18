@@ -335,7 +335,8 @@ namespace EQC.Services
                     sum(m1._F1109Length) F1109Length,
                     min(m1.ExecUnitSeq) ExecUnitSeq,
                     min(m1.ExecSubUnitSeq) ExecSubUnitSeq,
-                    round(IIF(count(m1.OrderNo) > 0 and sum(m1._SubContractingBudget) > 0, sum(m1._Co2TotalItem)*100/ sum(m1._SubContractingBudget), 0),1) co2TotalRate     
+                    sum(m1._Co2TotalItemAll) Co2TotalItemAll,
+                    round(IIF(count(m1.OrderNo) > 0 and sum(m1._Co2TotalItemAll) > 0, sum(m1._Co2TotalItem)*100/ sum(m1._Co2TotalItemAll), 0),1) co2TotalRate     
                 from (
                     select
                         --可分解率
@@ -344,6 +345,7 @@ namespace EQC.Services
                         IIF(m.SubContractingBudget is not null and m.SubContractingBudget>0 and m.awardStatus='是', Round(m.GreenFunding*100/m.SubContractingBudget, 0), NULL) greenFundingRate,
                         IIF(m.awardStatus='是', m.Co2Total, 0) _Co2Total,
                         IIF(m.awardStatus='是', m.Co2TotalItem, 0) _Co2TotalItem,
+                        IIF(m.awardStatus='是', m.Co2TotalItemAll, 0) _Co2TotalItemAll,
                         IIF(m.awardStatus='是', m.GreenFunding, 0) _GreenFunding,
                         IIF(m.awardStatus='是', m.F1108Area, 0) _F1108Area,
                         IIF(m.awardStatus='是', m.F1109Length, 0) _F1109Length,
@@ -391,8 +393,18 @@ namespace EQC.Services
                                 from CarbonEmissionHeader zb
                                 inner join CarbonEmissionPayItem za on(za.CarbonEmissionHeaderSeq=zb.Seq)
                                 where zb.EngMainSeq=a.Seq
-                                and za.KgCo2e is not null and za.ItemKgCo2e is not null
+                                and za.KgCo2e is not null and za.RStatusCode != 300
                             ) Co2TotalItem  
+
+                            --碳排量金額全部(不包括大項)
+                            ,(
+                                select
+                                    ROUND(sum(ISNULL(za.Quantity * za.Price, 0)), 0)
+                                from CarbonEmissionHeader zb
+                                inner join CarbonEmissionPayItem za on(za.CarbonEmissionHeaderSeq=zb.Seq)
+                                where zb.EngMainSeq=a.Seq
+                                and za.RStatusCode != 300
+                            ) Co2TotalItemAll  
                             --綠色經費
                             ,(
                                 select
@@ -400,6 +412,7 @@ namespace EQC.Services
                                 from CarbonEmissionHeader zb
                                 inner join CarbonEmissionPayItem za on(za.CarbonEmissionHeaderSeq=zb.Seq and za.GreenFundingSeq is not null)
                                 where zb.EngMainSeq=a.Seq
+                                and za.KgCo2e is not null
                             ) GreenFunding
                             ----喬木類合計
                             ,(
@@ -458,6 +471,7 @@ namespace EQC.Services
                         );
                 foreach(var engGroup in  list)
                 {
+                    if (!engExecUnitGroupDic.ContainsKey(engGroup.execUnitName)) continue;
                     engGroup.Tree02931JsonList = engExecUnitGroupDic[engGroup.execUnitName].Select(r => r.F1106TreeJson).ToList();
                     engGroup.Tree02932JsonList = engExecUnitGroupDic[engGroup.execUnitName].Select(r => r.F1107TreeJson).ToList();
                 }
@@ -469,7 +483,7 @@ namespace EQC.Services
             string sql = @"
                 select
 	                --可分解率
-	                IIF(m.SubContractingBudget is not null and m.SubContractingBudget>0, Round(m.Co2TotalItem*100/m.SubContractingBudget, 0), NULL) co2TotalRate,
+	                IIF(m.SubContractingBudget is not null and m.SubContractingBudget>0, Round(m.Co2TotalItem*100/m.Co2TotalItemAll  , 0), NULL) co2TotalRate,
                     --綠色經費比例
                     IIF(m.SubContractingBudget is not null and m.SubContractingBudget>0, Round(m.GreenFunding*100000/m.SubContractingBudget, 0), NULL) greenFundingRate,
    	                m.*
@@ -478,6 +492,8 @@ namespace EQC.Services
                         b.OrderNo,
                         b.Name execUnitName,
                         a.EngName,
+                        a.ExecUnitSeq,
+                        a.AwardDate,
                         a.DredgingEng,
                         e.OutsourcingBudget, --核定經費
                         a.CarbonDemandQuantity,
@@ -515,8 +531,17 @@ namespace EQC.Services
                             from CarbonEmissionHeader zb
                             inner join CarbonEmissionPayItem za on(za.CarbonEmissionHeaderSeq=zb.Seq)
                             where zb.EngMainSeq=a.Seq
-                            and za.KgCo2e is not null and za.ItemKgCo2e is not null
+                            and za.KgCo2e is not null and za.RStatusCode != 300 
                         ) Co2TotalItem  
+                        --碳排量金額(全部，不包括大項)
+                        ,(
+                            select
+                                ROUND(sum(ISNULL(za.Quantity * za.Price, 0)), 0)
+                            from CarbonEmissionHeader zb
+                            inner join CarbonEmissionPayItem za on(za.CarbonEmissionHeaderSeq=zb.Seq)
+                            where zb.EngMainSeq=a.Seq
+                            and za.RStatusCode != 300 
+                        ) Co2TotalItemAll  
                         --綠色經費
                         ,(
                             select
@@ -607,7 +632,7 @@ namespace EQC.Services
                     and((@subUnitSeq=-1) or a.ExecSubUnitSeq=@subUnitSeq)
                 ) m
                 where m.awardStatus = @awardStatus or  @awardStatus = '否'
-                order by m.OrderNo, m.EngName
+                order by m.AwardDate
             ";
             //Utils.getAuthoritySql("a.")
             SqlCommand cmd = db.GetCommand(sql);
@@ -625,9 +650,12 @@ namespace EQC.Services
                 select
 	                b.Name execUnitName
                     ,a.EngNo
+                    ,a.EngYear
                     ,a.EngName
+                    ,a.ExecUnitSeq
                     ,c.TenderNo
                     ,c.TenderName
+                    ,a.AwardDate
                     --發包狀態
                     --,a.AwardDate
                     ,(
@@ -784,7 +812,8 @@ namespace EQC.Services
                     a.IsEnabled,
                     a.SubCode,
                     a.KeyCode2,
-                    a.Memo
+                    a.Memo,
+                    a.Green
                 FROM CarbonEmissionFactor a
 				where a.IsEnabled=1
                 and a.Code Like @keyWord
@@ -889,7 +918,8 @@ namespace EQC.Services
                 KeyCode2 = @KeyCode2,
                 KeyCode3 = @KeyCode3,
                 ModifyTime = GetDate(),
-                ModifyUserSeq = @ModifyUserSeq
+                ModifyUserSeq = @ModifyUserSeq,
+                Green = @Green
             where Seq=@Seq";
 
             try
@@ -907,6 +937,7 @@ namespace EQC.Services
                 cmd.Parameters.AddWithValue("@KeyCode1", m.KeyCode1);
                 cmd.Parameters.AddWithValue("@KeyCode2", m.KeyCode2);
                 cmd.Parameters.AddWithValue("@KeyCode3", m.KeyCode3);
+                cmd.Parameters.AddWithValue("@Green", m.Green);
 
                 cmd.Parameters.AddWithValue("@ModifyUserSeq", getUserSeq());
                 db.ExecuteNonQuery(cmd);

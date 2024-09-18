@@ -1,4 +1,8 @@
 ﻿
+using EQC.EDMXModel;
+using System;
+using System.Linq;
+
 namespace EQC.Models
 {//抽查標準
     public class ControlStVModel : ConstCheckRecResultModel
@@ -18,5 +22,25 @@ namespace EQC.Models
         public bool changed { get; set; }
         public int itemType { get; set; } //s20231016
         public string RecResultRemark { get;  set; }
+
+        public string StandardValuesStr { get; set; }
+
+        public string StandardFilled(EQC_NEW_Entities standardValesContext) { 
+            
+                var standardFilled = Stand1.Aggregate("", (a, c) => {
+                    if (c != '_')
+                        a += c;
+                    if (a.Length > 0 && a[a.Length - 1] != '_' && c == '_')
+                        a += c;
+                    return a;
+                });
+                standardValesContext?.ConstCheckRecResultStandard.Where(r => r.ConstCheckRecResultSeq == Seq)
+                    .ToList()
+                    .ForEach(e =>
+                    {
+                        standardFilled = standardFilled.Replace("_", e.Value);
+                    });
+                return standardFilled ==  "" ? null : standardFilled; 
+        }
     }
 }

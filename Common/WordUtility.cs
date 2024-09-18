@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
-
+using EQC.ProposalV2;
 namespace EQC.Common
 {
     public static class WordUtility
@@ -112,8 +112,23 @@ namespace EQC.Common
             }
         }
 
+
+        public static void InsertImageToDocx(string templateFileName, string imageDir, Dictionary<string, string> fileNamesMap)
+        {
+            using(var doc = new OfficeDocumentV2(templateFileName, imageDir))
+            {
+                foreach(var pair in fileNamesMap)
+                {
+                    doc.InsertCharts(pair.Key, new List<Attachment> { new Attachment { Name = pair.Value, Description = "" } }, false, "[${0}$]");
+               
+                }
+
+                doc.SaveAs(templateFileName);
+            }
+        }
         public static byte[] GenerateDocx(byte[] template, Dictionary<string, string> data)
         {
+       
             using (var ms = new MemoryStream())
             {
                 ms.Write(template, 0, template.Length);

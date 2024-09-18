@@ -1,6 +1,6 @@
 ﻿<template>
     <div>
-        <div>
+        <div >
             <h5>提案審查表&nbsp;&nbsp;&nbsp;<a href="/Content/images/工程提案命名原則.jpg" title="命名規則" target="_blank" style="font-size: smaller;">命名規則</a></h5>
             <div class="setFormcontentCenter">
                 <div class="form-row">
@@ -193,18 +193,18 @@
                                         <td class="text-left" style="text-align: left !important;"><strong>公共工程生態檢核自評表</strong></td>
                                         <td style="width: 400px;">{{engReport.D01FileName}}</td>
                                         <td style="display: flex; width: 140px;">
-                                            <label class="btn btn-shadow btn-color11-3">
-                                                <input v-on:change="fileChange($event,'D1')" id="inputFile" type="file" name="file" multiple="" style="display:none;"><i class="fas fa-upload"></i>
+                                            <label class="btn btn-shadow btn-color11-3" >
+                                                <input  v-on:change="fileChange($event,'D1')" id="inputFile" type="file" name="file" multiple="" style="display:none;"><i class="fas fa-upload"></i>
                                             </label>
-                                            <button v-if="engReport.D01FileName!=''" v-on:click.stop="download(engReport.Seq,'D1')" role="button" class="btn btn-color11-1 btn-x sharp mx-1"><i class="fas fa-download"></i></button>
-                                            <button v-if="engReport.D01FileName!=''" v-on:click.stop="delAttachment(engReport.Seq,'D1')" role="button" class="btn btn-color11-4 btn-x sharp mx-1"><i class="fas fa-trash-alt"></i></button>
+                                            <button v-if="engReport.D01FileName!='' " v-on:click.stop="download(engReport.Seq,'D1')" role="button" class="btn btn-color11-1 btn-x sharp mx-1"><i class="fas fa-download"></i></button>
+                                            <button v-if="engReport.D01FileName!='' " v-on:click.stop="delAttachment(engReport.Seq,'D1')" role="button" class="btn btn-color11-4 btn-x sharp mx-1"><i class="fas fa-trash-alt"></i></button>
                                         </td>
                                     </tr>
                                     <tr>
                                         <td class="text-left" style="text-align: left !important;"><strong>P-01 提案階段工程生態背景資料表</strong></td>
                                         <td>{{engReport.D02FileName}}</td>
                                         <td style="display: flex;">
-                                            <label class="btn btn-shadow btn-color11-3">
+                                            <label class="btn btn-shadow btn-color11-3" >
                                                 <input v-on:change="fileChange($event,'D2')" id="inputFile" type="file" name="file" multiple="" style="display:none;"><i class="fas fa-upload"></i>
                                             </label>
                                             <button v-if="engReport.D02FileName!=''" v-on:click.stop="download(engReport.Seq,'D2')" role="button" class="btn btn-color11-1 btn-x sharp mx-1"><i class="fas fa-download"></i></button>
@@ -215,7 +215,7 @@
                                         <td class="text-left" style="text-align: left !important;"><strong>P-02 提案階段現場勘查紀錄表</strong></td>
                                         <td>{{engReport.D03FileName}}</td>
                                         <td style="display: flex;">
-                                            <label class="btn btn-shadow btn-color11-3">
+                                            <label class="btn btn-shadow btn-color11-3 ">
                                                 <input v-on:change="fileChange($event,'D3')" id="inputFile" type="file" name="file" multiple="" style="display:none;"><i class="fas fa-upload"></i>
                                             </label>
                                             <button v-if="engReport.D03FileName!=''" v-on:click.stop="download(engReport.Seq,'D3')" role="button" class="btn btn-color11-1 btn-x sharp mx-1"><i class="fas fa-download"></i></button>
@@ -226,22 +226,22 @@
                                         <td class="text-left" style="text-align: left !important;"><strong>P-03 提案階段民眾參與紀錄表</strong></td>
                                         <td>{{engReport.D04FileName}}</td>
                                         <td style="display: flex;">
-                                            <label class="btn btn-shadow btn-color11-3">
+                                            <label class="btn btn-shadow btn-color11-3" >
                                                 <input v-on:change="fileChange($event,'D4')" id="inputFile" type="file" name="file" multiple="" style="display:none;"><i class="fas fa-upload"></i>
                                             </label>
                                             <button v-if="engReport.D04FileName!=''" v-on:click.stop="download(engReport.Seq,'D4')" role="button" class="btn btn-color11-1 btn-x sharp mx-1"><i class="fas fa-download"></i></button>
-                                            <button v-if="engReport.D04FileName!=''" v-on:click.stop="delAttachment(engReport.Seq,'D4')" role="button" class="btn btn-color11-4 btn-x sharp mx-1"><i class="fas fa-trash-alt"></i></button>
+                                            <button v-if="engReport.D04FileName!='' " v-on:click.stop="delAttachment(engReport.Seq,'D4')" role="button" class="btn btn-color11-4 btn-x sharp mx-1"><i class="fas fa-trash-alt"></i></button>
                                         </td>
                                     </tr>
                                     <tr>
                                         <td class="text-left" style="text-align: left !important;"><strong>P-04 提案階段生態保育原則研擬紀錄表</strong></td>
                                         <td>{{engReport.D05FileName}}</td>
                                         <td style="display: flex;">
-                                            <label class="btn btn-shadow btn-color11-3">
+                                            <label class="btn btn-shadow btn-color11-3" >
                                                 <input v-on:change="fileChange($event,'D5')" id="inputFile" type="file" name="file" multiple="" style="display:none;"><i class="fas fa-upload"></i>
                                             </label>
                                             <button v-if="engReport.D05FileName!=''" v-on:click.stop="download(engReport.Seq,'D5')" role="button" class="btn btn-color11-1 btn-x sharp mx-1"><i class="fas fa-download"></i></button>
-                                            <button v-if="engReport.D05FileName!=''" v-on:click.stop="delAttachment(engReport.Seq,'D5')" role="button" class="btn btn-color11-4 btn-x sharp mx-1"><i class="fas fa-trash-alt"></i></button>
+                                            <button v-if="engReport.D05FileName!='' " v-on:click.stop="delAttachment(engReport.Seq,'D5')" role="button" class="btn btn-color11-4 btn-x sharp mx-1"><i class="fas fa-trash-alt"></i></button>
                                         </td>
                                     </tr>
                                     <tr>
@@ -252,7 +252,7 @@
                                                 <input v-on:change="fileChange($event,'D6')" id="inputFile" type="file" name="file" multiple="" style="display:none;"><i class="fas fa-upload"></i>
                                             </label>
                                             <button v-if="engReport.D06FileName!=''" v-on:click.stop="download(engReport.Seq,'D6')" role="button" class="btn btn-color11-1 btn-x sharp mx-1"><i class="fas fa-download"></i></button>
-                                            <button v-if="engReport.D06FileName!=''" v-on:click.stop="delAttachment(engReport.Seq,'D6')" role="button" class="btn btn-color11-4 btn-x sharp mx-1"><i class="fas fa-trash-alt"></i></button>
+                                            <button v-if="engReport.D06FileName!='' " v-on:click.stop="delAttachment(engReport.Seq,'D6')" role="button" class="btn btn-color11-4 btn-x sharp mx-1"><i class="fas fa-trash-alt"></i></button>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -264,14 +264,15 @@
                     <div class="col-12 col-md-6 form-inline my-2 justify-content-md-between">
                         需求碳排量(頓)<span class="small-red">&nbsp;*</span>
                         <a href="#" title="碳排連結" data-toggle="modal" data-target="#refSampleModal" class="a-blue underl" role="button">碳排連結</a>
-                        <p style="color: red; padding-top: 20px;">參考碳排量=核定經費(元)*回歸曲線0.38*物調(82.156/前一年的平均新指數)：{{engReport.RefCarbonEmission}}</p>
+                <p style="color: red; padding-top: 20px;">參考碳排量=概估經費(元)*回歸曲線0.38*物調(82.156/前一年的平均新指數)：{{RefCarbonEmission}}<span style="color:blue" v-if="engReport.RefCarbonEmission != engReport._RefCarbonEmission"> (未儲存) </span> </p>
+          
                         <input v-model="engReport.DemandCarbonEmissions" type="text" class="col-12 form-control" value="OO">
                         <textarea v-model="engReport.DemandCarbonEmissionsMemo" class="col-12 form-control min1110"
                                   style="min-height: 100px;" placeholder="說明"></textarea>
                     </div>
                 </div>
             </div>
-            <h5>概估經費</h5>
+            <h5 ref="itemsA" >概估經費 <span class="small-red">&nbsp;*</span></h5>
             <div class="table-responsive">
                 <table class="table table1" id="addnew1010">
                     <thead class="insearch">
@@ -280,8 +281,8 @@
                             <th style="width: 50px;"><strong>年度</strong></th>
                             <th><strong>項目</strong></th>
                             <th style="width: 250px;"><strong>金額(元)</strong></th>
-                            <th style="text-align: center; width: 200px;">
-                                <a v-on:click.stop="fAddItemA=true" href="##" class="btn btn-color11-3 btn-xs sharp mr-1" title="新增"><i class="fas fa-plus"></i></a>
+                            <th style="text-align: center; width: 200px;" v-if="fileEditable">
+                                <a v-on:click.stop="fAddItemA=true" href="##" class="btn btn-color11-3 btn-xs sharp mr-1" title="新增" ><i class="fas fa-plus"></i></a>
                             </th>
                         </tr>
                     </thead>
@@ -322,7 +323,7 @@
                                 <div v-if="!item.edit">{{item.Price}}</div>
                                 <input v-if="item.edit" type="text" v-model.trim="item.Price" maxlength="12" class="form-control" />
                             </td>
-                            <td style="min-width: 105px;">
+                            <td style="min-width: 105px;"  v-if="fileEditable">
                                 <a href="#" v-if="!item.edit" v-on:click.prevent="item.edit=!item.edit" class="btn btn-color11-3 btn-xs mx-1" title="編輯"><i class="fas fa-pencil-alt"></i> 編輯</a>
                                 <a href="#" v-if="item.edit" v-on:click.prevent="onSaveRecordA(item)" class="btn btn-color11-2 btn-xs mx-1"><i class="fas fa-save"></i> 儲存</a>
                                 <a href="#" v-on:click.prevent="onDelEngA(index, item.Seq)" class="btn btn-color9-1 btn-xs mx-1" title="刪除"><i class="fas fa-trash-alt"></i> 刪除</a>
@@ -344,8 +345,8 @@
                             <th><strong>日期</strong></th>
                             <th><strong>文號</strong></th>
                             <th><strong>檔案名稱</strong></th>
-                            <th style="text-align: center; width: 200px;">
-                                <a v-on:click.stop="fAddItemB=true" href="##" class="btn btn-color11-3 btn-xs sharp mr-1" title="新增"><i class="fas fa-plus"></i></a>
+                            <th style="text-align: center; width: 200px;" v-if="fileEditable">
+                                <a v-on:click.stop="fAddItemB=true" href="##" class="btn btn-color11-3 btn-xs sharp mr-1" title="新增" ><i class="fas fa-plus"></i></a>
                             </th>
                         </tr>
                     </thead>
@@ -379,7 +380,7 @@
                                 <div v-if="!item.edit">{{item.FileName}}</div>
                                 <b-form-file v-if="item.edit" v-model="editFileB" placeholder="未選擇任何檔案"></b-form-file>
                             </td>
-                            <td style="min-width: 105px;">
+                            <td style="min-width: 105px;"  v-if="fileEditable">
                                 <a href="#" v-if="!item.edit" v-on:click.prevent="item.edit=!item.edit" class="btn btn-color11-3 btn-xs mx-1" title="編輯"><i class="fas fa-pencil-alt"></i> 編輯</a>
                                 <a href="#" v-if="item.edit" v-on:click.prevent="onSaveRecordB(item)" class="btn btn-color11-2 btn-xs mx-1"><i class="fas fa-save"></i> 儲存</a>
                                 <a href="#" v-if="item.edit" v-on:click.prevent="item.edit==item.edit" class="btn btn-color9-1 btn-xs sharp mx-1" title="取消"><i class="fas fa-times"></i>取消</a>
@@ -402,8 +403,8 @@
                             <th><strong>日期</strong></th>
                             <th><strong>文號</strong></th>
                             <th><strong>檔案名稱</strong></th>
-                            <th style="text-align: center; width: 200px;">
-                                <a v-on:click.stop="fAddItemC=true" href="##" class="btn btn-color11-3 btn-xs sharp mr-1" title="新增"><i class="fas fa-plus"></i></a>
+                            <th style="text-align: center; width: 200px;" v-if="fileEditable">
+                                <a v-on:click.stop="fAddItemC=true" href="##" class="btn btn-color11-3 btn-xs sharp mr-1" title="新增" ><i class="fas fa-plus"></i></a>
                             </th>
                         </tr>
                     </thead>
@@ -436,7 +437,7 @@
                                 <div v-if="!item.edit">{{item.FileName}}</div>
                                 <b-form-file v-if="item.edit" v-model="editFileC" placeholder="未選擇任何檔案"></b-form-file>
                             </td>
-                            <td style="min-width: 105px;">
+                            <td style="min-width: 105px;"  v-if="fileEditable">
                                 <a href="#" v-if="!item.edit" v-on:click.prevent="item.edit=!item.edit" class="btn btn-color11-3 btn-xs mx-1" title="編輯"><i class="fas fa-pencil-alt"></i> 編輯</a>
                                 <a href="#" v-if="item.edit" v-on:click.prevent="onSaveRecordC(item)" class="btn btn-color11-2 btn-xs mx-1"><i class="fas fa-save"></i> 儲存</a>
                                 <a href="#" v-if="item.edit" v-on:click.prevent="item.edit= !item.edit" class="btn btn-color9-1 btn-xs sharp mx-1" title="取消"><i class="fas fa-times"></i>取消</a>
@@ -460,8 +461,8 @@
                             <th style="width:110px;"><strong>數量</strong></th>
                             <th style="width:140px;"><strong>經費(元)</strong></th>
                             <th style="width:200px;"><strong>備註</strong></th>
-                            <th style="text-align: center; width: 150px;">
-                                <a v-on:click.stop="fAddItemD=true" href="##" class="btn btn-color11-3 btn-xs sharp mr-1" title="新增"><i class="fas fa-plus"></i></a>
+                            <th style="text-align: center; width: 150px;" v-if="fileEditable">
+                                <a v-on:click.stop="fAddItemD=true" href="##" class="btn btn-color11-3 btn-xs sharp mr-1" title="新增" ><i class="fas fa-plus"></i></a>
                             </th>
                         </tr>
                     </thead>
@@ -509,7 +510,7 @@
                                 <div v-if="!item.edit">{{item.Memo}}</div>
                                 <input v-if="item.edit" v-model.trim="item.Memo" type="text" class="form-control" />
                             </td>
-                            <td style="min-width: 140px;">
+                            <td style="min-width: 140px;" v-if="fileEditable">
                                 <a href="#" v-if="!item.edit" v-on:click.prevent="item.edit=!item.edit" class="btn btn-color11-3 btn-xs mx-1" title="編輯"><i class="fas fa-pencil-alt"></i> 編輯</a>
                                 <a href="#" v-if="!item.edit" v-on:click.prevent="onDelEngD(index, item.Seq)" class="btn btn-color9-1 btn-xs mx-1" title="刪除"><i class="fas fa-trash-alt"></i> 刪除</a>
                                 <a href="#" v-if="item.edit" v-on:click.prevent="onSaveRecordD(item)" class="btn btn-color11-2 btn-xs mx-1"><i class="fas fa-save"></i> 儲存</a>
@@ -530,7 +531,7 @@
 
             <h5>附件上傳</h5>
             <a href="#" title="說明" target="_blank" data-toggle="modal" data-target="#prepare_edit01">說明&nbsp;</a>
-            <p style="color: red; padding-top: 20px;">*請上傳 jpg、png、pdf格式</p>
+            <p style="color: red; padding-top: 20px;">*請上傳 jpg、png 格式</p>
             <p style="color: red;">屬「用地先期作業」及「用地取得」者<br>以下僅需檢附位置圖、空拍圖、現場照片、基地地籍圖，其餘免填</p>
             <!-- 小視窗 編輯人員 -->
             <div class="modal fade" id="prepare_edit01">
@@ -562,7 +563,7 @@
                         <tr class="insearch">
                             <th class="text-left"><strong>資料名稱</strong></th>
                             <th style="width: 400px;"><strong>上傳檔案</strong></th>
-                            <th style="width: 140px;"><strong>功能</strong></th>
+                            <th style="width: 140px;" ><strong>功能</strong></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -570,101 +571,104 @@
                             <td class="text-left" style="text-align: left !important;"><span class="small-red">&nbsp;*</span><strong>位置圖(建議比例尺大於1/5000)</strong></td>
                             <td>{{engReport.LocationMapFileName}}</td>
                             <td style="display: flex;">
-                                <label class="btn btn-shadow btn-color11-3">
-                                    <input v-on:change="fileChange($event,'A1')" id="inputFile" type="file" name="file" multiple="" style="display:none;"><i class="fas fa-upload"></i>
+                                <label class="btn btn-shadow btn-color11-3"  v-if="fileEditable">
+                                    <input v-on:change="fileChange($event,'A1')"  id="inputFile" type="file" name="file" multiple="" style="display:none;"><i class="fas fa-upload"></i>
                                 </label>
                                 <button v-if="engReport.LocationMapFileName!=''" v-on:click.stop="download(engReport.Seq,'A1')" role="button" class="btn btn-color11-1 btn-x sharp mx-1"><i class="fas fa-download"></i></button>
-                                <button v-if="engReport.LocationMapFileName!=''" v-on:click.stop="delAttachment(engReport.Seq,'A1')" role="button" class="btn btn-color11-4 btn-x sharp mx-1"><i class="fas fa-trash-alt"></i></button>
+                                <button v-if="engReport.LocationMapFileName!='' && fileEditable" v-on:click.stop="delAttachment(engReport.Seq,'A1')" role="button" class="btn btn-color11-4 btn-x sharp mx-1"><i class="fas fa-trash-alt"></i></button>
                             </td>
                         </tr>
                         <tr>
                             <td class="text-left" style="text-align: left !important;"><span class="small-red">&nbsp;*</span><strong>空拍照(建議比例尺大於1/5000)</strong></td>
                             <td>{{engReport.AerialPhotographyFileName}}</td>
                             <td style="display: flex;">
-                                <label class="btn btn-shadow btn-color11-3">
+                                <label class="btn btn-shadow btn-color11-3" v-if="fileEditable">
                                     <input v-on:change="fileChange($event,'A2')" id="inputFile" type="file" name="file" multiple="" style="display:none;"><i class="fas fa-upload"></i>
                                 </label>
                                 <button v-if="engReport.AerialPhotographyFileName!=''" v-on:click.stop="download(engReport.Seq,'A2')" role="button" class="btn btn-color11-1 btn-x sharp mx-1"><i class="fas fa-download"></i></button>
-                                <button v-if="engReport.AerialPhotographyFileName!=''" v-on:click.stop="delAttachment(engReport.Seq,'A2')" role="button" class="btn btn-color11-4 btn-x sharp mx-1"><i class="fas fa-trash-alt"></i></button>
+                                <button v-if="engReport.AerialPhotographyFileName!='' && fileEditable" v-on:click.stop="delAttachment(engReport.Seq,'A2')" role="button" class="btn btn-color11-4 btn-x sharp mx-1"><i class="fas fa-trash-alt"></i></button>
                             </td>
                         </tr>
                         <tr>
                             <td class="text-left" style="text-align: left !important;"><span class="small-red">&nbsp;*</span><strong>現場照片</strong></td>
                             <td>{{engReport.ScenePhotoFileName}}</td>
                             <td style="display: flex;">
-                                <label class="btn btn-shadow btn-color11-3">
+                                <label class="btn btn-shadow btn-color11-3" v-if="fileEditable">
                                     <input v-on:change="fileChange($event,'A3')" id="inputFile" type="file" name="file" multiple="" style="display:none;"><i class="fas fa-upload"></i>
                                 </label>
                                 <button v-if="engReport.ScenePhotoFileName!=''" v-on:click.stop="download(engReport.Seq,'A3')" role="button" class="btn btn-color11-1 btn-x sharp mx-1"><i class="fas fa-download"></i></button>
-                                <button v-if="engReport.ScenePhotoFileName!=''" v-on:click.stop="delAttachment(engReport.Seq,'A3')" role="button" class="btn btn-color11-4 btn-x sharp mx-1"><i class="fas fa-trash-alt"></i></button>
+                                <button v-if="engReport.ScenePhotoFileName!='' && fileEditable" v-on:click.stop="delAttachment(engReport.Seq,'A3')" role="button" class="btn btn-color11-4 btn-x sharp mx-1"><i class="fas fa-trash-alt"></i></button>
                             </td>
                         </tr>
                         <tr>
                             <td class="text-left" style="text-align: left !important;"><strong>基地地藉圖(建議比例尺大於1/5000)</strong></td>
                             <td>{{engReport.BaseMapFileName}}</td>
                             <td style="display: flex;">
-                                <label class="btn btn-shadow btn-color11-3">
+                                <label class="btn btn-shadow btn-color11-3" v-if="fileEditable">
                                     <input v-on:change="fileChange($event,'A4')" id="inputFile" type="file" name="file" multiple="" style="display:none;"><i class="fas fa-upload"></i>
                                 </label>
                                 <button v-if="engReport.BaseMapFileName!=''" v-on:click.stop="download(engReport.Seq,'A4')" role="button" class="btn btn-color11-1 btn-x sharp mx-1"><i class="fas fa-download"></i></button>
-                                <button v-if="engReport.BaseMapFileName!=''" v-on:click.stop="delAttachment(engReport.Seq,'A4')" role="button" class="btn btn-color11-4 btn-x sharp mx-1"><i class="fas fa-trash-alt"></i></button>
+                                <button v-if="engReport.BaseMapFileName!='' && fileEditable" v-on:click.stop="delAttachment(engReport.Seq,'A4')" role="button" class="btn btn-color11-4 btn-x sharp mx-1"><i class="fas fa-trash-alt"></i></button>
                             </td>
                         </tr>
                         <tr>
                             <td class="text-left" style="text-align: left !important;"><strong>工程平面配置圖(建議比例尺大於1/1000)</strong></td>
                             <td>{{engReport.EngPlaneLayoutFileName}}</td>
                             <td style="display: flex;">
-                                <label class="btn btn-shadow btn-color11-3">
+                                <label class="btn btn-shadow btn-color11-3" v-if="fileEditable">
                                     <input v-on:change="fileChange($event,'A5')" id="inputFile" type="file" name="file" multiple="" style="display:none;"><i class="fas fa-upload"></i>
                                 </label>
                                 <button v-if="engReport.EngPlaneLayoutFileName!=''" v-on:click.stop="download(engReport.Seq,'A5')" role="button" class="btn btn-color11-1 btn-x sharp mx-1"><i class="fas fa-download"></i></button>
-                                <button v-if="engReport.EngPlaneLayoutFileName!=''" v-on:click.stop="delAttachment(engReport.Seq,'A5')" role="button" class="btn btn-color11-4 btn-x sharp mx-1"><i class="fas fa-trash-alt"></i></button>
+                                <button v-if="engReport.EngPlaneLayoutFileName!='' && fileEditable" v-on:click.stop="delAttachment(engReport.Seq,'A5')" role="button" class="btn btn-color11-4 btn-x sharp mx-1"><i class="fas fa-trash-alt"></i></button>
                             </td>
                         </tr>
                         <tr>
                             <td class="text-left" style="text-align: left !important;"><strong>縱斷面圖</strong></td>
                             <td>{{engReport.LongitudinalSectionFileName}}</td>
                             <td style="display: flex;">
-                                <label class="btn btn-shadow btn-color11-3">
+                                <label class="btn btn-shadow btn-color11-3" v-if="fileEditable">
                                     <input v-on:change="fileChange($event,'A6')" id="inputFile" type="file" name="file" multiple="" style="display:none;"><i class="fas fa-upload"></i>
                                 </label>
                                 <button v-if="engReport.LongitudinalSectionFileName!=''" v-on:click.stop="download(engReport.Seq,'A6')" role="button" class="btn btn-color11-1 btn-x sharp mx-1"><i class="fas fa-download"></i></button>
-                                <button v-if="engReport.LongitudinalSectionFileName!=''" v-on:click.stop="delAttachment(engReport.Seq,'A6')" role="button" class="btn btn-color11-4 btn-x sharp mx-1"><i class="fas fa-trash-alt"></i></button>
+                                <button v-if="engReport.LongitudinalSectionFileName!='' && fileEditable" v-on:click.stop="delAttachment(engReport.Seq,'A6')" role="button" class="btn btn-color11-4 btn-x sharp mx-1"><i class="fas fa-trash-alt"></i></button>
                             </td>
                         </tr>
                         <tr>
                             <td class="text-left" style="text-align: left !important;"><strong>標準斷面圖 (建議比例尺水平大於1/1000、垂直大於1/500)</strong></td>
                             <td>{{engReport.StandardSectionFileName}}</td>
                             <td style="display: flex;">
-                                <label class="btn btn-shadow btn-color11-3">
+                                <label class="btn btn-shadow btn-color11-3" v-if="fileEditable"> 
                                     <input v-on:change="fileChange($event,'A6')" id="inputFile" type="file" name="file" multiple="" style="display:none;"><i class="fas fa-upload"></i>
                                 </label>
                                 <button v-if="engReport.StandardSectionFileName!=''" v-on:click.stop="download(engReport.Seq,'A6')" role="button" class="btn btn-color11-1 btn-x sharp mx-1"><i class="fas fa-download"></i></button>
-                                <button v-if="engReport.StandardSectionFileName!=''" v-on:click.stop="delAttachment(engReport.Seq,'A6')" role="button" class="btn btn-color11-4 btn-x sharp mx-1"><i class="fas fa-trash-alt"></i></button>
+                                <button v-if="engReport.StandardSectionFileName!='' && fileEditable" v-on:click.stop="delAttachment(engReport.Seq,'A6')" role="button" class="btn btn-color11-4 btn-x sharp mx-1"><i class="fas fa-trash-alt"></i></button>
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
-        <h5 v-if="engReport.IsProposalReview==1">審核意見</h5>
-        <div v-if="engReport.IsProposalReview==1" style="display: flex;">
-            <div class="custom-control custom-radio custom-control-inline" style="padding-top: 10px;">
-                <input :disabled="!(isAdmin||isEQCAdmin)" v-model="engReport.ProposalAuditOpinion" v-bind:value="1" type="radio" name="QA" id="QA07" class="custom-control-input">
-                <label for="QA07" class="custom-control-label">同意</label>
+        <h5 v-if="engReport.IsProposalReview==1  && !FundDiff">審核意見</h5>
+        <div v-if="engReport.IsProposalReview==1 && !FundDiff " style="display: flex;" >
+            <div class="custom-control custom-radio custom-control-inline " style="padding-top: 10px;" >
+                <input  :disabled="!(isAdmin||isEQCAdmin)" v-model="engReport.ProposalAuditOpinion"  :value="1 " type="radio" :name="tenderId +'QA'" :id=" 'QA07'" class="custom-control-input">
+                <label :for="'QA07'" class="custom-control-label">同意</label>
             </div><br>
-            <div class="custom-control custom-radio custom-control-inline" style="padding-top: 10px;">
-                <input :disabled="!(isAdmin||isEQCAdmin)" v-model="engReport.ProposalAuditOpinion" v-bind:value="2" type="radio" name="QA" id="QA08" class="custom-control-input">
-                <label for="QA08" class="custom-control-label">暫緩</label>
+            <div class="custom-control custom-radio custom-control-inline" style="padding-top: 10px;"  >
+                <input :disabled="!(isAdmin||isEQCAdmin)" v-model="engReport.ProposalAuditOpinion" :value="2" type="radio" :name="tenderId +'QA'" :id="'QA08'" class="custom-control-input">
+                <label :for="'QA08'" class="custom-control-label">暫緩</label>
             </div>
+            <button class="btn btn-color11-2 btn-xs sharp mx-1 m-2" @click="updateProposalReview()">
+                <i class="fas fa-save"> </i>
+            </button>
         </div>
         <div class="row justify-content-center mt-5">
-            <div class="d-flex">
-                <button v-on:click.stop="onSend()" role="button" class="btn btn-color11-2 btn-xs mx-1">
-                    <i class="fas fa-save">&nbsp;{{engReport.IsProposalReview==0?'送簽':'儲存'}}</i>
+            <div class="d-flex" >
+                <button v-if="fileEditable " v-on:click.stop="onSend()" role="button" class="btn btn-color11-2 btn-xs mx-1">
+                    <i class="fas fa-save">&nbsp;送簽</i>
                 </button>
             </div>
-            <div v-if="engReport.IsProposalReview==0" class="d-flex">
+            <div v-if="fileEditable" class="d-flex">
                 <button v-on:click.stop="onSave()" role="button" class="btn btn-color11-2 btn-xs mx-1">
                     <i class="fas fa-save">&nbsp;暫存</i>
                 </button>
@@ -677,8 +681,10 @@
 </template>
 <script>
     export default {
+        props: ["tenderId"],
         data: function () {
             return {
+
                 isAdmin: false,
                 isEQCAdmin: false,
 
@@ -734,8 +740,63 @@
                 editPR:0
             };
         },
+        watch :{
+            // RefCarbonEmission : {
+            //     async handler(value)
+            //     {
+            //         this.engReport.RefCarbonEmission = value;
+            //     }
+            // },
+            engReport :{
+                async handler(value){
+                    await new Promise(re => setTimeout(re, 200));
+                    if(value.IsProposalReview ==1 && value.ProposalAuditOpinion ==1)
+                    {
+     
+                        Array.apply(null, document.querySelectorAll("input, textarea, select") )
+                            .filter(e => e.id != "QA07" && e.id != 'QA08')
+                            .forEach(e => e.disabled = true);
 
+                            
+                    }
+                    else{
+                        Array.apply(null, document.querySelectorAll("input, textarea, select") )
+                            .forEach(e => e.disabled = false);
+                    }
+                    Array.apply(null, document.querySelectorAll("#inputFile"))
+                    .forEach(e => e.disabled = false);
+                }
+            }
+        },
+        computed : {
+            FundDiff()
+            {
+                return  this.estimateCost !=  this.itemsD.reduce((a, c) => a+ c.Cost, 0) && this.engReport.ProposalReviewAttributesSeq != 1
+            },
+            RefCarbonEmission()
+            {
+                return ( (this.engReport.RefCarbonEmissionFactor * this.estimateCost) ?? 0 ).toFixed(2);
+                
+            },
+            estimateCost()
+            {
+                return this.itemsA.reduce( (a, c) => a + c.Price, 0);
+            },
+            fileEditable()
+            {
+                return this.engReport.IsProposalReview==0 || this.engReport.ProposalAuditOpinion != 1
+            }
+        },
         methods: {
+            async updateProposalReview()
+            {
+                let {data :res} = await window.myAjax.post("ERProposalReview/UpdateProposalReview", { seq : this.engReport.Seq ,proposalAuditOption : this.engReport.ProposalAuditOpinion});
+                if(res)
+                {
+                    alert("儲存成功");
+                    this.getItem();
+                }
+            },
             checkDateSmaller(orgdate, event)
             {
                 if(new Date(event.target.value) < new Date())
@@ -858,9 +919,15 @@
             },
             //送簽
             onSend() {
-                if(this.itemsA.reduce( (a, c) => a + c.Price, 0) !=  this.itemsD.reduce((a, c) => a+ c.Cost, 0) && this.engReport.ProposalReviewAttributesSeq != 1)
+                if(this.estimateCost !=  this.itemsD.reduce((a, c) => a+ c.Cost, 0) && this.engReport.ProposalReviewAttributesSeq != 1)
                 {
                     alert("該工程內容的經費與概估經費不同");
+                    return ;
+                }
+                if(this.itemsA.length == 0)
+                {
+                    alert("概估經費需要填寫");
+                    return ;
                 }
                 this.engReport.EstimatedLandAcquisitionCosts 
                     = this.engReport.EstimatedLandAcquisitionCosts  ?? 0 ;
@@ -1317,11 +1384,15 @@
                     this.editCoastal = 0;
                 }
                 //if (this.strEmpty(this.engReport.SetConditions)) { 
-                    if (this.engReport.ProposalReviewTypeSeq == 3) {
+                    if(!this.engReport.SetConditions)
+                    {
+                        if (this.engReport.ProposalReviewTypeSeq == 3) {
                         this.engReport.SetConditions = "河床谿線高OO公尺、現況河床高OO公尺、計畫洪水高OO公尺、常水位高OO公尺、計畫河寬OO公尺、現況河寬OO公尺、計畫堤頂高OO公尺、計畫流量OOcms、計畫流速OOcms、河床質D50OOCM、現況堤頂高程OO公尺、現況基腳深度OO公尺、其他";
-                    } else {
-                        this.engReport.SetConditions = "高潮位高程OO公尺、暴潮位高程OO公尺、計畫堤頂高程OO公尺、現況堤頂高OO公尺、現況海堤長度OO公尺、現況外坡坡度O/O、現況內坡坡度O/O、其他";
+                        } else {
+                            this.engReport.SetConditions = "高潮位高程OO公尺、暴潮位高程OO公尺、計畫堤頂高程OO公尺、現況堤頂高OO公尺、現況海堤長度OO公尺、現況外坡坡度O/O、現況內坡坡度O/O、其他";
+                        }
                     }
+
                 //}
             },
             //下載-在地溝通辦理情形
@@ -1417,7 +1488,7 @@
             },
         },
         async mounted() {
-            console.log('mounted() 提案審查 ' + window.location.href);
+            console.log('mounted() 提案審查A ' + window.location.href );
             let urlParams = new URLSearchParams(window.location.search);
             if (urlParams.has('id')) {
                 if (this.selectProposalReviewTypeOptions.length == 0) this.getProposalReviewTypeOption();
@@ -1427,7 +1498,6 @@
                 if (this.cities.length == 0) this.getCities();
                 this.isAdmin = localStorage.getItem('isAdmin') == 'True' ? true : false;
                 this.isEQCAdmin = localStorage.getItem('isEQCAdmin') == 'True' ? true : false;
-                console.log(this.isAdmin);
                 this.targetId = parseInt(urlParams.get('id'), 10);
                 // console.log(this.targetId);
                 if (Number.isInteger(this.targetId)) {
@@ -1444,7 +1514,7 @@
                     return;
                 }
             }
-            window.history.back(); //.location = "/FrontDesk";
+            // window.history.back(); //.location = "/FrontDesk";
         }
     }
 </script>

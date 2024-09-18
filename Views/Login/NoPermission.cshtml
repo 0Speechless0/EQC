@@ -1,0 +1,22 @@
+﻿
+@{
+    ViewBag.Title = "NoPermission";
+    Layout = "~/Views/Shared/_NoneLayout.cshtml";
+}
+
+<h2 style="color:red">您沒有權限瀏覽此頁，<span id="sec"> 5 </span> 秒後自動返回 ...</h2>
+
+
+<script>
+    var sec = 5;
+    setInterval(() => {
+        if (sec == 0) {
+            sec = 5
+            history.go(-1)
+        }
+            
+        sec--;
+        document.getElementById("sec").innerHTML = sec;
+    }, 1000)
+</script>
+

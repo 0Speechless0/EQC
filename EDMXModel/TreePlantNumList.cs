@@ -24,6 +24,7 @@ namespace EQC.EDMXModel
         public Nullable<int> ModifyUserSeq { get; set; }
         public Nullable<int> ActualPlantNum { get; set; }
         public string TreeTypeName { get; set; }
+        public string TreeType { get; set; }
     
         public virtual TreePlantMain TreePlantMain { get; set; }
     }

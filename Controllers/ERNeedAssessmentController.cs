@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Services.Description;
@@ -47,13 +48,13 @@ namespace EQC.Controllers
         }
 
         //工程清單
-        public JsonResult GetList(int year, int unit, int subUnit, int rptType, int pageRecordCount, int pageIndex)
+        public JsonResult GetList(int year, int unit, int subUnit, int rptType, int pageRecordCount, int pageIndex, string keyWord = null)
         {
             List<EngReportVModel> engList = new List<EngReportVModel>();
-            int total = engReportService.GetEngListCount(year, unit, subUnit, rptType, 1);
+            int total = engReportService.GetEngListCount(year, unit, subUnit, rptType, 1, keyWord);
             if (total > 0)
             {
-                engList = engReportService.GetEngList<EngReportVModel>(year, unit, subUnit, rptType, pageRecordCount, pageIndex, 1);
+                engList = engReportService.GetEngList<EngReportVModel>(year, unit, subUnit, rptType, pageRecordCount, pageIndex, 1, keyWord);
             }
             return Json(new
             {
@@ -63,15 +64,15 @@ namespace EQC.Controllers
         }
 
         //工程清單-待核清單
-        public JsonResult GetListB(int year, int unit, int subUnit, int rptType, int pageRecordCount, int pageIndex)
+        public JsonResult GetListB(int unit, int subUnit, int rptType, int pageRecordCount, int pageIndex, int year = -1, string keyWord = null)
         {
             subUnit = -1;
             rptType = 0;
             List<EngReportVModel> engList = new List<EngReportVModel>();
-            int total = engReportService.GetEngListCount(year, unit, subUnit, rptType, 11);
+            int total = engReportService.GetEngListCount(year, unit, subUnit, rptType, 11, keyWord);
             if (total > 0)
             {
-                engList = engReportService.GetEngList<EngReportVModel>(year, unit, subUnit, rptType, pageRecordCount, pageIndex, 11);
+                engList = engReportService.GetEngList<EngReportVModel>(year, unit, subUnit, rptType, pageRecordCount, pageIndex, 11, keyWord);
             }
             return Json(new
             {
@@ -146,13 +147,14 @@ namespace EQC.Controllers
                   || String.IsNullOrEmpty(m.ScenePhotoFileName) 
                 )
             {
+   
                 return Json(new
                 {
                     result = -1,
                     msg = "資料不完整!!"
                 });
             }
-
+            era.ApproveUserSeq = Utils.getUserSeq();
             int state;
             era.EngReportSeq = m.Seq;
             //更新簽核
@@ -238,10 +240,10 @@ namespace EQC.Controllers
                 items[0].IsEditFile = 0;
                 items[0].IsSavaApproval =
 
-                       (!items[0].OriginAndScopeReviewState || items[0].OriginAndScopeUpdateReviewUserName == items[0].OriginAndScopeAssignReviewUserName) &&
-                       ( !items[0].RelatedReportResultsReviewState || items[0].RelatedReportResultsAssignReviewUserName == items[0].RelatedReportResultsUpdateReviewUserName ) &&
-                       ( !items[0].FacilityManagementReviewState || items[0].FacilityManagementAssignReviewUserName == items[0].FacilityManagementUpdateReviewUserName )&&
-                       (!items[0].ProposalScopeLandReviewState || items[0].ProposalScopeLandAssignReviewUserName == items[0].ProposalScopeLandUpdateReviewUserName );
+                       ( (!items[0].OriginAndScopeReviewState && items[0].OriginAndScopeReviewTime != null) || items[0].OriginAndScopeUpdateReviewUserName == items[0].OriginAndScopeAssignReviewUserName) &&
+                       ( (!items[0].RelatedReportResultsReviewState && items[0].RelatedReportResultsReviewTime != null) || items[0].RelatedReportResultsAssignReviewUserName == items[0].RelatedReportResultsUpdateReviewUserName ) &&
+                       ( (!items[0].FacilityManagementReviewState && items[0].FacilityManagementReviewTime != null) || items[0].FacilityManagementAssignReviewUserName == items[0].FacilityManagementUpdateReviewUserName )&&
+                       ( (!items[0].ProposalScopeLandReviewState && items[0].ProposalScopeLandReviewTime != null) || items[0].ProposalScopeLandAssignReviewUserName == items[0].ProposalScopeLandUpdateReviewUserName );
                 
                 items[0].LocationMapFileName = items[0].LocationMapFileName != null ? items[0].LocationMapFileName : "";
                 items[0].AerialPhotographyFileName = items[0].AerialPhotographyFileName != null ? items[0].AerialPhotographyFileName : "";
@@ -331,19 +333,21 @@ namespace EQC.Controllers
         public JsonResult GetEngReportApprove(int engReportSeq)
         {
             EngReportApproveService engReportApproveService = new EngReportApproveService();
-
+            var user = new SessionManager().GetUser();
             EngReportApproveVModel model;
             List<EngReportApproveVModel> list = engReportApproveService.GetEngReportApprove<EngReportApproveVModel>(engReportSeq);
-
+            list = list.OrderByDescending(r => r.ApprovalWorkFlow).ToList();
+            bool approved = false;
             if (list.Count > 0)
             {
                 model = list[0];
+                approved = true;
             }
             else
             {
                 model = new EngReportApproveVModel() { Seq = -1 };
             }
-
+          
             //if (String.IsNullOrEmpty(model.Signature) && (model.ApprovalMethod == 2 || model.ApprovalMethod == 3))
             //{
             //    List<SignatureFileVM> signatureFileVMList = new UserService().GetSignatureFileByUserSeq(Utils.getUserSeq());
@@ -368,7 +372,8 @@ namespace EQC.Controllers
             return Json(new
             {
                 result = 0,
-                item = model
+                item = model,
+                Approved = approved
             });
         }
 

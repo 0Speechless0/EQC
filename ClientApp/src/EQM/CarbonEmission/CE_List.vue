@@ -48,9 +48,9 @@
                         <div class="col-12 col-sm-6 col-md-auto mb-3 mb-sm-0">
                             <button type="button" class="btn btn-outline-secondary btn-sm"><i class="fas fa-search"></i></button>
                         </div>
-                        <div v-if="ceHeader.State==0" class="col-12 col-sm-6 col-md-auto mb-3 mb-sm-0 mt-sm-2 mt-md-0">
+                        <div v-if=" ceHeader.State == 0 || !(Role > 2 && ceHeader.State ==2 )" class="col-12 col-sm-6 col-md-auto mb-3 mb-sm-0 mt-sm-2 mt-md-0">
                             <label class="btn btn-block btn-color11-2 btn-sm">
-                                <input v-on:change="fileChange($event)" id="inputFile" type="file" name="file" multiple="" style="display:none;">
+                                <input v-on:change="fileChange($event)" id="inputFile" type="file" name="file" multiple="" style="display: none;" >
                                 <i class="fas fa-upload"></i> 匯入PCCES
                             </label>
                             <!-- button @click="ImportPcces" type="button" class="btn btn-block btn-color12 btn-sm">匯入PCCES</button-->
@@ -58,9 +58,13 @@
                         <!-- div v-if="ceHeader.State==0" class="col-12 col-sm-6 col-md-auto mb-3 mb-sm-0 mt-sm-2 mt-md-0">
                             <button @click="onCalCarbonEmissions" type="button" class="btn btn-block btn-color12 btn-sm">計算碳排放量</button>
                         </div>
-                        <div v-if="ceHeader.State==0" class="col-12 col-sm-6 col-md-auto mb-3 mb-sm-0 mt-sm-2 mt-md-0">
-                            <button @click="onCheck" type="button" class="btn btn-block btn-color12 btn-sm"><i class="fa fa-check"></i> 送出</button>
-                        </div -->
+                        -->
+                        <div v-if="ceHeader.State==0 && Role <= 2 " class="col-12 col-sm-6 col-md-auto mb-3 mb-sm-0 mt-sm-2 mt-md-0">
+                            <button @click="onLock" type="button" class="btn btn-block btn-color12 btn-sm"><i class="fa fa-lock"></i>鎖定</button>
+                        </div> 
+                        <div v-else-if="ceHeader.State==2 && Role <= 2 " class="col-12 col-sm-6 col-md-auto mb-3 mb-sm-0 mt-sm-2 mt-md-0">
+                            <button @click="unLock" type="button" class="btn btn-block btn-color11-1 btn-sm"><i class="fa fa-lock"></i>解鎖</button>
+                        </div> 
                         <div class="col-12 col-sm-6 col-md-auto mb-3 mb-sm-0 mt-sm-2 mt-md-0">
                             <button @click="downloadPayItem" type="button" class="btn btn-block btn-color11-1 btn-sm"><i class="fas fa-download"></i> 碳排放量估算表下載</button>
                         </div>
@@ -68,8 +72,16 @@
                 </form>
 
                 <comm-pagination ref="pagination" :recordTotal="totalRows" v-on:onPaginationChange="onPaginationChange"></comm-pagination>
-
-                <div class="table-responsive">
+                <SuggesttionModal ref="SuggesttionModal" :title="`${editSuggestionItem.Description} 修改意見填寫`">
+                                            <template #body>
+                                                <input type="text" class="form-control"  v-model="editSuggestionItem.Suggestion"/>
+                                                <div class="d-flex mt-3 justify-content-center">
+                                                    <button class="btn btn-color11-2 btn-xs  mx-1"  @click="sendSuggestion">送出</button>
+                                                </div>
+                     
+                                            </template>
+                                        </SuggesttionModal>
+                <div class="tableFixHead">
                     <table class="table table-responsive-md table-hover VA-middle">
                         <thead class="insearch">
                             <tr>
@@ -83,13 +95,14 @@
                                 <th class="text-right"><strong>工項碳排放量</strong></th>
                                 <!-- th style="min-width: 110px;"><strong>綠色經費</strong></th>
                                 <th><strong>綠色經費修改說明</strong></th -->
-                                <th style="width: 150px;"><strong>編碼(備註)</strong></th>
-                                <th><strong v-if="editSeq != -99" >修改說明</strong></th>
+                                <th style="width: 100px;"><strong>編碼(備註)</strong></th>
+                                <th style="width: 100px;"><strong v-if="editSeq != -99" >修改說明</strong></th>
                                 <th><strong>管理</strong></th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr v-for="(item, index) in items" v-bind:key="item.Seq" v-bind:class="{'GreenFunding': item.GreenFundingSeq!=null }">
+
                                 <td class="text-left"><strong>{{item.PayItem}}</strong></td>
                                 <td>{{item.ItemNo}}</td>
                                 <td>{{item.Description}}</td>
@@ -108,11 +121,24 @@
                                     <td colspan="2" class="text-left">
                                         <span v-html="memoTitle(item)"></span>
                                         <br />修改說明:{{editTitle(item)}}
+                                        <br />
+
+                                        <label  v-show="item.Suggestion">
+                                            水利署修改意見 :
+                                        </label>
+
+
+                                        <div  class="d-inline-block col-12" tabindex="0" v-b-tooltip :title="item.Suggestion ">
+                                            <label>{{(item.Suggestion ?? "").slice(0, 10)}} </label> <span v-if="item.Suggestion && item.Suggestion.length > 15"> ... </span>
+                                        </div>
                                     </td>
                                     <td>
-                                        <div v-if="ceHeader.State==0 && canEdit(item)" class="d-flex justify-content-center">
-                                            <button @click="onEditRecord(item)" class="btn btn-color11-3 btn-xs sharp mx-1"><i class="fas fa-pencil-alt"></i></button>
-                                            <button @click="onEditRecord1(item)" class="btn btn-color11-1 btn-xs sharp mx-1" data-toggle="modal" data-target="#green_edit"><i class="fas fa-pencil-alt"></i></button>
+                                     
+                                        <div class="d-flex justify-content-center" >
+                                            <button v-if="editSuggestion != index" @click="onEditSuggestion(item)" class="btn btn-color11-2 btn-xs  mx-1"   ><i class="fas fa-pencil-alt"></i> 意見</button>
+                                            <!-- <button v-else @click="onEditSuggestion(index, false)" class="btn btn-color11-2 btn-xs  mx-1"   ><i class="fas fa-pencil-alt"></i> 取消 </button> -->
+                                            <button  v-if=" canEdit(item) && ! (Role > 2 && ceHeader.State ==2 )" @click="onEditRecord(item)" class="btn btn-color11-3 btn-xs sharp mx-1" :disabled="ceHeader.State!=0 && ceHeader.State!=2"  ><i class="fas fa-pencil-alt"></i></button>
+                                            <button  v-if=" canEdit(item) && ! (Role > 2 && ceHeader.State ==2 )" @click="onEditRecord1(item)" class="btn btn-color11-1 btn-xs sharp mx-1" data-toggle="modal" data-target="#green_edit"><i class="fas fa-pencil-alt"></i></button>
                                         </div>
                                     </td>
                                 </template>
@@ -125,7 +151,7 @@
                                     <td><input v-model.trim="editRecord.Memo" maxlength="100" type="text" class="form-control text-left"></td>
                                     <td>
                                         <div class="d-flex justify-content-center">
-                                            <button @click="onSaveRecord" class="btn btn-color11-2 btn-xs sharp mx-1"><i class="fas fa-save"></i></button>
+                                            <button @click.prevent="onSaveRecord(index)" class="btn btn-color11-2 btn-xs sharp mx-1"><i class="fas fa-save"></i></button>
                                             <button @click.stop="editSeq = -99" class="btn btn-color9-1 btn-xs sharp mx-1" title="取消"><i class="fas fa-times"></i></button>
                                         </div>
                                     </td>
@@ -194,8 +220,8 @@
             </div>
         </div>
         <!-- 綠色經費修改 modal -->
-        <div class="modal fade" id="green_edit" style="display: none;" aria-hidden="true">
-            <div class="modal-dialog modal-xl modal-dialog-centered" style="max-width: fit-content;">
+        <div class="modal fade" id="green_edit" tabindex="-1" ria-hidden="true">
+            <div class="modal-dialog modal-xl modal-dialog-centered" style="max-width: fit-content;" >
                 <div class="modal-content">
                     <div class="card whiteBG mb-4 pattern-F colorset_1">
                         <div class="card-header">
@@ -245,13 +271,16 @@
     </div>
 </template>
 <script>
+import SuggesttionModal from "../../components/Modal.vue";
     export default {
         components: {
             CheckTable: require('./CE_CheckTable.vue').default,
             CarbonTrading: require('./CE_CarbonTrading.vue').default,
+            SuggesttionModal : SuggesttionModal
         },
         data: function () {
             return {
+                Role : {},
                 targetId: null,
                 tenderItem: {},
                 selectitems: [],
@@ -266,6 +295,7 @@
                 editRecord: {},
                 //分頁
                 totalRows: 0,
+                editSuggestion : -1,
                 isAdmin: false,
                 //s20230418
                 greenFundingOptions: [],
@@ -274,9 +304,25 @@
                 greenFunding: null,//s20230418
                 greenFundingRate: null,//s20230418
                 selTab:'TaPrice',//s20230428
+                editSuggestionItem : {}
             };
         },
         methods: {
+            sendSuggestion()
+            {
+                window.myAjax.post("/EQMCarbonEmission/UpdatePayItemSuggestion", {m : this.editSuggestionItem } )
+                .then(resp => {
+                    if(resp.data == true) {
+                        alert("成功");
+                        this.$refs.SuggesttionModal.show = false;
+                    }
+                })
+            },
+            onEditSuggestion(item)
+            {
+                this.editSuggestionItem = item;
+                this.$refs.SuggesttionModal.show = true;
+            },
             //下載 節能減碳簡易檢核表 s20230428
             downloadCheckTable() {
                 window.comm.dnFile('/EQMCarbonEmission/DnCheckTable?id=' + this.targetId);
@@ -335,6 +381,26 @@
                     return item.Memo;
                 }
             },
+            unLock() {
+                window.myAjax.post('/EQMCarbonEmission/unLockData', { id: this.targetId })
+                    .then(resp => {
+                        alert(resp.data.msg);
+                        this.getCEHeader();
+                    })
+                    .catch(err => {
+                        console.log(err);
+                    });
+            },
+            onLock() {
+                window.myAjax.post('/EQMCarbonEmission/LockData', { id: this.targetId })
+                    .then(resp => {
+                        alert(resp.data.msg);
+                        this.getCEHeader();
+                    })
+                    .catch(err => {
+                        console.log(err);
+                    });
+            },
             //檢查是否有未填寫理由
             onCheck() {
                 window.myAjax.post('/EQMCarbonEmission/CheckData', { id: this.targetId })
@@ -366,7 +432,7 @@
                 return window.comm.stringEmpty(str);
             },
             //儲存
-            onSaveRecord() {
+            onSaveRecord(index) {
                 if (this.isAdmin && this.strEmpty(this.editRecord.Memo)) {//s20230307
                     alert('編碼(備註) 必須輸入!');
                     return;
@@ -381,6 +447,8 @@
                 window.myAjax.post('/EQMCarbonEmission/UpdateRecord', { m: this.editRecord })
                     .then(resp => {
                         if (resp.data.result == 0) {
+                            this.editSeq = -99;
+                            // this.items[index] = this.editRecord;
                             this.getResords();
                         } else
                         alert(resp.data.msg);
@@ -532,6 +600,7 @@
                     .then(resp => {
                         if (resp.data.result == 0) {
                             this.tenderItem = resp.data.item;
+                            this.Role = resp.data.Role;
                             this.getGreenFundingList();
                             this.getLevel1();
                             this.getResords();
@@ -554,3 +623,24 @@
         },
     }
 </script>
+<style scoped>
+.tableFixHead          { overflow: auto; max-height: 500px;   }
+table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+.table {
+    margin : 0;
+}
+.tableFixHead thead  { position: sticky !important ; top: 0 !important ; z-index: 1 !important;     }
+th {
+    border : 0;
+    border-bottom: #ddd solid 1px !important; 
+    border-left : 0 !important;
+    border-right:0 !important;
+}
+td {
+    z-index: 0;
+    position: relative;
+}
+</style>

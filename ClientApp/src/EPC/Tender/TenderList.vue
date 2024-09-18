@@ -64,6 +64,7 @@
                                 <button  v-bind:disabled="item.PrjXMLSeq == null || item.PrjXMLSeq<1" @click="dnDoc2(item)" class="btn btn-color11-1 btn-xs mx-1">
                                     <i class="fas fa-download"></i> 工程資料表
                                 </button>
+                                <PackageDownload  btnclass="btn btn-color11-3 btn-xs mr-1" :systemType="3" :seq="item.Seq"></PackageDownload>
                             </div>
                         </td>
                     </tr>
@@ -74,6 +75,9 @@
 </template>
 <script>
     export default {
+        components :{
+            PackageDownload :require("../../FilePackage/Modal.vue").default
+        },
         data: function () {
             return {
                 //使用者單位資訊

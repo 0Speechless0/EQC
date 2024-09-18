@@ -14,6 +14,12 @@ namespace EQC.EDMXModel
     
     public partial class EnvirConsList
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
+        public EnvirConsList()
+        {
+            this.EnvirConsControlSt = new HashSet<EnvirConsControlSt>();
+        }
+    
         public int Seq { get; set; }
         public Nullable<int> EngMainSeq { get; set; }
         public string ItemName { get; set; }
@@ -29,5 +35,7 @@ namespace EQC.EDMXModel
         public byte DataType { get; set; }
     
         public virtual EngMain EngMain { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<EnvirConsControlSt> EnvirConsControlSt { get; set; }
     }
 }

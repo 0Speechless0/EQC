@@ -19,6 +19,8 @@ namespace EQC.EDMXModel
         {
             this.EngMain = new HashSet<EngMain>();
             this.ProgressData = new HashSet<ProgressData>();
+            this.PerformanceScore = new HashSet<PerformanceScore>();
+            this.SuperviseEng = new HashSet<SuperviseEng>();
         }
     
         public int Seq { get; set; }
@@ -119,5 +121,10 @@ namespace EQC.EDMXModel
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<ProgressData> ProgressData { get; set; }
         public virtual PrjXMLTag PrjXMLTag { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<PerformanceScore> PerformanceScore { get; set; }
+        public virtual PrjXMLExt PrjXMLExt { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<SuperviseEng> SuperviseEng { get; set; }
     }
 }

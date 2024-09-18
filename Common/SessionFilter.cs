@@ -12,6 +12,9 @@ using EQC.Common;
 using System.Web.Routing;
 using System.Configuration;
 using EQC.Detection;
+using EQC.Controllers;
+
+
 namespace EQC.Common
 {
     public class SessionFilter : ActionFilterAttribute
@@ -31,30 +34,48 @@ namespace EQC.Common
         public override void OnActionExecuting(ActionExecutingContext filterContext)
         {
             HttpContext httpcontext = HttpContext.Current;
-
+            //if( httpcontext.Request.HttpMethod == "POST" && HttpContext.Current.Session["AlertSetting"] != null)
+            //{
+            //    HttpContext.Current.Response.Redirect(httpcontext.Request.Url.AbsoluteUri);
+            //}
             string currentControllerName = (filterContext.ActionDescriptor).ControllerDescriptor.ControllerName + "/";
             string currentActionName = (filterContext.ActionDescriptor).ActionName;
 
             // 判斷權限
             string controllerName = string.Empty;
             UserInfo userInfo;
+
             userInfo = _sm.GetUser();
-            if (userInfo.Seq != null) filterContext.ActionDescriptor.Record(userInfo);
+            if (userInfo.Seq != null && ConfigurationManager.AppSettings.Get("Debug") == null) filterContext.ActionDescriptor.Record(userInfo);
+            var selectedEngSeq = LoginController.selectedEngSeq == null ?
+                filterContext.HttpContext.Request.Cookies.Get("selectedEngSeq")?.Value : LoginController.selectedEngSeq;
+            if (selectedEngSeq != null && selectedEngSeq.Length > 0)
+                HttpContext.Current.Session["selectedEngSeq"] = selectedEngSeq;
+
+            bool isUse = false;
+            string relative_path = $"{currentControllerName}{currentActionName}";
+            int? systemType =
+                LoginController.systemType == null ?
+                userInfo.SystemList?.FirstOrDefault(row => row.PathName == HttpContext.Current.Request.Path.Remove(0, 1))?.SystemType : LoginController.systemType;
+            LoginController.systemType = null;
+            LoginController.selectedEngSeq = null;
+            List<VMenu> vMenuList = userInfo.MenuList;
+
+            HttpContext.Current.Session["MenuPath"] = "/"+relative_path;
+
+            if (systemType != null)
+            {
+                _sm.currentSystemSeq = systemType.ToString();
+            }
+            else if (HttpContext.Current.Request.Path.Contains("/Portal"))
+            {
+                HttpContext.Current.Session["SystemType"] = 0;
+            }
 
             if (ConfigurationManager.AppSettings.Get("Debug") == null)
             {
 
-                bool isUse = false;
-                int? systemType = userInfo.SystemList?.FirstOrDefault(row => row.PathName == HttpContext.Current.Request.Path.Remove(0, 1))?.SystemType;
-                List<VMenu> vMenuList = userInfo.MenuList;
-                if (systemType != null)
-                {
-                    HttpContext.Current.Session["SystemType"] = systemType;
-                }
-                else if (HttpContext.Current.Request.Path.Contains("/Portal"))
-                {
-                    HttpContext.Current.Session["SystemType"] = 0;
-                }
+
                 // 確認目前要求的HttpSessionState
                 if (httpcontext.Session != null)
                 {
@@ -67,7 +88,7 @@ namespace EQC.Common
                         {
                             if (vMenuList != null)
                             {
-                                if (vMenuList.Any(w => w.Url != null && w.Url.Contains(currentControllerName)))
+                                if (vMenuList.Any(w => w.Url != null && w.Url.StartsWith(currentControllerName)))
                                 {
                                     isUse = true;
                                 }
@@ -96,11 +117,30 @@ namespace EQC.Common
                     else
                     {
                         System.Diagnostics.Debug.WriteLine(String.Format("非選單權限: Ctl:{0}, Action:{1}", currentControllerName, currentActionName));
+
+                        //using(var context = new EDMXModel.EQC_NEW_Entities() )
+                        //{
+                        //    if (
+                        //        filterContext.RequestContext.HttpContext.Request.RequestType == "GET" &&
+                        //        context.Menu.Any(w => w.PathName != null && w.PathName.StartsWith(currentControllerName)) )
+                        //        NoPermission(filterContext);
+                        //}
                         //shioulo 20210523 由於其它功能像有跨 Controller 且不在權限控制項內, 故先暫停嚴管機制
                         //toHome(filterContext);
                     }
                 }
             }
+            else if(ConfigurationManager.AppSettings.Get("Debug") == "true")
+            {
+                base.OnActionExecuting(filterContext);
+            }
+            //else if(menuSeq != null)
+            //{
+            //    var _selectedEngSeq = HttpContext.Current.Session["selectedEngSeq"]?.ToString();
+            //    var _systemType = HttpContext.Current.Session["SystemType"]?.ToString();
+            //    //var selectedEngSeq = filterContext.HttpContext.Request.Cookies.Get("selectedEngSeq")?.ToString();
+            //    ($"{relative_path}/{_systemType}:{_selectedEngSeq }").SaveToTxTFile("App_Data", "debug_url.txt");
+            //}
 
         }
 
@@ -120,6 +160,23 @@ namespace EQC.Common
             filterContext.Result = new RedirectToRouteResult(dictionary);
             base.OnActionExecuting(filterContext);
         }
+        /// <summary> 系統登出 </summary>
+        /// <param name="filterContext"></param>
+        private void NoPermission(ActionExecutingContext filterContext)
+        {
+            HttpContext context = HttpContext.Current;
+            string url = string.Empty;
+            RouteValueDictionary dictionary = new RouteValueDictionary(
+            new
+            {
+                controller = "Login",
+                action = "NoPermission",
+                returnUrl = filterContext.HttpContext.Request.RawUrl
+            });
+            filterContext.Result = new RedirectToRouteResult(dictionary);
+            base.OnActionExecuting(filterContext);
+        }
+
 
         /// <summary> 系統登出 </summary>
         /// <param name="filterContext"></param>

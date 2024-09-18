@@ -30,6 +30,9 @@ namespace EQC.EDMXModel
             this.EngConstruction = new HashSet<EngConstruction>();
             this.CarbonEmissionHeader = new HashSet<CarbonEmissionHeader>();
             this.EC_SupDailyDate = new HashSet<EC_SupDailyDate>();
+            this.SystemProblem = new HashSet<SystemProblem>();
+            this.EngSupervisor = new HashSet<EngSupervisor>();
+            this.EC_SchEngProgressHeader = new HashSet<EC_SchEngProgressHeader>();
         }
     
         public int Seq { get; set; }
@@ -100,6 +103,7 @@ namespace EQC.EDMXModel
         public int CarbonTradedQuantity { get; set; }
         public Nullable<int> CarbonConstructionQuantity { get; set; }
         public bool DredgingEng { get; set; }
+        public Nullable<System.DateTime> ProgressDoneEarly { get; set; }
     
         public virtual Town Town { get; set; }
         public virtual Unit Unit { get; set; }
@@ -133,5 +137,11 @@ namespace EQC.EDMXModel
         public virtual CarbonReductionCalResult CarbonReductionCalResult { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<EC_SupDailyDate> EC_SupDailyDate { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<SystemProblem> SystemProblem { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<EngSupervisor> EngSupervisor { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<EC_SchEngProgressHeader> EC_SchEngProgressHeader { get; set; }
     }
 }

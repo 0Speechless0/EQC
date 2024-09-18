@@ -32,8 +32,8 @@ namespace EQC.EDMXModel
         public Nullable<int> ModifyUserSeq { get; set; }
         public string ItemNo { get; set; }
     
+        public virtual EngMain EngMain { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<ConstCheckRec> ConstCheckRec { get; set; }
-        public virtual EngMain EngMain { get; set; }
     }
 }

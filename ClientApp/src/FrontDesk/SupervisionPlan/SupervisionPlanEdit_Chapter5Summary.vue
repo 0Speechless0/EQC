@@ -10,8 +10,19 @@
                 </button>
             </div>
         </div>
-        <comm-pagination :recordTotal="totalRows" v-on:onPaginationChange="onPaginationChange"></comm-pagination>
-        <div class="table-responsive">
+        <div class="d-flex mt-2 mb-2">
+            <comm-pagination :recordTotal="totalRows" v-on:onPaginationChange="onPaginationChange"></comm-pagination>
+            <button class="btn btn-color11-3 btn-xs ml-4"  v-if="!merging" @click="merging= true"><i class="fas  fa-compress-arrows-alt" > 合併項目</i></button>
+            <button class="btn btn-color11-2 btn-xs ml-4"  v-else @click="onMergeItems"><i class="fas  fa-compress-arrows-alt"> 合併</i></button>
+            <div class="form-inline ml-4" v-if="merging">
+                <label for="i1">合併列舉&nbsp;&nbsp;</label>
+                <input  type="text" class="form-control " id="i1" style="width: 200px;" v-model="mergeItemOrderA" />
+                <span style="color:red" class="ml-4"> 範例 : 23, 24, 25 ...</span>
+            </div>
+
+        </div>
+
+        <div class="table-responsive tableFixHead">
             <table class="table table1 min910" border="0">
                 <thead>
                     <tr>
@@ -24,7 +35,7 @@
                         <th class="sort" rowspan="2">項次</th>
                         <th rowspan="2">契約詳細表項次</th>
                         <th rowspan="2">材料/設備名稱</th>
-                        <th colspan="2">契約數量</th>
+                        <th colspan="2"  style="border:0 !important; ">契約數量</th>
                         <th rowspan="2">是否取樣試驗</th>
                         <th rowspan="2">是否驗廠</th>
                         <th rowspan="2">協力廠商資料</th>
@@ -132,15 +143,34 @@
             return {
                 fCanEdit: false,
                 items: [],
-
+                merging : false,
                 targetItem: { ItemName: '', FlowCharOriginFileName: '' },
                 //分頁
                 pageIndex: 1,
                 perPage: 30,
                 totalRows: 0,
+                mergeItemOrderA : [],
+                mergeItemOrderB : []
             };
         },
         methods: {
+            onMergeItems()
+            {   
+                var orderDic = {};
+                this.items.forEach( e => {
+                    orderDic[e.OrderNo] = e.Seq;
+                })
+                var str = this.mergeItemOrderA.split(',')
+                    .reduce((a, c) => a + "," + orderDic[c], "" )
+                console.log("fff", str, this.items);
+                str = str.length > 0 ? str.slice(1) : "";
+                window.myAjax.post("SupervisionPlan/MergeItemsChapter5Summary", { items : str })
+                .then(resp => {
+                    alert(resp.data);
+                    this.getList();
+                    this.merging = false;
+                })
+            },
             onCheckAllChange(event) {
                 for (let item of this.items) {
                     item.DataKeep = event.target.checked;
@@ -159,6 +189,9 @@
                 window.myAjax.post('/SupervisionPlan/Chapter5', params)
                     .then(resp => {
                         this.items = resp.data.items;
+                        this.items.sort(function (a, b) {
+                            return a.DataKeep - b.DataKeep;
+                        })
                         this.totalRows = resp.data.pTotal;
                     })
                     .catch(err => {
@@ -208,8 +241,8 @@
                             //const resultItem = resp.data.item.Data;
                             //item.modifyDate = resultItem.modifyDate;
                         } else
-                            item.DataKeep = !item.DataKeep;
-                            alert(resp.data.message);
+                            item.DataKeep = resp.data.DataKeep;
+                            // alert(resp.data.message);
                     })
                     .catch(err => {
                         console.log(err);
@@ -250,3 +283,24 @@
         }
     }
 </script>
+<style scoped>
+.tableFixHead          { overflow: auto; max-height: 500px;   }
+table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+.table {
+    margin : 0;
+}
+.tableFixHead thead  { position: sticky !important ; top: 0 !important ; z-index: 1 !important;     }
+th {
+    border : 0;
+    border-bottom: #ddd solid 1px !important; 
+    border-left : 0 !important;
+    border-right:0 !important;
+}
+td {
+    z-index: 0;
+    position: relative;
+}
+</style>

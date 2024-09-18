@@ -220,14 +220,18 @@
         <p class="text-R">* 查核案件定義：查核欄位有資料<br>* 督導案件定義：系統內已有工程督導案件</p>
         <div class="row justify-content-center">
             <div class="col-12 col-sm-4 col-xl-2 my-2">
-                <button @click="getList" role="button" class="btn btn-shadow btn-block btn-outline-secondary"><i class="fas fa-search"></i> 分析結果</button>
+                <button @click="getList(false)" role="button" class="btn btn-shadow btn-block btn-outline-secondary"><i class="fas fa-search"></i> 分析結果</button>
             </div>
+            <button style="padding: 5px;margin: 5px; " 
+                @click="getList(true)"
+                class="btn btn-color11-1 btn-xs mx-1" id="capture6"><i class="fas fa-download"></i><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">下載</font></font></button>
         </div>
         <EngList v-for="(item, index) in selPlaneWeakness" v-bind:key="index" v-bind:engData="engItems[item]"></EngList>
     </div>
 </template>
 <script>
     import {useSelectionStore} from "../../store/SelectionStore.js";
+    import Com from "../../Common/Common2";
     const store = useSelectionStore();
     export default {
         data: function () {
@@ -310,8 +314,9 @@
                     }
                 }
             },
+
             //清單
-            async getList() {
+            async getList(downloadExcel) {
 
                 this.selUnits = this.unitList
                     .filter(e => e.IsSelected && !e.other )
@@ -345,7 +350,21 @@
                 }
                 this.initEngItems();
                 this.selPlaneWeakness.sort();
-                for (const key of this.selPlaneWeakness) {
+                if(downloadExcel)
+                {
+                    Com.dnFile(`/EADPlaneWeakness/ExportExcel?${new URLSearchParams({
+                        units: this.selUnits,
+                        sYear: this.selStartYear,
+                        eYear: this.selEndYear,
+                        places: this.selPlaces,
+                        isSupervise: this.isSupervise,
+                        minBid: this.minBid,
+                        maxBid: this.maxBid
+                    }).toString()}`);
+                }
+                else
+                {
+                    for (const key of this.selPlaneWeakness) {
                     await window.myAjax.post('/EADPlaneWeakness/GetList', {
                         units: this.selUnits,
                         sYear: this.selStartYear,
@@ -362,7 +381,9 @@
                         .catch(err => {
                             console.log(err);
                         });
+                    }
                 }
+
             },
             //工程年分
             async getSelectYearOption() {

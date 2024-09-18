@@ -1,5 +1,6 @@
 ﻿using EQC.Common;
 using EQC.EDMXModel;
+using EQC.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,24 +12,89 @@ namespace EQC.Detection
 {
     public static class APIDetection
     {
-        private static Dictionary<int, APIRecord> threadActions = new Dictionary<int, APIRecord>();
+        private static Dictionary<int, APIRecord> threadActions = new Dictionary<int, APIRecord>(30000);
+
+
+        private static Dictionary<int, APIRecord> htmlReadyCapture = new Dictionary<int, APIRecord>(30000);
+
+
         public static void StartAction(int tid, APIRecord apiRecord)
         {
-            if(!threadActions.ContainsKey(tid))
-                threadActions.Add(tid, apiRecord);
+            try
+            {
+                if (!threadActions.ContainsKey(tid))
+                    threadActions.Add(tid, apiRecord);
+            }
+            catch
+            {
+                BaseService.log.Info($@"軌跡記錄失敗 => 時間 :{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") }, 動作: {apiRecord.ActionName}");
+            }
+
+        }
+        public static bool FinishHtmlCapture(int captureId, HttpSessionStateBase Session)
+        {
+            using (var context = new EQC_NEW_Entities())
+            {
+
+
+                if (htmlReadyCapture.ContainsKey(captureId) && htmlReadyCapture[captureId] != null)
+                {
+                    var record = context.APIRecord.Find(htmlReadyCapture[captureId]?.Seq);
+ 
+                    if (record != null && record.ChangeText != null)
+                    {
+                        var fileName = record.CreateTime?.ToString($"yyyy-MM-dd-HH-mm-ss");
+                        var dirName = record.CreateTime?.ToString($"yyyy-MM-dd") ;
+                        Session["captureHTMLEncode"]?.ToString().SaveToTxTFile($"HtmlCapturedContent/{dirName}/{record.UserMainSeq}", fileName + ".txt");
+                        Session["captureHTMLEncodeLast"]?.ToString().SaveToTxTFile($"HtmlCapturedContent/{dirName}/{record.UserMainSeq}", "org_" + fileName + ".txt");
+                        htmlReadyCapture.Remove(captureId);
+                        return true;
+                    }
+
+                }
+
+
+            }
+            return false;
         }
 
-        public static void FinishAction(int tid)
+
+
+        public static void StartHtmlCaptureIfNeeded(int captureId)
+        {
+            if (!htmlReadyCapture.ContainsKey(captureId))
+            {
+                htmlReadyCapture.Add(captureId, null);
+            }
+            else
+            {
+                htmlReadyCapture[captureId] = null;
+            }
+
+
+
+            
+
+        }
+        public static void FinishAction(int tid, int captureId = 0)
         {
             using (var context = new EQC_NEW_Entities())
             {
                 var record = GetActionRecord(tid);
-                record.EndingTime = DateTime.Now;
-                context.APIRecord.Add(record);
-                context.SaveChanges();
+
+
+                if(record.ChangeText != null)
+                {
+                    record.EndingTime = DateTime.Now;
+                    context.APIRecord.Add(record);
+                    StartHtmlCaptureIfNeeded(captureId);
+                    htmlReadyCapture[captureId] = record;
+                }
 
                 threadActions.Remove(tid);
+                context.SaveChanges();
             }
+            
         }
 
         public static APIRecord GetActionRecord(int tid)
@@ -63,7 +129,6 @@ namespace EQC.Detection
                     Origin = HttpContext.Current.Request.UserHostAddress,
                     CreateTime = DateTime.Now,
                     UserMainSeq = userInfo?.Seq ?? 0,
-                    ChangeText = null,
                     ActionTable = null
                 };
                 var tid = Thread.CurrentThread.ManagedThreadId;

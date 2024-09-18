@@ -18,6 +18,7 @@ namespace EQC.EDMXModel
         public Role()
         {
             this.UserUnitPosition = new HashSet<UserUnitPosition>();
+            this.MenuRole = new HashSet<MenuRole>();
         }
     
         public byte Seq { get; set; }
@@ -34,5 +35,7 @@ namespace EQC.EDMXModel
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<UserUnitPosition> UserUnitPosition { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<MenuRole> MenuRole { get; set; }
     }
 }

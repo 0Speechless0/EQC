@@ -1,7 +1,7 @@
 <template>
     <div class="tab-content">
         <div>
-            <div class="table-responsive">
+            <div class="table-responsive tableFixHead ">
                 <table class="table table-responsive-md table-hover VA-middle">
                     <thead class="insearch">
                         <tr>
@@ -100,3 +100,23 @@
         },
     }
 </script>
+<style scoped>
+.tableFixHead          { overflow: auto; max-height: 500px;   }
+table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+.table {
+    margin : 0;
+}
+.tableFixHead thead  { position: sticky !important ; top: 0 !important ; z-index: 1 !important;     }
+th {
+    border : 0;
+    border-bottom: #ddd solid 1px !important; 
+    border-left : 0 !important;
+    border-right:0 !important;
+}
+td {
+    z-index: 0;
+    position: relative;
+}</style>
